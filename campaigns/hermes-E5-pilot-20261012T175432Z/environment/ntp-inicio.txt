@@ -1,0 +1,7 @@
+Timezone=Etc/UTC
+LocalRTC=no
+CanNTP=yes
+NTP=yes
+NTPSynchronized=yes
+TimeUSec=Mon 2026-10-12 17:54:32 UTC
+RTCTimeUSec=Mon 2026-10-12 17:54:32 UTC

@@ -1,0 +1,10 @@
+{
+  "experiment": "E6",
+  "description": "Política de saída por execução (agentnet_policy, cgroup/connect4) com a mesma identidade, no servidor MCP real; vínculo manual vs. automático. Execuções alternam classe permissiva (P) e restrita (R); referência independente pela porta exclusiva.",
+  "factors": {
+    "binding_mode": ["manual", "auto"],
+    "tool": ["sync", "thread", "subproc", "async"],
+    "execs": [2, 8]
+  },
+  "fixed": {"cond": "E6", "ops": 25, "workload": "workload/mcp_e4.py", "policy": 1, "policy_noctx_allow": 0}
+}

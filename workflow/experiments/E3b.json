@@ -1,0 +1,10 @@
+{
+  "experiment": "E3b",
+  "runner": "overhead",
+  "description": "Decomposição do custo do coletor (ablação): nenhum, só probes (count), completo, otimizado (fast); sem/com marcadores.",
+  "factors": {
+    "instr": ["none", "count", "collector", "fast"],
+    "markers": [0, 1]
+  },
+  "fixed": {"n": 20000, "warmup": 1000}
+}

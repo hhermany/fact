@@ -1,0 +1,8 @@
+{
+  "experiment": "E7",
+  "description": "Agentes LLM reais (modelo local via Ollama, temperatura 0) compartilhando um servidor MCP instrumentado (vínculo automático) com política por execução ativa. O modelo decide as chamadas de ferramenta; referência independente pela porta exclusiva de cada serviço.",
+  "factors": {
+    "execs": [4]
+  },
+  "fixed": {"cond": "E7", "workload": "workload/agent_e7.py", "policy": 1, "policy_noctx_allow": 0}
+}

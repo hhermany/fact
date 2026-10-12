@@ -1,0 +1,10 @@
+{
+  "experiment": "E2",
+  "description": "Escala e carga (RQ4): perdas de captura e atribuição com K execuções concorrentes e duas taxas.",
+  "factors": {
+    "cond": ["N1", "N3"],
+    "execs": [2, 4, 8, 16, 32, 64],
+    "jitter": [0.01, 0.0]
+  },
+  "fixed": {"wrong_label": 0.0, "mode": "inproc", "ops": 20, "threads": 8}
+}

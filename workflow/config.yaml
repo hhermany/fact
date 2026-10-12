@@ -1,0 +1,60 @@
+# Parâmetros congelados das campanhas. Alterar só com registro no diário.
+campaign_seed: 51193
+
+experiments:
+  E1:
+    spec: workflow/experiments/E1.json
+    pilot_n: 3
+    # N da campanha confirmatória: DECISÃO HUMANA após o piloto
+    # (ver scripts/dimensionar_n.py e docs/METODOLOGIA.md §3.5). null = não rodar.
+    n: 3   # por boot (provisório; 2 boots = 6 por célula)
+  E2:
+    spec: workflow/experiments/E2.json
+    pilot_n: 5
+    n: 5   # um boot (provisório)
+
+  E3:
+    spec: workflow/experiments/E3.json
+    pilot_n: 5
+    n: 5   # por boot (provisório; 2 boots = 10 por célula)
+
+  E3b:
+    spec: workflow/experiments/E3b.json
+    pilot_n: 5
+    n: 5   # um boot (provisório)
+  E1fast:
+    spec: workflow/experiments/E1fast.json
+    pilot_n: 1
+    n: 1   # equivalência (provisório)
+
+  E4:
+    spec: workflow/experiments/E4.json
+    pilot_n: 3
+    n: 5   # um boot (provisório)
+
+  E5:
+    spec: workflow/experiments/E5.json
+    pilot_n: 2
+    # N por Clopper-Pearson: com 0 erros, limite superior unilateral 95% da taxa de
+    # erro por conexão <= 1% exige >= 299 conexões por célula; a menor célula (K=2)
+    # tem 50 conexões por rodada -> 6 rodadas (3 por boot, 2 boots). Ver METODOLOGIA §3.5.
+    n: 3   # por boot
+
+  E6:
+    spec: workflow/experiments/E6.json
+    pilot_n: 2
+    # mesmo critério do E5 (Clopper-Pearson, >= 299 decisões por célula; K=2 tem 50/rodada)
+    n: 3   # por boot
+
+  E7:
+    spec: workflow/experiments/E7.json
+    pilot_n: 2
+    n: 13   # por boot (2 boots): 12 decisões por rodada -> 26 rodadas = 312 >= 299 (Clopper-Pearson, ver METODOLOGIA §3.3)
+
+  E2b:
+    spec: workflow/experiments/E2b.json
+    pilot_n: 2
+    n: 5   # por boot (2 boots); piloto: captura = 1 ate P=4 e variavel (0,33-0,58) em P=8; P=6 adicionado para localizar o limite
+
+# precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
+precision_target: 0.05

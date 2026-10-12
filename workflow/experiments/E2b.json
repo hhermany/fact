@@ -1,0 +1,10 @@
+{
+  "experiment": "E2b",
+  "runner": "capacity",
+  "description": "Capacidade do coletor: P instâncias concorrentes do microbenchmark de connect em laço fechado (taxa máxima do host), coletor completo e otimizado. Mede captura e eventos perdidos até a saturação.",
+  "factors": {
+    "par": [1, 2, 4, 6, 8],
+    "collector": ["agentnet.bt", "agentnet-fast.bt"]
+  },
+  "fixed": {"n": 50000}
+}

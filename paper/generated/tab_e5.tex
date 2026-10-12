@@ -1,0 +1,21 @@
+% gerado por analysis/analysis.R — não editar à mão
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+ & & \multicolumn{2}{c}{manual (\%)} & \multicolumn{3}{c}{automatic (\%)} & \multicolumn{2}{c}{ms/call} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-7}\cmidrule(l){8-9}
+Tool & $K$ & C/N & I/N & C/N & I/N & I/N$\le$ & man. & auto \\
+\midrule
+sync & 2 & 100.0 & 0.0 & 100.0 & 0.0 & 1.0 & 3.8 & 3.9 \\
+sync & 4 & 100.0 & 0.0 & 100.0 & 0.0 & 0.5 & 6.3 & 6.3 \\
+sync & 8 & 100.0 & 0.0 & 100.0 & 0.0 & 0.2 & 12.2 & 12.2 \\
+thread & 2 & 100.0 & 0.0 & 100.0 & 0.0 & 1.0 & 3.2 & 3.3 \\
+thread & 4 & 100.0 & 0.0 & 100.0 & 0.0 & 0.5 & 6.2 & 6.4 \\
+thread & 8 & 100.0 & 0.0 & 100.0 & 0.0 & 0.2 & 12.0 & 12.1 \\
+subproc & 2 & 100.0 & 0.0 & 100.0 & 0.0 & 1.0 & 28.1 & 28.3 \\
+subproc & 4 & 100.0 & 0.0 & 100.0 & 0.0 & 0.5 & 28.5 & 28.6 \\
+subproc & 8 & 100.0 & 0.0 & 100.0 & 0.0 & 0.2 & 32.1 & 32.1 \\
+async & 2 & 30.0 & 40.3 & 100.0 & 0.0 & 1.0 & 6.3 & 6.4 \\
+async & 4 & 10.7 & 38.5 & 100.0 & 0.0 & 0.5 & 8.1 & 8.2 \\
+async & 8 & 6.7 & 38.4 & 100.0 & 0.0 & 0.2 & 13.0 & 13.0 \\
+\bottomrule
+\end{tabular}

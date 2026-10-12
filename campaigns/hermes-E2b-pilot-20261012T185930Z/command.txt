@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E2b.json --n 2 --seed 51193 --label pilot --preflight preflight/last

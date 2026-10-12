@@ -1,0 +1,9 @@
+{
+  "experiment": "E4",
+  "description": "Runtime real: servidor MCP (SDK oficial 1.6.0, FastMCP, SSE) compartilhado por K sessões; quatro padrões de execução de ferramenta.",
+  "factors": {
+    "tool": ["sync", "thread", "subproc", "async"],
+    "execs": [2, 4]
+  },
+  "fixed": {"cond": "E4", "ops": 25, "workload": "workload/mcp_e4.py"}
+}

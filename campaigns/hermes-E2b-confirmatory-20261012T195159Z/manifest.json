@@ -1,0 +1,1354 @@
+{
+ "campaign_id": "hermes-E2b-confirmatory-20261012T195159Z",
+ "experiment": "E2b",
+ "label": "confirmatory",
+ "description": "Capacidade do coletor: P inst\u00e2ncias concorrentes do microbenchmark de connect em la\u00e7o fechado (taxa m\u00e1xima do host), coletor completo e otimizado. Mede captura e eventos perdidos at\u00e9 a satura\u00e7\u00e3o.",
+ "spec": {
+  "experiment": "E2b",
+  "runner": "capacity",
+  "description": "Capacidade do coletor: P inst\u00e2ncias concorrentes do microbenchmark de connect em la\u00e7o fechado (taxa m\u00e1xima do host), coletor completo e otimizado. Mede captura e eventos perdidos at\u00e9 a satura\u00e7\u00e3o.",
+  "factors": {
+   "par": [
+    1,
+    2,
+    4,
+    6,
+    8
+   ],
+   "collector": [
+    "agentnet.bt",
+    "agentnet-fast.bt"
+   ]
+  },
+  "fixed": {
+   "n": 50000
+  }
+ },
+ "n_per_cell": 5,
+ "campaign_seed": 51193,
+ "cells": 10,
+ "total_runs": 50,
+ "started_utc": "20261012T195159Z",
+ "duration_s": 287.0,
+ "runs_ok": 50,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/ai-agent-ebpf-management-noms",
+  "commit": "a03607c034e34bc76eaefe327b060c06fcc9ae77",
+  "branch": "noms/agentnet",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "9440424c-d913-4db9-a839-d240c8282a7c",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": "preflight/last",
+ "unavailable_note": "itens INDISPONIVEL em environment/ n\u00e3o puderam ser observados",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet.bt"
+   },
+   "position": 1,
+   "run_id": "r0001-collectoragentnet.bt-par1-c00-rep00",
+   "returncode": 0,
+   "seconds": 4.747,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0001-collectoragentnet.bt-par1-c00-rep00",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 2,
+   "run_id": "r0002-collectoragentnet-fast.bt-par1-c01-rep04",
+   "returncode": 0,
+   "seconds": 4.692,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0002-collectoragentnet-fast.bt-par1-c01-rep04",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet.bt"
+   },
+   "position": 3,
+   "run_id": "r0003-collectoragentnet.bt-par6-c06-rep01",
+   "returncode": 0,
+   "seconds": 6.56,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0003-collectoragentnet.bt-par6-c06-rep01",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet.bt"
+   },
+   "position": 4,
+   "run_id": "r0004-collectoragentnet.bt-par4-c04-rep01",
+   "returncode": 0,
+   "seconds": 5.72,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0004-collectoragentnet.bt-par4-c04-rep01",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet.bt"
+   },
+   "position": 5,
+   "run_id": "r0005-collectoragentnet.bt-par1-c00-rep03",
+   "returncode": 0,
+   "seconds": 4.799,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0005-collectoragentnet.bt-par1-c00-rep03",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 6,
+   "run_id": "r0006-collectoragentnet-fast.bt-par2-c03-rep00",
+   "returncode": 0,
+   "seconds": 4.931,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0006-collectoragentnet-fast.bt-par2-c03-rep00",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 7,
+   "run_id": "r0007-collectoragentnet-fast.bt-par6-c07-rep00",
+   "returncode": 0,
+   "seconds": 6.486,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0007-collectoragentnet-fast.bt-par6-c07-rep00",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 8,
+   "run_id": "r0008-collectoragentnet-fast.bt-par2-c03-rep02",
+   "returncode": 0,
+   "seconds": 4.928,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0008-collectoragentnet-fast.bt-par2-c03-rep02",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet.bt"
+   },
+   "position": 9,
+   "run_id": "r0009-collectoragentnet.bt-par1-c00-rep02",
+   "returncode": 0,
+   "seconds": 4.807,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0009-collectoragentnet.bt-par1-c00-rep02",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 10,
+   "run_id": "r0010-collectoragentnet-fast.bt-par8-c09-rep00",
+   "returncode": 0,
+   "seconds": 6.781,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0010-collectoragentnet-fast.bt-par8-c09-rep00",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet.bt"
+   },
+   "position": 11,
+   "run_id": "r0011-collectoragentnet.bt-par2-c02-rep01",
+   "returncode": 0,
+   "seconds": 5.077,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0011-collectoragentnet.bt-par2-c02-rep01",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 12,
+   "run_id": "r0012-collectoragentnet-fast.bt-par6-c07-rep03",
+   "returncode": 0,
+   "seconds": 6.455,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0012-collectoragentnet-fast.bt-par6-c07-rep03",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 13,
+   "run_id": "r0013-collectoragentnet-fast.bt-par8-c09-rep01",
+   "returncode": 0,
+   "seconds": 6.812,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0013-collectoragentnet-fast.bt-par8-c09-rep01",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet.bt"
+   },
+   "position": 14,
+   "run_id": "r0014-collectoragentnet.bt-par2-c02-rep03",
+   "returncode": 0,
+   "seconds": 5.09,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0014-collectoragentnet.bt-par2-c02-rep03",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet.bt"
+   },
+   "position": 15,
+   "run_id": "r0015-collectoragentnet.bt-par8-c08-rep01",
+   "returncode": 0,
+   "seconds": 6.297,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0015-collectoragentnet.bt-par8-c08-rep01",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet.bt"
+   },
+   "position": 16,
+   "run_id": "r0016-collectoragentnet.bt-par2-c02-rep02",
+   "returncode": 0,
+   "seconds": 5.088,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0016-collectoragentnet.bt-par2-c02-rep02",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 17,
+   "run_id": "r0017-collectoragentnet-fast.bt-par2-c03-rep03",
+   "returncode": 0,
+   "seconds": 4.962,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0017-collectoragentnet-fast.bt-par2-c03-rep03",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet.bt"
+   },
+   "position": 18,
+   "run_id": "r0018-collectoragentnet.bt-par8-c08-rep00",
+   "returncode": 0,
+   "seconds": 6.807,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0018-collectoragentnet.bt-par8-c08-rep00",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet.bt"
+   },
+   "position": 19,
+   "run_id": "r0019-collectoragentnet.bt-par8-c08-rep03",
+   "returncode": 0,
+   "seconds": 7.376,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0019-collectoragentnet.bt-par8-c08-rep03",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 20,
+   "run_id": "r0020-collectoragentnet-fast.bt-par8-c09-rep02",
+   "returncode": 0,
+   "seconds": 6.672,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0020-collectoragentnet-fast.bt-par8-c09-rep02",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 21,
+   "run_id": "r0021-collectoragentnet-fast.bt-par4-c05-rep04",
+   "returncode": 0,
+   "seconds": 5.592,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0021-collectoragentnet-fast.bt-par4-c05-rep04",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet.bt"
+   },
+   "position": 22,
+   "run_id": "r0022-collectoragentnet.bt-par6-c06-rep00",
+   "returncode": 0,
+   "seconds": 6.452,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0022-collectoragentnet.bt-par6-c06-rep00",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 23,
+   "run_id": "r0023-collectoragentnet-fast.bt-par1-c01-rep02",
+   "returncode": 0,
+   "seconds": 4.704,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0023-collectoragentnet-fast.bt-par1-c01-rep02",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 24,
+   "run_id": "r0024-collectoragentnet-fast.bt-par2-c03-rep04",
+   "returncode": 0,
+   "seconds": 4.944,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0024-collectoragentnet-fast.bt-par2-c03-rep04",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet.bt"
+   },
+   "position": 25,
+   "run_id": "r0025-collectoragentnet.bt-par6-c06-rep03",
+   "returncode": 0,
+   "seconds": 6.495,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0025-collectoragentnet.bt-par6-c06-rep03",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 26,
+   "run_id": "r0026-collectoragentnet-fast.bt-par4-c05-rep02",
+   "returncode": 0,
+   "seconds": 5.578,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0026-collectoragentnet-fast.bt-par4-c05-rep02",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 27,
+   "run_id": "r0027-collectoragentnet-fast.bt-par8-c09-rep03",
+   "returncode": 0,
+   "seconds": 6.498,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0027-collectoragentnet-fast.bt-par8-c09-rep03",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet.bt"
+   },
+   "position": 28,
+   "run_id": "r0028-collectoragentnet.bt-par1-c00-rep04",
+   "returncode": 0,
+   "seconds": 4.825,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0028-collectoragentnet.bt-par1-c00-rep04",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 29,
+   "run_id": "r0029-collectoragentnet-fast.bt-par1-c01-rep00",
+   "returncode": 0,
+   "seconds": 4.746,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0029-collectoragentnet-fast.bt-par1-c01-rep00",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 30,
+   "run_id": "r0030-collectoragentnet-fast.bt-par6-c07-rep02",
+   "returncode": 0,
+   "seconds": 6.461,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0030-collectoragentnet-fast.bt-par6-c07-rep02",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet.bt"
+   },
+   "position": 31,
+   "run_id": "r0031-collectoragentnet.bt-par6-c06-rep04",
+   "returncode": 0,
+   "seconds": 6.493,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0031-collectoragentnet.bt-par6-c06-rep04",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 32,
+   "run_id": "r0032-collectoragentnet-fast.bt-par1-c01-rep01",
+   "returncode": 0,
+   "seconds": 4.714,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0032-collectoragentnet-fast.bt-par1-c01-rep01",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 33,
+   "run_id": "r0033-collectoragentnet-fast.bt-par2-c03-rep01",
+   "returncode": 0,
+   "seconds": 4.945,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0033-collectoragentnet-fast.bt-par2-c03-rep01",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 34,
+   "run_id": "r0034-collectoragentnet-fast.bt-par8-c09-rep04",
+   "returncode": 0,
+   "seconds": 7.042,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0034-collectoragentnet-fast.bt-par8-c09-rep04",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 35,
+   "run_id": "r0035-collectoragentnet-fast.bt-par6-c07-rep01",
+   "returncode": 0,
+   "seconds": 6.46,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0035-collectoragentnet-fast.bt-par6-c07-rep01",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 36,
+   "run_id": "r0036-collectoragentnet-fast.bt-par4-c05-rep01",
+   "returncode": 0,
+   "seconds": 5.58,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0036-collectoragentnet-fast.bt-par4-c05-rep01",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet.bt"
+   },
+   "position": 37,
+   "run_id": "r0037-collectoragentnet.bt-par8-c08-rep02",
+   "returncode": 0,
+   "seconds": 6.647,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0037-collectoragentnet.bt-par8-c08-rep02",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet.bt"
+   },
+   "position": 38,
+   "run_id": "r0038-collectoragentnet.bt-par4-c04-rep02",
+   "returncode": 0,
+   "seconds": 5.73,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0038-collectoragentnet.bt-par4-c04-rep02",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet.bt"
+   },
+   "position": 39,
+   "run_id": "r0039-collectoragentnet.bt-par2-c02-rep00",
+   "returncode": 0,
+   "seconds": 5.08,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0039-collectoragentnet.bt-par2-c02-rep00",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet.bt"
+   },
+   "position": 40,
+   "run_id": "r0040-collectoragentnet.bt-par6-c06-rep02",
+   "returncode": 0,
+   "seconds": 6.518,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0040-collectoragentnet.bt-par6-c06-rep02",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet.bt"
+   },
+   "position": 41,
+   "run_id": "r0041-collectoragentnet.bt-par4-c04-rep03",
+   "returncode": 0,
+   "seconds": 5.747,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0041-collectoragentnet.bt-par4-c04-rep03",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet.bt"
+   },
+   "position": 42,
+   "run_id": "r0042-collectoragentnet.bt-par1-c00-rep01",
+   "returncode": 0,
+   "seconds": 4.824,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0042-collectoragentnet.bt-par1-c00-rep01",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 1,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 43,
+   "run_id": "r0043-collectoragentnet-fast.bt-par1-c01-rep03",
+   "returncode": 0,
+   "seconds": 4.747,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0043-collectoragentnet-fast.bt-par1-c01-rep03",
+    "--par",
+    "1",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 2,
+    "collector": "agentnet.bt"
+   },
+   "position": 44,
+   "run_id": "r0044-collectoragentnet.bt-par2-c02-rep04",
+   "returncode": 0,
+   "seconds": 5.084,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0044-collectoragentnet.bt-par2-c02-rep04",
+    "--par",
+    "2",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 45,
+   "run_id": "r0045-collectoragentnet-fast.bt-par4-c05-rep03",
+   "returncode": 0,
+   "seconds": 5.596,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0045-collectoragentnet-fast.bt-par4-c05-rep03",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 8,
+    "collector": "agentnet.bt"
+   },
+   "position": 46,
+   "run_id": "r0046-collectoragentnet.bt-par8-c08-rep04",
+   "returncode": 0,
+   "seconds": 6.633,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0046-collectoragentnet.bt-par8-c08-rep04",
+    "--par",
+    "8",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 6,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 47,
+   "run_id": "r0047-collectoragentnet-fast.bt-par6-c07-rep04",
+   "returncode": 0,
+   "seconds": 6.417,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0047-collectoragentnet-fast.bt-par6-c07-rep04",
+    "--par",
+    "6",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet.bt"
+   },
+   "position": 48,
+   "run_id": "r0048-collectoragentnet.bt-par4-c04-rep00",
+   "returncode": 0,
+   "seconds": 5.78,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0048-collectoragentnet.bt-par4-c04-rep00",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet.bt"
+   },
+   "position": 49,
+   "run_id": "r0049-collectoragentnet.bt-par4-c04-rep04",
+   "returncode": 0,
+   "seconds": 5.769,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0049-collectoragentnet.bt-par4-c04-rep04",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet.bt",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 50000,
+    "par": 4,
+    "collector": "agentnet-fast.bt"
+   },
+   "position": 50,
+   "run_id": "r0050-collectoragentnet-fast.bt-par4-c05-rep00",
+   "returncode": 0,
+   "seconds": 5.57,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E2b-confirmatory-20261012T195159Z/runs/r0050-collectoragentnet-fast.bt-par4-c05-rep00",
+    "--par",
+    "4",
+    "--n",
+    "50000",
+    "--collector",
+    "agentnet-fast.bt",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  }
+ ]
+}

@@ -1,0 +1,373 @@
+{
+ "campaign_id": "hermes-E7-confirmatory-20261012T202426Z",
+ "experiment": "E7",
+ "label": "confirmatory",
+ "description": "Agentes LLM reais (modelo local via Ollama, temperatura 0) compartilhando um servidor MCP instrumentado (v\u00ednculo autom\u00e1tico) com pol\u00edtica por execu\u00e7\u00e3o ativa. O modelo decide as chamadas de ferramenta; refer\u00eancia independente pela porta exclusiva de cada servi\u00e7o.",
+ "spec": {
+  "experiment": "E7",
+  "description": "Agentes LLM reais (modelo local via Ollama, temperatura 0) compartilhando um servidor MCP instrumentado (v\u00ednculo autom\u00e1tico) com pol\u00edtica por execu\u00e7\u00e3o ativa. O modelo decide as chamadas de ferramenta; refer\u00eancia independente pela porta exclusiva de cada servi\u00e7o.",
+  "factors": {
+   "execs": [
+    4
+   ]
+  },
+  "fixed": {
+   "cond": "E7",
+   "workload": "workload/agent_e7.py",
+   "policy": 1,
+   "policy_noctx_allow": 0
+  }
+ },
+ "n_per_cell": 13,
+ "campaign_seed": 51193,
+ "cells": 1,
+ "total_runs": 13,
+ "started_utc": "20261012T202426Z",
+ "duration_s": 1048.1,
+ "runs_ok": 13,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/ai-agent-ebpf-management-noms",
+  "commit": "96efbcfda0a60d54928aadb09f6912189c74ac09",
+  "branch": "noms/agentnet",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "9440424c-d913-4db9-a839-d240c8282a7c",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": "preflight/last",
+ "unavailable_note": "itens INDISPONIVEL em environment/ n\u00e3o puderam ser observados",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 1,
+   "run_id": "r0001-E7-c00-rep04",
+   "returncode": 0,
+   "seconds": 93.329,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0001-E7-c00-rep04",
+    "--seed",
+    "51197",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 10,
+   "seed": 51203,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 2,
+   "run_id": "r0002-E7-c00-rep10",
+   "returncode": 0,
+   "seconds": 94.882,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0002-E7-c00-rep10",
+    "--seed",
+    "51203",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 8,
+   "seed": 51201,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 3,
+   "run_id": "r0003-E7-c00-rep08",
+   "returncode": 0,
+   "seconds": 71.159,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0003-E7-c00-rep08",
+    "--seed",
+    "51201",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 11,
+   "seed": 51204,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 4,
+   "run_id": "r0004-E7-c00-rep11",
+   "returncode": 0,
+   "seconds": 71.109,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0004-E7-c00-rep11",
+    "--seed",
+    "51204",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 5,
+   "run_id": "r0005-E7-c00-rep02",
+   "returncode": 0,
+   "seconds": 72.05,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0005-E7-c00-rep02",
+    "--seed",
+    "51195",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 6,
+   "run_id": "r0006-E7-c00-rep00",
+   "returncode": 0,
+   "seconds": 71.552,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0006-E7-c00-rep00",
+    "--seed",
+    "51193",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 7,
+   "run_id": "r0007-E7-c00-rep01",
+   "returncode": 0,
+   "seconds": 83.889,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0007-E7-c00-rep01",
+    "--seed",
+    "51194",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 8,
+   "run_id": "r0008-E7-c00-rep03",
+   "returncode": 0,
+   "seconds": 84.015,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0008-E7-c00-rep03",
+    "--seed",
+    "51196",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 7,
+   "seed": 51200,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 9,
+   "run_id": "r0009-E7-c00-rep07",
+   "returncode": 0,
+   "seconds": 71.718,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0009-E7-c00-rep07",
+    "--seed",
+    "51200",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 9,
+   "seed": 51202,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 10,
+   "run_id": "r0010-E7-c00-rep09",
+   "returncode": 0,
+   "seconds": 95.437,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0010-E7-c00-rep09",
+    "--seed",
+    "51202",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 5,
+   "seed": 51198,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 11,
+   "run_id": "r0011-E7-c00-rep05",
+   "returncode": 0,
+   "seconds": 95.325,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0011-E7-c00-rep05",
+    "--seed",
+    "51198",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 12,
+   "seed": 51205,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 12,
+   "run_id": "r0012-E7-c00-rep12",
+   "returncode": 0,
+   "seconds": 59.861,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0012-E7-c00-rep12",
+    "--seed",
+    "51205",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 6,
+   "seed": 51199,
+   "params": {
+    "cond": "E7",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "execs": 4
+   },
+   "position": 13,
+   "run_id": "r0013-E7-c00-rep06",
+   "returncode": 0,
+   "seconds": 83.574,
+   "command": [
+    "E7",
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E7-confirmatory-20261012T202426Z/runs/r0013-E7-c00-rep06",
+    "--seed",
+    "51199",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  }
+ ]
+}

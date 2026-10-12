@@ -1,0 +1,1214 @@
+{
+ "campaign_id": "hermes-E3b-confirmatory-20261012T165717Z",
+ "experiment": "E3b",
+ "label": "confirmatory",
+ "description": "Decomposi\u00e7\u00e3o do custo do coletor (abla\u00e7\u00e3o): nenhum, s\u00f3 probes (count), completo, otimizado (fast); sem/com marcadores.",
+ "spec": {
+  "experiment": "E3b",
+  "runner": "overhead",
+  "description": "Decomposi\u00e7\u00e3o do custo do coletor (abla\u00e7\u00e3o): nenhum, s\u00f3 probes (count), completo, otimizado (fast); sem/com marcadores.",
+  "factors": {
+   "instr": [
+    "none",
+    "count",
+    "collector",
+    "fast"
+   ],
+   "markers": [
+    0,
+    1
+   ]
+  },
+  "fixed": {
+   "n": 20000,
+   "warmup": 1000
+  }
+ },
+ "n_per_cell": 5,
+ "campaign_seed": 51193,
+ "cells": 8,
+ "total_runs": 40,
+ "started_utc": "20261012T165717Z",
+ "duration_s": 74.9,
+ "runs_ok": 40,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/ai-agent-ebpf-management-noms",
+  "commit": "f305672442620c3d299114daa995cd32ccfeb99e",
+  "branch": "noms/agentnet",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "63df28b0-8114-4d9d-bf6c-b8f0235ca8c7",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": "preflight/last",
+ "unavailable_note": "itens INDISPONIVEL em environment/ n\u00e3o puderam ser observados",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 0
+   },
+   "position": 1,
+   "run_id": "r0001-instrnone-markers0-c00-rep00",
+   "returncode": 0,
+   "seconds": 0.669,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0001-instrnone-markers0-c00-rep00",
+    "--instr",
+    "none",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 0
+   },
+   "position": 2,
+   "run_id": "r0002-instrfast-markers0-c06-rep03",
+   "returncode": 0,
+   "seconds": 2.215,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0002-instrfast-markers0-c06-rep03",
+    "--instr",
+    "fast",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 0
+   },
+   "position": 3,
+   "run_id": "r0003-instrnone-markers0-c00-rep02",
+   "returncode": 0,
+   "seconds": 0.673,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0003-instrnone-markers0-c00-rep02",
+    "--instr",
+    "none",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 1
+   },
+   "position": 4,
+   "run_id": "r0004-instrcount-markers1-c03-rep00",
+   "returncode": 0,
+   "seconds": 2.092,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0004-instrcount-markers1-c03-rep00",
+    "--instr",
+    "count",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 1
+   },
+   "position": 5,
+   "run_id": "r0005-instrnone-markers1-c01-rep01",
+   "returncode": 0,
+   "seconds": 0.754,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0005-instrnone-markers1-c01-rep01",
+    "--instr",
+    "none",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 1
+   },
+   "position": 6,
+   "run_id": "r0006-instrcount-markers1-c03-rep02",
+   "returncode": 0,
+   "seconds": 2.094,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0006-instrcount-markers1-c03-rep02",
+    "--instr",
+    "count",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 1
+   },
+   "position": 7,
+   "run_id": "r0007-instrfast-markers1-c07-rep02",
+   "returncode": 0,
+   "seconds": 2.363,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0007-instrfast-markers1-c07-rep02",
+    "--instr",
+    "fast",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 1
+   },
+   "position": 8,
+   "run_id": "r0008-instrnone-markers1-c01-rep04",
+   "returncode": 0,
+   "seconds": 0.758,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0008-instrnone-markers1-c01-rep04",
+    "--instr",
+    "none",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 1
+   },
+   "position": 9,
+   "run_id": "r0009-instrcount-markers1-c03-rep01",
+   "returncode": 0,
+   "seconds": 2.087,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0009-instrcount-markers1-c03-rep01",
+    "--instr",
+    "count",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 0
+   },
+   "position": 10,
+   "run_id": "r0010-instrfast-markers0-c06-rep00",
+   "returncode": 0,
+   "seconds": 2.222,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0010-instrfast-markers0-c06-rep00",
+    "--instr",
+    "fast",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 0
+   },
+   "position": 11,
+   "run_id": "r0011-instrcollector-markers0-c04-rep02",
+   "returncode": 0,
+   "seconds": 2.325,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0011-instrcollector-markers0-c04-rep02",
+    "--instr",
+    "collector",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 1
+   },
+   "position": 12,
+   "run_id": "r0012-instrcollector-markers1-c05-rep02",
+   "returncode": 0,
+   "seconds": 2.535,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0012-instrcollector-markers1-c05-rep02",
+    "--instr",
+    "collector",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 0
+   },
+   "position": 13,
+   "run_id": "r0013-instrfast-markers0-c06-rep01",
+   "returncode": 0,
+   "seconds": 2.26,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0013-instrfast-markers0-c06-rep01",
+    "--instr",
+    "fast",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 1
+   },
+   "position": 14,
+   "run_id": "r0014-instrfast-markers1-c07-rep03",
+   "returncode": 0,
+   "seconds": 2.371,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0014-instrfast-markers1-c07-rep03",
+    "--instr",
+    "fast",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 1
+   },
+   "position": 15,
+   "run_id": "r0015-instrfast-markers1-c07-rep00",
+   "returncode": 0,
+   "seconds": 2.368,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0015-instrfast-markers1-c07-rep00",
+    "--instr",
+    "fast",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 1
+   },
+   "position": 16,
+   "run_id": "r0016-instrcollector-markers1-c05-rep04",
+   "returncode": 0,
+   "seconds": 2.54,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0016-instrcollector-markers1-c05-rep04",
+    "--instr",
+    "collector",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 1
+   },
+   "position": 17,
+   "run_id": "r0017-instrnone-markers1-c01-rep02",
+   "returncode": 0,
+   "seconds": 0.764,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0017-instrnone-markers1-c01-rep02",
+    "--instr",
+    "none",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 1
+   },
+   "position": 18,
+   "run_id": "r0018-instrcount-markers1-c03-rep03",
+   "returncode": 0,
+   "seconds": 2.105,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0018-instrcount-markers1-c03-rep03",
+    "--instr",
+    "count",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 1
+   },
+   "position": 19,
+   "run_id": "r0019-instrcount-markers1-c03-rep04",
+   "returncode": 0,
+   "seconds": 2.089,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0019-instrcount-markers1-c03-rep04",
+    "--instr",
+    "count",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 1
+   },
+   "position": 20,
+   "run_id": "r0020-instrfast-markers1-c07-rep04",
+   "returncode": 0,
+   "seconds": 2.387,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0020-instrfast-markers1-c07-rep04",
+    "--instr",
+    "fast",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 1
+   },
+   "position": 21,
+   "run_id": "r0021-instrnone-markers1-c01-rep00",
+   "returncode": 0,
+   "seconds": 0.76,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0021-instrnone-markers1-c01-rep00",
+    "--instr",
+    "none",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 1
+   },
+   "position": 22,
+   "run_id": "r0022-instrcollector-markers1-c05-rep01",
+   "returncode": 0,
+   "seconds": 2.523,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0022-instrcollector-markers1-c05-rep01",
+    "--instr",
+    "collector",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 0
+   },
+   "position": 23,
+   "run_id": "r0023-instrnone-markers0-c00-rep03",
+   "returncode": 0,
+   "seconds": 0.679,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0023-instrnone-markers0-c00-rep03",
+    "--instr",
+    "none",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 0
+   },
+   "position": 24,
+   "run_id": "r0024-instrfast-markers0-c06-rep04",
+   "returncode": 0,
+   "seconds": 2.237,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0024-instrfast-markers0-c06-rep04",
+    "--instr",
+    "fast",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 0
+   },
+   "position": 25,
+   "run_id": "r0025-instrcount-markers0-c02-rep02",
+   "returncode": 0,
+   "seconds": 1.972,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0025-instrcount-markers0-c02-rep02",
+    "--instr",
+    "count",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 1
+   },
+   "position": 26,
+   "run_id": "r0026-instrfast-markers1-c07-rep01",
+   "returncode": 0,
+   "seconds": 2.378,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0026-instrfast-markers1-c07-rep01",
+    "--instr",
+    "fast",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "fast",
+    "markers": 0
+   },
+   "position": 27,
+   "run_id": "r0027-instrfast-markers0-c06-rep02",
+   "returncode": 0,
+   "seconds": 2.247,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0027-instrfast-markers0-c06-rep02",
+    "--instr",
+    "fast",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 0
+   },
+   "position": 28,
+   "run_id": "r0028-instrcount-markers0-c02-rep03",
+   "returncode": 0,
+   "seconds": 1.943,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0028-instrcount-markers0-c02-rep03",
+    "--instr",
+    "count",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 0
+   },
+   "position": 29,
+   "run_id": "r0029-instrnone-markers0-c00-rep04",
+   "returncode": 0,
+   "seconds": 0.68,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0029-instrnone-markers0-c00-rep04",
+    "--instr",
+    "none",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 0
+   },
+   "position": 30,
+   "run_id": "r0030-instrcollector-markers0-c04-rep01",
+   "returncode": 0,
+   "seconds": 2.298,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0030-instrcollector-markers0-c04-rep01",
+    "--instr",
+    "collector",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 0
+   },
+   "position": 31,
+   "run_id": "r0031-instrcount-markers0-c02-rep01",
+   "returncode": 0,
+   "seconds": 1.952,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0031-instrcount-markers0-c02-rep01",
+    "--instr",
+    "count",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 0
+   },
+   "position": 32,
+   "run_id": "r0032-instrcount-markers0-c02-rep00",
+   "returncode": 0,
+   "seconds": 1.945,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0032-instrcount-markers0-c02-rep00",
+    "--instr",
+    "count",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 0
+   },
+   "position": 33,
+   "run_id": "r0033-instrcollector-markers0-c04-rep03",
+   "returncode": 0,
+   "seconds": 2.292,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0033-instrcollector-markers0-c04-rep03",
+    "--instr",
+    "collector",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 0
+   },
+   "position": 34,
+   "run_id": "r0034-instrnone-markers0-c00-rep01",
+   "returncode": 0,
+   "seconds": 0.678,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0034-instrnone-markers0-c00-rep01",
+    "--instr",
+    "none",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "none",
+    "markers": 1
+   },
+   "position": 35,
+   "run_id": "r0035-instrnone-markers1-c01-rep03",
+   "returncode": 0,
+   "seconds": 0.76,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0035-instrnone-markers1-c01-rep03",
+    "--instr",
+    "none",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "count",
+    "markers": 0
+   },
+   "position": 36,
+   "run_id": "r0036-instrcount-markers0-c02-rep04",
+   "returncode": 0,
+   "seconds": 1.945,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0036-instrcount-markers0-c02-rep04",
+    "--instr",
+    "count",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 1
+   },
+   "position": 37,
+   "run_id": "r0037-instrcollector-markers1-c05-rep03",
+   "returncode": 0,
+   "seconds": 2.632,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0037-instrcollector-markers1-c05-rep03",
+    "--instr",
+    "collector",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 0
+   },
+   "position": 38,
+   "run_id": "r0038-instrcollector-markers0-c04-rep00",
+   "returncode": 0,
+   "seconds": 2.297,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0038-instrcollector-markers0-c04-rep00",
+    "--instr",
+    "collector",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 0
+   },
+   "position": 39,
+   "run_id": "r0039-instrcollector-markers0-c04-rep04",
+   "returncode": 0,
+   "seconds": 2.315,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0039-instrcollector-markers0-c04-rep04",
+    "--instr",
+    "collector",
+    "--markers",
+    "0",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "instr": "collector",
+    "markers": 1
+   },
+   "position": 40,
+   "run_id": "r0040-instrcollector-markers1-c05-rep00",
+   "returncode": 0,
+   "seconds": 2.527,
+   "command": [
+    "/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/campaigns/hermes-E3b-confirmatory-20261012T165717Z/runs/r0040-instrcollector-markers1-c05-rep00",
+    "--instr",
+    "collector",
+    "--markers",
+    "1",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  }
+ ]
+}

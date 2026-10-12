@@ -1,0 +1,86 @@
+#!/usr/bin/env bpftrace
+/*
+ * agentnet.bt — coletor eBPF para atribuição de conexões TCP a execuções.
+ *
+ * Emite uma linha JSON por evento em stdout. Requer root, kernel com BTF e
+ * bpftrace >= 0.16. Somente IPv4 nesta versão.
+ *
+ * Sinais coletados por evento de rede (D1–D5):
+ *   - pid/tid e comm             -> lineage (o resolver reconstrói a árvore com fork/exit)
+ *   - cgroup (id cgroup v2)      -> resolver por cgroup
+ *   - ctx (string ou "")         -> vínculo de contexto da aplicação (marcador openat)
+ *   - sk (ponteiro do socket)    -> junção connect <-> mudança de estado
+ *   - daddr/dport                -> SOMENTE para a referência independente; o
+ *                                   resolver não pode ler esses campos.
+ *
+ * Vínculo de contexto: o runtime chama openat() em
+ *   /run/agentctx/begin/<exec_id>   (início da operação)
+ *   /run/agentctx/end               (fim da operação)
+ * Os caminhos não precisam existir (ENOENT é esperado). O contexto é mantido
+ * por tid e herdado por threads e processos filhos em sched_process_fork.
+ */
+
+BEGIN
+{
+	printf("{\"ev\":\"ready\",\"ts\":%llu}\n", nsecs);
+}
+
+tracepoint:syscalls:sys_enter_openat
+/ strncmp(str(args->filename), "/run/agentctx/", 14) == 0 /
+{
+	if (strncmp(str(args->filename), "/run/agentctx/begin/", 20) == 0) {
+		@ctx[tid] = str(args->filename);
+		printf("{\"ev\":\"ctx_begin\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
+		       nsecs, pid, tid, cgroup, str(args->filename));
+	} else {
+		printf("{\"ev\":\"ctx_end\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
+		       nsecs, pid, tid, cgroup, @ctx[tid]);
+		delete(@ctx[tid]);
+	}
+}
+
+tracepoint:sched:sched_process_fork
+{
+	/* parent_pid/child_pid são ids de task (tid); cobre threads e processos. */
+	@ctx[args->child_pid] = @ctx[args->parent_pid];
+	printf("{\"ev\":\"fork\",\"ts\":%llu,\"ptid\":%d,\"ctid\":%d,\"ppid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
+	       nsecs, args->parent_pid, args->child_pid, pid, cgroup, @ctx[args->child_pid]);
+}
+
+tracepoint:sched:sched_process_exec
+{
+	printf("{\"ev\":\"exec\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"comm\":\"%s\",\"ctx\":\"%s\"}\n",
+	       nsecs, pid, tid, cgroup, comm, @ctx[tid]);
+}
+
+tracepoint:sched:sched_process_exit
+{
+	printf("{\"ev\":\"exit\",\"ts\":%llu,\"pid\":%d,\"tid\":%d}\n", nsecs, pid, tid);
+	delete(@ctx[tid]);
+}
+
+kprobe:tcp_connect
+{
+	$sk = (struct sock *)arg0;
+	if ($sk->__sk_common.skc_family == 2) {   /* AF_INET */
+		$dp = $sk->__sk_common.skc_dport;
+		$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
+		printf("{\"ev\":\"connect\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"comm\":\"%s\",\"sk\":%llu,\"ctx\":\"%s\",\"daddr\":\"%s\",\"dport\":%d}\n",
+		       nsecs, pid, tid, cgroup, comm, (uint64)$sk, @ctx[tid],
+		       ntop(2, $sk->__sk_common.skc_daddr), $dport);
+	}
+}
+
+tracepoint:sock:inet_sock_set_state
+/ args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
+{
+	/* Saída de SYN_SENT: 1 = ESTABLISHED (sucesso), 7 = CLOSE (falha).
+	 * Pode rodar em softirq: pid/tid aqui NÃO são usados para atribuição. */
+	printf("{\"ev\":\"tcp_state\",\"ts\":%llu,\"sk\":%llu,\"old\":%d,\"new\":%d}\n",
+	       nsecs, (uint64)args->skaddr, args->oldstate, args->newstate);
+}
+
+END
+{
+	clear(@ctx);
+}

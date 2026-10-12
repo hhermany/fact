@@ -1,0 +1,11 @@
+preflight 2026-10-12T20:24:22Z host=hermes
+PASS root
+PASS bpftrace
+PASS btf
+PASS cgroup2
+PASS python3
+PASS tracepoint sock
+PASS kprobe tcp_connect
+PASS coletor anexado (8 probes, sentinel ready)
+PASS independência dos resolvers (AST)
+RESULTADO PASS

@@ -1,0 +1,10 @@
+{
+  "experiment": "E1",
+  "description": "Correção da atribuição (RQ1-RQ3): estrutura x taxa de rótulo errado x modo de operação, K=2.",
+  "factors": {
+    "cond": ["N0", "N1", "N2", "N3"],
+    "wrong_label": [0.0, 0.05, 0.2],
+    "mode": ["inproc", "subproc"]
+  },
+  "fixed": {"execs": 2, "ops": 100, "jitter": 0.01, "threads": 8}
+}

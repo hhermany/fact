@@ -1,0 +1,65 @@
+#!/usr/bin/env bpftrace
+/*
+ * agentnet-fast.bt — variante otimizada do coletor (mesma atribuição, menos custo).
+ *
+ * Diferenças em relação a agentnet.bt (todas sem efeito sobre os resolvers):
+ *  - fentry:tcp_connect no lugar de kprobe (trampolim BPF, mais barato);
+ *  - marcadores apenas atualizam o mapa de contexto: não emitem eventos
+ *    (os resolvers leem o contexto no momento do connect);
+ *  - exec e exit não emitem eventos (não usados pelos resolvers); exit só limpa o mapa;
+ *  - fork só copia contexto quando o pai tem contexto;
+ *  - filtro do marcador copia no máximo 21 bytes do caminho;
+ *  - connect sem o campo comm.
+ * A equivalência com agentnet.bt é verificada experimentalmente (E1 com ambos).
+ */
+
+BEGIN
+{
+	printf("{\"ev\":\"ready\",\"ts\":%llu}\n", nsecs);
+}
+
+tracepoint:syscalls:sys_enter_openat
+/ strncmp(str(args->filename, 15), "/run/agentctx/", 14) == 0 /
+{
+	if (strncmp(str(args->filename, 21), "/run/agentctx/begin/", 20) == 0) {
+		@ctx[tid] = str(args->filename);
+	} else {
+		delete(@ctx[tid]);
+	}
+}
+
+tracepoint:sched:sched_process_fork
+{
+	if (@ctx[args->parent_pid] != "") {
+		@ctx[args->child_pid] = @ctx[args->parent_pid];
+	}
+	printf("{\"ev\":\"fork\",\"ts\":%llu,\"ptid\":%d,\"ctid\":%d}\n", nsecs, args->parent_pid, args->child_pid);
+}
+
+tracepoint:sched:sched_process_exit
+{
+	delete(@ctx[tid]);
+}
+
+fentry:tcp_connect
+{
+	$sk = args->sk;
+	if ($sk->__sk_common.skc_family == 2) {
+		$dp = $sk->__sk_common.skc_dport;
+		printf("{\"ev\":\"connect\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"sk\":%llu,\"ctx\":\"%s\",\"daddr\":\"%s\",\"dport\":%d}\n",
+		       nsecs, pid, tid, cgroup, (uint64)$sk, @ctx[tid],
+		       ntop(2, $sk->__sk_common.skc_daddr), (($dp & 0xff) << 8) | (($dp >> 8) & 0xff));
+	}
+}
+
+tracepoint:sock:inet_sock_set_state
+/ args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
+{
+	printf("{\"ev\":\"tcp_state\",\"ts\":%llu,\"sk\":%llu,\"old\":%d,\"new\":%d}\n",
+	       nsecs, (uint64)args->skaddr, args->oldstate, args->newstate);
+}
+
+END
+{
+	clear(@ctx);
+}

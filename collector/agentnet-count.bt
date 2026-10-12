@@ -1,0 +1,59 @@
+#!/usr/bin/env bpftrace
+/*
+ * agentnet-count.bt — variante de ablação (E3): as MESMAS probes e a mesma
+ * manutenção do mapa de contexto de agentnet.bt, mas sem emitir nenhum evento
+ * para o espaço de usuário (apenas contadores no kernel). Mede o custo das
+ * probes em si, separado do custo de exportar eventos. Não serve para atribuição.
+ */
+
+BEGIN
+{
+	printf("{\"ev\":\"ready\",\"ts\":%llu}\n", nsecs);
+}
+
+tracepoint:syscalls:sys_enter_openat
+/ strncmp(str(args->filename), "/run/agentctx/", 14) == 0 /
+{
+	if (strncmp(str(args->filename), "/run/agentctx/begin/", 20) == 0) {
+		@ctx[tid] = str(args->filename);
+	} else {
+		delete(@ctx[tid]);
+	}
+	@n["marker"] = count();
+}
+
+tracepoint:sched:sched_process_fork
+{
+	@ctx[args->child_pid] = @ctx[args->parent_pid];
+	@n["fork"] = count();
+}
+
+tracepoint:sched:sched_process_exec
+{
+	@n["exec"] = count();
+}
+
+tracepoint:sched:sched_process_exit
+{
+	delete(@ctx[tid]);
+	@n["exit"] = count();
+}
+
+kprobe:tcp_connect
+{
+	$sk = (struct sock *)arg0;
+	if ($sk->__sk_common.skc_family == 2) {
+		@n["connect"] = count();
+	}
+}
+
+tracepoint:sock:inet_sock_set_state
+/ args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
+{
+	@n["tcp_state"] = count();
+}
+
+END
+{
+	clear(@ctx);
+}
