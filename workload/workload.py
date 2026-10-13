@@ -253,6 +253,8 @@ def main():
             os.close(rfd)
             cg_path, cg_id = cgs[e]
             cg_move(cg_path, pid)
+            if a.policy:     # raiz de dono único: a política pode checar a linhagem
+                policyctl.register_root(pid, e)
             children[e], gates[e] = pid, wfd
             registry["roots"][str(pid)] = [e]
             registry["cgroups"].setdefault(str(cg_id), []).append(e)

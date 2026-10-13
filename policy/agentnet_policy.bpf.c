@@ -10,6 +10,13 @@
  *   - com identidade: permite se (id, porta) está na lista de permissões;
  *     caso contrário nega (EPERM);
  *   - sem identidade: ação padrão configurável (cfg.no_ctx_allow).
+ * Linhagem (cfg.lineage): o espaço de usuário registra as raízes de árvores de
+ * processos que pertencem a UMA execução (owner_map); a raiz é herdada por
+ * threads e processos filhos (dom_map). Se o rótulo da thread contradiz o dono
+ * da árvore: modo 1 nega a conexão (conflito); modo 2 decide pelo dono da
+ * árvore. Sem rótulo, decide pelo dono da árvore. Raízes compartilhadas por
+ * várias execuções (worker compartilhado) não são registradas: lá a linhagem
+ * não separa execuções e a decisão segue o rótulo, como antes.
  * Só portas no intervalo policiado [cfg.lo, cfg.hi] são avaliadas; as demais
  * passam (para não afetar SSH, DNS etc. no host de teste).
  * Cada decisão é registrada num ring buffer (auditoria e avaliação).
@@ -25,7 +32,7 @@ struct task_struct { int pid; int tgid; } __attribute__((preserve_access_index))
 
 struct ident { char id[ID_LEN]; };
 struct pkey { char id[ID_LEN]; __u32 dport; };
-struct cfg { __u32 lo; __u32 hi; __u32 no_ctx_allow; __u32 pad; };
+struct cfg { __u32 lo; __u32 hi; __u32 no_ctx_allow; __u32 lineage; };
 struct decision {
 	__u64 ts; __u32 pid; __u32 tid; __u32 dport; __u32 daddr;
 	__u8 verdict; __u8 has_ctx; __u8 pad[6]; char id[ID_LEN];
@@ -35,6 +42,10 @@ struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
 	 __type(key, __u32); __type(value, struct ident); } ctx_map SEC(".maps");
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
 	 __type(key, struct pkey); __type(value, __u8); } allow_map SEC(".maps");
+struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
+	 __type(key, __u32); __type(value, __u32); } dom_map SEC(".maps");      /* tid -> raiz */
+struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
+	 __type(key, __u32); __type(value, struct ident); } owner_map SEC(".maps"); /* raiz -> execução */
 struct { __uint(type, BPF_MAP_TYPE_ARRAY); __uint(max_entries, 1);
 	 __type(key, __u32); __type(value, struct cfg); } cfg_map SEC(".maps");
 struct { __uint(type, BPF_MAP_TYPE_RINGBUF); __uint(max_entries, 1 << 22); } events SEC(".maps");
@@ -82,6 +93,11 @@ int on_fork(__u64 *ctx)
 	struct ident *v = bpf_map_lookup_elem(&ctx_map, &ptid);
 	if (v)
 		bpf_map_update_elem(&ctx_map, &ctid, v, BPF_ANY);
+	__u32 *r = bpf_map_lookup_elem(&dom_map, &ptid);
+	if (r) {
+		__u32 root = *r;
+		bpf_map_update_elem(&dom_map, &ctid, &root, BPF_ANY);
+	}
 	return 0;
 }
 
@@ -90,7 +106,19 @@ int on_exit(__u64 *ctx)
 {
 	__u32 tid = (__u32)bpf_get_current_pid_tgid();
 	bpf_map_delete_elem(&ctx_map, &tid);
+	bpf_map_delete_elem(&dom_map, &tid);
 	return 0;
+}
+
+static __always_inline int id_eq(const char *a, const char *b)
+{
+	for (int i = 0; i < ID_LEN; i++) {
+		if (a[i] != b[i])
+			return 0;
+		if (a[i] == 0)
+			return 1;
+	}
+	return 1;
 }
 
 SEC("cgroup/connect4")
@@ -106,10 +134,28 @@ int on_connect4(struct bpf_sock_addr *sa)
 	__u64 pt = bpf_get_current_pid_tgid();
 	__u32 tid = (__u32)pt;
 	struct ident *v = bpf_map_lookup_elem(&ctx_map, &tid);
+	struct ident *own = 0;
+	if (c->lineage) {
+		__u32 *r = bpf_map_lookup_elem(&dom_map, &tid);
+		if (r)
+			own = bpf_map_lookup_elem(&owner_map, r);
+	}
+	struct ident *who = v;        /* identidade usada na decisão */
+	__u8 conflict = 0, from_lineage = 0;
+	if (own) {
+		if (!v) {
+			who = own; from_lineage = 1;
+		} else if (!id_eq(v->id, own->id)) {
+			conflict = 1;
+			if (c->lineage == 2) { who = own; from_lineage = 1; }
+		}
+	}
 	__u8 verdict;
 	struct pkey k = {};
-	if (v) {
-		__builtin_memcpy(k.id, v->id, ID_LEN);
+	if (conflict && c->lineage == 1) {
+		verdict = 0;
+	} else if (who) {
+		__builtin_memcpy(k.id, who->id, ID_LEN);
 		k.dport = dport;
 		verdict = bpf_map_lookup_elem(&allow_map, &k) ? 1 : 0;
 	} else {
@@ -121,6 +167,7 @@ int on_connect4(struct bpf_sock_addr *sa)
 		d->dport = dport; d->daddr = sa->user_ip4; d->verdict = verdict;
 		d->has_ctx = v ? 1 : 0;
 		__builtin_memset(d->pad, 0, sizeof(d->pad));
+		d->pad[0] = conflict; d->pad[1] = from_lineage;
 		if (v) __builtin_memcpy(d->id, v->id, ID_LEN); else __builtin_memset(d->id, 0, ID_LEN);
 		bpf_ringbuf_submit(d, 0);
 	}

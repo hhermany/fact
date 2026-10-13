@@ -61,8 +61,12 @@ def run_summary(rd):
         allow = {e: set(v) for e, v in plan["policy"]["allow"].items()}
         first = {}
         for ev in pevents:
+            if ev.get("ev") == "ready":
+                pol["lineage_mode"] = ev.get("lineage", 0)
             if ev.get("ev") == "decision" and ev["dport"] in dmap and ev["dport"] not in first:
                 first[ev["dport"]] = ev
+                pol["conflict"] = pol.get("conflict", 0) + ev.get("conflict", 0)
+                pol["from_lineage"] = pol.get("from_lineage", 0) + ev.get("from_lineage", 0)
         for port, owner in dmap.items():
             exp = "allow" if port in allow[owner] else "deny"
             ev = first.get(port)
@@ -87,21 +91,21 @@ def main():
             if not os.path.isdir(rd) or not os.path.exists(os.path.join(rd, "events.jsonl")):
                 continue
             plan, c, pol = run_summary(rd)
-            key = (man["experiment"], plan["cond"], (plan.get("tool") or plan.get("mode")) + ("/" + plan["binding_mode"] if plan.get("binding_mode") else ""), plan["execs"], plan.get("wrong_label"))
+            key = (man["experiment"] + (f"/L{pol['lineage_mode']}" if pol.get("lineage_mode") else ""), plan["cond"], (plan.get("tool") or plan.get("mode")) + ("/" + plan["binding_mode"] if plan.get("binding_mode") else ""), plan["execs"], plan.get("wrong_label"))
             cells[key]["runs"] += 1
             cells[key]["att"].update(c)
-            cells[key]["pol"].update(pol)
+            cells[key]["pol"].update({k: v for k, v in pol.items() if k != "lineage_mode"})
             rows.append(dict(campaign=man["campaign_id"], run=run, exp=man["experiment"], cond=plan["cond"],
                              tool=key[2], K=plan["execs"], p=plan.get("wrong_label"), **c,
                              **{"pol_" + k: v for k, v in pol.items()}))
-    print(f"{'exp':5} {'cond':5} {'tool/mode':14} {'K':>2} {'p':>5} {'runs':>4} {'N':>5} {'mis':>4} "
-          f"{'C':>5} {'A':>4} {'I':>4} {'misA':>4} {'misI':>4} | {'FA':>3} {'FD':>3} {'misFA':>5} {'misFD':>5} {'ND':>3}")
+    print(f"{'exp':8} {'cond':5} {'tool/mode':14} {'K':>2} {'p':>5} {'runs':>4} {'N':>5} {'mis':>4} "
+          f"{'C':>5} {'A':>4} {'I':>4} {'misA':>4} {'misI':>4} | {'FA':>3} {'FD':>3} {'misFA':>5} {'misFD':>5} {'ND':>3} {'conf':>4} {'lin':>4}")
     for k in sorted(cells, key=lambda x: tuple(map(str, x))):
         v = cells[k]
         t, p = v["att"], v["pol"]
-        print(f"{k[0]:5} {k[1]:5} {str(k[2]):14} {k[3]:>2} {k[4]:>5.2f} {v['runs']:>4} {t['N']:>5} {t['mislabeled']:>4} "
+        print(f"{k[0]:8} {k[1]:5} {str(k[2]):14} {k[3]:>2} {k[4]:>5.2f} {v['runs']:>4} {t['N']:>5} {t['mislabeled']:>4} "
               f"{t['C']:>5} {t['A']:>4} {t['I']:>4} {t['mis_A']:>4} {t['mis_I']:>4} | "
-              f"{p.get('FA', 0):>3} {p.get('FD', 0):>3} {p.get('mis_FA', 0):>5} {p.get('mis_FD', 0):>5} {p.get('ND', 0):>3}")
+              f"{p.get('FA', 0):>3} {p.get('FD', 0):>3} {p.get('mis_FA', 0):>5} {p.get('mis_FD', 0):>5} {p.get('ND', 0):>3} {p.get('conflict', 0):>4} {p.get('from_lineage', 0):>4}")
     if a.csv:
         keys = sorted({k for r in rows for k in r})
         with open(a.csv, "w", newline="") as f:

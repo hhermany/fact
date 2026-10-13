@@ -74,6 +74,15 @@ experiments:
     pilot_n: 2
     n: null
 
+  E6L:
+    spec: workflow/experiments/E6L.json
+    pilot_n: 1
+    n: null
+  E6Ls:
+    spec: workflow/experiments/E6Ls.json
+    pilot_n: 1
+    n: null
+
 # precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
 precision_target: 0.05
 

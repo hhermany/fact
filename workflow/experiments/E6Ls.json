@@ -1,0 +1,10 @@
+{
+  "experiment": "E6Ls",
+  "description": "Controle da verificação de linhagem num worker compartilhado (servidor MCP real, vínculo automático): a raiz é compartilhada e não é registrada, então a decisão deve seguir o rótulo, sem vetos falsos.",
+  "factors": {
+    "tool": ["sync", "thread", "subproc", "async"],
+    "execs": [2, 8],
+    "wrong_label": [0.0, 0.2]
+  },
+  "fixed": {"cond": "E6Ls", "ops": 25, "binding_mode": "auto", "workload": "workload/mcp_e4.py", "policy": 1, "policy_noctx_allow": 0, "policy_lineage": 1}
+}

@@ -1,0 +1,11 @@
+{
+  "experiment": "E6L",
+  "description": "Política com verificação de linhagem no kernel (raízes de dono único registradas), estruturas N0/N1 com rótulos errados. policy_lineage: 0 = só o rótulo (como E6n); 1 = rótulo contradito pela linhagem é negado; 2 = rótulo contradito é substituído pelo dono da árvore.",
+  "factors": {
+    "cond": ["N0", "N1"],
+    "mode": ["inproc", "subproc"],
+    "wrong_label": [0.05, 0.2],
+    "policy_lineage": [0, 1, 2]
+  },
+  "fixed": {"ops": 100, "execs": 2, "policy": 1, "policy_noctx_allow": 0}
+}

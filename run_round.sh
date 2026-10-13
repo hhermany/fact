@@ -35,7 +35,7 @@ EXTRA=()
 if [ "${POLICY:-0}" = 1 ]; then
   [ -x "$HERE/policy/agentnet_policy" ] && [ -f "$HERE/policy/agentnet_policy.bpf.o" ] || make -s -C "$HERE/policy"
   "$HERE/policy/agentnet_policy" /sys/fs/cgroup 61000 64998 "${POLICY_NOCTX_ALLOW:-0}" \
-      "$HERE/policy/agentnet_policy.bpf.o" > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
+      "$HERE/policy/agentnet_policy.bpf.o" "${POLICY_LINEAGE:-0}" > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
   PPOL=$!
   for i in $(seq 1 100); do
     grep -q '"ev":"ready"' "$OUT/policy_events.jsonl" 2>/dev/null && break

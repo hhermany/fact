@@ -42,6 +42,19 @@ def load_dict(d):
     return len(lines)
 
 
+def register_root(pid, exec_id):
+    """Registra a raiz de uma árvore de processos que pertence a UMA execução
+    (usado pela verificação de linhagem da política)."""
+    k = [str(x) for x in int(pid).to_bytes(4, "little")]
+    b = exec_id.encode()
+    if len(b) >= ID_LEN:
+        raise ValueError(f"id inválido: {exec_id!r}")
+    val = [str(x) for x in b + b"\0" * (ID_LEN - len(b))]
+    base = PIN.rsplit("/", 1)[0]
+    subprocess.run(["bpftool", "map", "update", "pinned", f"{base}/dom_map", "key", *k, "value", *k], check=True)
+    subprocess.run(["bpftool", "map", "update", "pinned", f"{base}/owner_map", "key", *k, "value", *val], check=True)
+
+
 def load(path):
     return load_dict(json.load(open(path)))
 
