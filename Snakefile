@@ -89,6 +89,17 @@ rule relatorio:
         "Rscript analysis/analysis.R {input} analysis/output analysis/overhead.csv analysis/output/tex"
 
 
+rule baselines:
+    # emulated mechanisms of related systems (AgentSight-style time window,
+    # AgentProvenance-style latest scope) on the confirmatory E1 and E5 logs
+    output:
+        "analysis/output/baselines.csv",
+        "analysis/output/tex/tab_baselines.tex"
+    shell:
+        "python3 -I analysis/baselines.py campaigns/hermes-E1-confirmatory-* campaigns/hermes-E5-confirmatory-* "
+        "> {output[0]} && python3 -I analysis/baselines_table.py {output[0]} analysis/output/tex"
+
+
 # atalhos legíveis
 for e in EXPS:
     rule:

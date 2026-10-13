@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+"""Paper table for the related-mechanism baselines (generated, do not edit the .tex).
+
+Usage: python3 baselines_table.py baselines.csv OUT_DIR
+Writes OUT_DIR/tab_baselines.tex and OUT_DIR/baselines_meta.tex.
+
+Rows: shared-worker cells with concurrent executions. Baselines read the
+tool-call boundaries of the manual mode (what a harness knows); agentnet is
+the fused resolver with the task-scoped (automatic) binding on the same
+server, tools, and K. For E1 N3 both read the same markers (p = 0).
+"""
+import csv
+import os
+import sys
+from collections import Counter, defaultdict
+
+rows = list(csv.DictReader(open(sys.argv[1])))
+out = sys.argv[2]
+agg = defaultdict(Counter)
+runs = defaultdict(set)
+runs_err = defaultdict(set)
+camps = set()
+
+
+def add(key, r):
+    c = agg[key]
+    for k in "NCAMI":
+        c[k] += int(r[k])
+    runs[key].add((r["campaign"], r["run"]))
+    if int(r["I"]) > 0:
+        runs_err[key].add((r["campaign"], r["run"]))
+    camps.add(r["campaign"])
+
+
+for r in rows:
+    if r["cond"] == "N3" and float(r["p"]) == 0.0:
+        row = "E1 N3"
+        src = {"tw-nearest-500ms": "near", "tw-set-500ms": "set", "scope-latest": "scope", "fused": "ours"}
+    elif r["cond"] == "E5" and r["K"] == "8":
+        row = f"E5 {r['tool']}"
+        if r["binding_mode"] == "manual":
+            src = {"tw-nearest-500ms": "near", "tw-set-500ms": "set", "scope-latest": "scope"}
+        else:
+            src = {"fused": "ours"}
+    else:
+        continue
+    if r["resolver"] in src:
+        add((row, src[r["resolver"]]), r)
+
+order = ["E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"]
+pct = lambda c, k: 100.0 * c[k] / c["N"] if c["N"] else float("nan")
+
+lines = ["% gerado por analysis/baselines_table.py — não editar à mão",
+         r"\begin{tabular}{@{}lrrrrrrr@{}}", r"\toprule",
+         r" & \multicolumn{2}{c}{time window} & set & \multicolumn{2}{c}{latest scope} & \multicolumn{2}{c}{agentnet} \\",
+         r"\cmidrule(lr){2-3}\cmidrule(lr){4-4}\cmidrule(lr){5-6}\cmidrule(l){7-8}",
+         r"Cell & C/N & I/N & A/N & C/N & I/N & C/N & I/N \\", r"\midrule"]
+for row in order:
+    n, s, sc, o = (agg[(row, k)] for k in ("near", "set", "scope", "ours"))
+    lines.append(f"{row.replace('E5 ', 'E5, ')} & {pct(n,'C'):.0f} & {pct(n,'I'):.0f} & {pct(s,'A'):.0f} & "
+                 f"{pct(sc,'C'):.0f} & {pct(sc,'I'):.0f} & {pct(o,'C'):.0f} & {pct(o,'I'):.0f} \\\\")
+lines += [r"\bottomrule", r"\end{tabular}"]
+os.makedirs(out, exist_ok=True)
+open(os.path.join(out, "tab_baselines.tex"), "w").write("\n".join(lines) + "\n")
+
+nruns = len(set().union(*(runs[k] for k in runs)))
+err_near = [row for row in order if agg[(row, "near")]["I"] > 0]
+all_runs_err = all(runs_err[(row, "near")] == runs[(row, "near")] for row in err_near)
+ours_err = sum(agg[(row, "ours")]["I"] for row in order)
+meta = ["% gerado por analysis/baselines_table.py",
+        f"\\def\\BaseRuns{{{nruns}}}",
+        f"\\def\\BaseCampaigns{{{', '.join(sorted(camps))}}}",
+        f"\\def\\BaseNearErrEveryRun{{{'yes' if all_runs_err else 'no'}}}",
+        f"\\def\\BaseOursWrong{{{ours_err}}}"]
+open(os.path.join(out, "baselines_meta.tex"), "w").write("\n".join(meta) + "\n")
+print("\n".join(lines))
+print("\n".join(meta))

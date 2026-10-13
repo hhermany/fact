@@ -1,0 +1,14 @@
+{
+  "title": "agentnet: code and campaign data for 'Who Opened This Connection? Per-Execution Network Attribution, Accounting, and Control for AI Agents'",
+  "upload_type": "dataset",
+  "description": "Raw event logs, run plans, scores, and environment snapshots of every campaign used in the paper (confirmatory campaigns and the pilots used to size them), with SHA-256 checksums. The code and analysis pipeline are in the accompanying repository; campaigns/<campaign_id>/checksums.sha256 there verifies each archive.",
+  "creators": [
+    {"name": "Hermany, Henrique"}
+  ],
+  "license": "cc-by-4.0",
+  "keywords": ["AI agents", "eBPF", "network accounting", "attribution", "NOMS 2027"],
+  "related_identifiers": [
+    {"identifier": "https://github.com/hhermany/agentnet", "relation": "isSupplementTo", "scheme": "url"}
+  ],
+  "notes": "Co-authors and the paper DOI are added before publication."
+}
