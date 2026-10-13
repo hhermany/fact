@@ -22,3 +22,14 @@ Incidente: a primeira tentativa de E6f/E6n/E7f (campanhas 20261013T014638Z, 0147
 as rodadas porque o carregador da política não compila dentro do ambiente Nix (falta bpf/libbpf.h); foi
 compilado com o toolchain do host (`make -C policy`) e os pilotos foram repetidos. As campanhas com falha ficam
 registradas e não são usadas.
+
+## Política com verificação de linhagem no kernel (E6L, E6Ls) — commit 39fd8b2
+
+A política passa a conhecer as raízes de árvores de processos de dono único (registradas pelo lançador antes de a execução começar), herdadas em cada fork e thread. No connect, se o rótulo contradiz o dono da árvore: modo 1 nega; modo 2 decide pelo dono da árvore. Raízes compartilhadas não são registradas.
+
+| Piloto | Estrutura | p | Modo 0 (só rótulo) | Modo 1 (nega conflito) | Modo 2 (dono da árvore) |
+|---|---|---|---|---|---|
+| E6L | N0 e N1, inproc e subproc | 0,05 | 3 FA + 5 FD | 0 FA + 7 FD | 0 erros |
+| E6L | N0 e N1, inproc e subproc | 0,20 | 10 FA + 20 FD | 0 FA + 30 FD | 0 erros |
+
+Por célula (iguais nas 4 combinações). Conflitos detectados no kernel = exatamente as conexões com rótulo errado, sem falso alarme; o modo 0 reproduziu o E6n. Controle E6Ls (servidor MCP compartilhado, modo 1): sem rótulos errados, zero erros e zero vetos; com p = 0,20, idêntico ao E6f.
