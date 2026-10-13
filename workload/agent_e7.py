@@ -128,8 +128,10 @@ async def agent(url, exec_id, task, a, log, plan_ports):
                             args = {}
                     dport = port_of(args)
                     t1 = time.time_ns()
+                    wrong = a.wrong_calls.get(exec_id, {})
+                    label = wrong["label"] if (rec["tool_calls"] + 1) in wrong.get("idx", ()) else exec_id
                     try:
-                        res = await call_tool_with_exec(s, name, args, exec_id)
+                        res = await call_tool_with_exec(s, name, args, label)
                         text = "".join(getattr(x, "text", "") for x in res.content)
                     except Exception as e:  # ferramenta inexistente, argumentos inválidos
                         text = f"error: {e}"
@@ -139,7 +141,7 @@ async def agent(url, exec_id, task, a, log, plan_ports):
                     if dport not in plan_ports:
                         rec["off_plan_ports"] += 1
                     op = {"exec_id": exec_id, "op_id": f"{exec_id}-{rec['tool_calls']:03d}", "tool": name,
-                          "args": args, "t_start": t1, "t_end": t2, "result": text[:120], "label": exec_id}
+                          "args": args, "t_start": t1, "t_end": t2, "result": text[:120], "label": label}
                     if dport is not None:
                         op["dport"] = dport
                     log.write(json.dumps(op) + "\n")
@@ -176,9 +178,16 @@ def main():
     ports = rng.sample(range(a.base_port, a.base_port + 2000), 3 * len(execs))
     own = {e: ports[3 * i:3 * i + 3] for i, e in enumerate(execs)}
     tasks = {e: TASK.format(e=e, p0=own[e][0], p1=own[e][1], p2=own[e][2]) for e in execs}
+    # falhas de vínculo: round(p * 3) das três primeiras chamadas de cada agente levam
+    # no _meta a identidade de outro agente (o agente decide quantas chamadas faz)
+    n_wrong = round(a.wrong_label * 3)
+    frng = random.Random(a.seed + 104729)
+    a.wrong_calls = {e: {"idx": sorted(frng.sample(range(1, 4), n_wrong)),
+                         "label": frng.choice([x for x in execs if x != e])} for e in execs} if n_wrong else {}
     from importlib.metadata import version
     plan = {"cond": a.cond, "mode": "agent", "tool": "llm", "binding": True, "binding_mode": "auto",
-            "seed": a.seed, "ops_per_exec": 3, "execs": len(execs), "exec_ids": execs, "wrong_label": 0.0,
+            "seed": a.seed, "ops_per_exec": 3, "execs": len(execs), "exec_ids": execs, "wrong_label": a.wrong_label,
+            "wrong_calls": a.wrong_calls,
             "listen_addr": "127.0.0.1", "mcp_version": version("mcp"), "model": a.model,
             "dport_map": {str(p): [e, f"{e}-svc{j}"] for e in execs for j, p in enumerate(own[e])},
             "tasks": tasks}

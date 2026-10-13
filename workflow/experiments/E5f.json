@@ -1,0 +1,10 @@
+{
+  "experiment": "E5f",
+  "description": "Injeção de falhas no vínculo automático (agentnet_rt) no servidor MCP real: uma fração exata p das chamadas de cada execução leva no _meta a identidade de outra execução. Mede o que a fusão consegue detectar dentro de um worker compartilhado e o efeito na contabilização.",
+  "factors": {
+    "tool": ["sync", "thread", "subproc", "async"],
+    "execs": [2, 8],
+    "wrong_label": [0.04, 0.2]
+  },
+  "fixed": {"cond": "E5f", "ops": 25, "binding_mode": "auto", "workload": "workload/mcp_e4.py"}
+}

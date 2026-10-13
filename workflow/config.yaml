@@ -56,5 +56,24 @@ experiments:
     pilot_n: 2
     n: 5   # por boot (2 boots); piloto: captura = 1 ate P=4 e variavel (0,33-0,58) em P=8; P=6 adicionado para localizar o limite
 
+  # injeção de falhas no framework (E5f/E6f/E6n/E7f): só piloto até a decisão do Eder
+  E5f:
+    spec: workflow/experiments/E5f.json
+    pilot_n: 1
+    n: null
+  E6f:
+    spec: workflow/experiments/E6f.json
+    pilot_n: 1
+    n: null
+  E6n:
+    spec: workflow/experiments/E6n.json
+    pilot_n: 1
+    n: null
+  E7f:
+    spec: workflow/experiments/E7f.json
+    pilot_n: 2
+    n: null
+
 # precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
 precision_target: 0.05
+

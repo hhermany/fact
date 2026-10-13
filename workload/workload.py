@@ -169,6 +169,8 @@ def main():
     ap.add_argument("--threads", type=int, default=8, help="threads do worker em N3")
     ap.add_argument("--wrong-label", type=float, default=0.0,
                     help="fração de operações por execução rotuladas com outra execução (número exato, posições sorteadas)")
+    ap.add_argument("--policy", type=int, default=0,
+                    help="1: carrega a política por execução (exige o agentnet_policy ativo)")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -210,8 +212,22 @@ def main():
             "threads": a.threads, "exec_ids": EXECS,
             "listen_addr": LISTEN_ADDR,
             "dport_map": {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in EXECS for o in ops[e]}}
+    if a.policy:
+        # mesmas classes do E6: P (todos os destinos do plano) e R (metade sorteada dos
+        # próprios); gerador separado, para não alterar o plano das demais condições
+        prng = random.Random(a.seed + 7919)
+        classes = {e: ("P" if i % 2 == 0 else "R") for i, e in enumerate(EXECS)}
+        allow = {}
+        for e in EXECS:
+            own = [o["dport"] for o in ops[e]]
+            allow[e] = sorted(ports) if classes[e] == "P" else sorted(prng.sample(own, len(own) // 2))
+        plan["policy"] = {"classes": classes, "allow": allow}
     with open(os.path.join(a.out, "plan.json"), "w") as f:
         json.dump(plan, f, indent=1)
+    if a.policy:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "policy"))
+        import policyctl
+        policyctl.load_dict(plan["policy"]["allow"])
 
     listener = Listener(ports)   # thread iniciada só depois dos forks
     lock = threading.Lock()

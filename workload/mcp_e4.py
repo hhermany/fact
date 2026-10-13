@@ -56,14 +56,15 @@ async def session(url, tool, exec_id, ops, log, binding):
             for op in ops:
                 t0 = time.time_ns()
                 args = {"exec_id": exec_id, "port": op["dport"]}
+                label = op.get("label", exec_id)
                 if binding == "auto":   # identidade no _meta; a ferramenta não a usa
-                    res = await call_tool_with_exec(s, TOOLS[tool], args, exec_id)
+                    res = await call_tool_with_exec(s, TOOLS[tool], args, label)
                 else:
                     res = await s.call_tool(TOOLS[tool], args)
                 t1 = time.time_ns()
                 text = "".join(getattr(c, "text", "") for c in res.content)
                 lat.append((t1 - t0) / 1e6)
-                log.write(json.dumps(dict(op, kind=tool, t_start=t0, t_end=t1, ok=(text == "ok"), label=exec_id)) + "\n")
+                log.write(json.dumps(dict(op, kind=tool, t_start=t0, t_end=t1, ok=(text == "ok"), label=label)) + "\n")
     return lat
 
 
@@ -99,9 +100,22 @@ def main():
     it = iter(ports)
     ops_by_exec = {e: [{"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": next(it)}
                        for i in range(a.ops)] for e in execs}
+    # falhas de vínculo (como no E1): exatamente round(p * ops) chamadas por execução
+    # levam no _meta a identidade de outra execução; posições sorteadas
+    n_wrong = round(a.wrong_label * a.ops)
+    if abs(n_wrong - a.wrong_label * a.ops) > 1e-9:
+        sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} não é inteiro")
+    if n_wrong and a.binding_mode != "auto":
+        sys.exit("--wrong-label se aplica ao vínculo automático (identidade no _meta)")
+    if n_wrong:
+        frng = random.Random(a.seed + 104729)
+        for e in execs:
+            for i in frng.sample(range(a.ops), n_wrong):
+                ops_by_exec[e][i]["label"] = frng.choice([x for x in execs if x != e])
     from importlib.metadata import version
     plan = {"cond": a.cond, "mode": "mcp", "tool": a.tool, "binding": True, "binding_mode": a.binding_mode, "seed": a.seed,
-            "ops_per_exec": a.ops, "execs": len(execs), "exec_ids": execs, "wrong_label": 0.0,
+            "ops_per_exec": a.ops, "execs": len(execs), "exec_ids": execs, "wrong_label": a.wrong_label,
+            "wrong_per_exec": n_wrong,
             "listen_addr": "127.0.0.1", "mcp_version": version("mcp"),
             "dport_map": {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
     if a.policy:

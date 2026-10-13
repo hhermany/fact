@@ -1,0 +1,10 @@
+{
+  "experiment": "E6n",
+  "description": "Política por execução com rótulos errados quando as execuções têm árvores de processos distintas (N0, N1): a fusão offline marca os rótulos contraditos como ambíguos; mede se a política no kernel, que confia no rótulo, libera ou nega indevidamente.",
+  "factors": {
+    "cond": ["N0", "N1"],
+    "mode": ["inproc", "subproc"],
+    "wrong_label": [0.05, 0.2]
+  },
+  "fixed": {"ops": 100, "execs": 2, "policy": 1, "policy_noctx_allow": 0}
+}
