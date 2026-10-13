@@ -76,6 +76,7 @@ if n7:
               f"\\multicolumn{{2}}{{l}}{{E7f (LLM)}} & {e7['mislabeled']} & {e7['mis_I']} & {e7['I'] - e7['mis_I']} & "
               f"{e7pol.get('mis_FA', 0)} & {e7pol.get('mis_FD', 0)} & {other7} \\\\"]
     meta.update(FaultEsevenMis=e7["mislabeled"], FaultEsevenFA=e7pol.get("mis_FA", 0),
+                FaultEsevenAllowed=e7pol.get("mis_FA", 0) + e7pol.get("mis_TA", 0),
                 FaultEsevenFD=e7pol.get("mis_FD", 0), FaultEsevenRuns=n7, FaultEsevenOther=spill_e7)
 lines += [r"\bottomrule", r"\end{tabular}"]
 open(os.path.join(out, "tab_fault.tex"), "w").write("\n".join(lines) + "\n")

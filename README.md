@@ -41,7 +41,25 @@ snakemake --cores 1 baselines            # comparison with emulated related mech
 | Tables E4, E5 | `hermes-E4-confirmatory-*`, `hermes-E5-confirmatory-*` | `analysis/analysis.R` |
 | Table of related mechanisms | `hermes-E1-confirmatory-*`, `hermes-E5-confirmatory-*` | `analysis/baselines.py`, `analysis/baselines_table.py` |
 | Tables E6, E7 | `hermes-E6-confirmatory-*`, `hermes-E7-confirmatory-*` | `analysis/score_policy.py`, `analysis/analysis.R` |
+| Binding faults (E5f, E6f, E7f) and lineage-checked policy (E6L, E6Ls) | `hermes-E5f-confirmatory-*`, `hermes-E6f-confirmatory-*`, `hermes-E7f-confirmatory-*`, `hermes-E6L-confirmatory-*`, `hermes-E6Ls-confirmatory-*` | `analysis/fault_tables.py` |
 | Live accounting (`agentnetd`) | all confirmatory campaigns (`analysis/output/agentnetd_equiv.json`) | `tests/test_agentnetd_equiv.py` |
+
+## Re-running the confirmatory campaigns
+
+Every confirmatory result in the paper comes from two boots of the same host. To repeat them:
+
+```sh
+sudo scripts/run_confirmatory.sh          # boot 1: all experiments with N set in workflow/config.yaml
+sudo reboot
+sudo scripts/run_confirmatory.sh          # boot 2: same command
+nix --extra-experimental-features 'nix-command flakes' develop -c \
+  snakemake --cores 1 validar relatorio baselines faults   # regenerate every table
+```
+
+`scripts/run_confirmatory.sh E6L E5f` runs only the listed experiments. The script builds the policy with the host
+toolchain, runs the preflight, starts Ollama for E7/E7f, and writes a log per boot under `campaigns/logs/`.
+N per experiment and the campaign seed are fixed in `workflow/config.yaml`; the comments there record how each N
+was chosen.
 
 ## Raw data
 

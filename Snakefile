@@ -100,6 +100,16 @@ rule baselines:
         "> {output[0]} && python3 -I analysis/baselines_table.py {output[0]} analysis/output/tex"
 
 
+rule faults:
+    # fault injection (E5f, E6f, E7f) and lineage-checked policy (E6L, E6Ls)
+    output:
+        "analysis/output/tex/tab_fault.tex",
+        "analysis/output/tex/tab_lineage.tex",
+        "analysis/output/tex/fault_meta.tex"
+    shell:
+        "python3 -I analysis/fault_tables.py campaigns analysis/output/tex"
+
+
 # atalhos legíveis
 for e in EXPS:
     rule:

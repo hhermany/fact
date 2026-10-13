@@ -1,0 +1,1 @@
+-r--r--r-- 1 root root 7061954 Oct 13 03:30 /sys/kernel/btf/vmlinux

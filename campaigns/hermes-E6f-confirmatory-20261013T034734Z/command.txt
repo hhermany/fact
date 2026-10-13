@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E6f.json --n 4 --seed 51193 --label confirmatory --preflight preflight/last
