@@ -60,28 +60,28 @@ experiments:
   E5f:
     spec: workflow/experiments/E5f.json
     pilot_n: 1
-    n: null
+    n: 4   # por boot (2 boots): K=2 tem 40-48 conexões sem rótulo errado por rodada -> 8 rodadas >= 299 (Clopper-Pearson)
   E6f:
     spec: workflow/experiments/E6f.json
     pilot_n: 1
-    n: null
+    n: 4   # por boot (2 boots): mesmo critério do E5f, sobre decisões
   E6n:
     spec: workflow/experiments/E6n.json
     pilot_n: 1
-    n: null
+    n: null   # substituído pelo E6L (modo 0)
   E7f:
     spec: workflow/experiments/E7f.json
     pilot_n: 2
-    n: null
+    n: 13   # por boot (2 boots): 12 decisões por rodada -> 26 rodadas = 312 >= 299, como no E7
 
   E6L:
     spec: workflow/experiments/E6L.json
     pilot_n: 1
-    n: null
+    n: 2   # por boot (2 boots): 200 decisões por rodada -> 4 rodadas = 800 por célula
   E6Ls:
     spec: workflow/experiments/E6Ls.json
     pilot_n: 1
-    n: null
+    n: 3   # por boot (2 boots): K=2 tem 50 decisões por rodada -> 6 rodadas = 300
 
 # precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
 precision_target: 0.05

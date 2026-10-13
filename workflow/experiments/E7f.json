@@ -2,8 +2,18 @@
   "experiment": "E7f",
   "description": "Agentes LLM reais (como no E7) com uma das três primeiras chamadas de ferramenta de cada agente rotulada com a identidade de outro agente; política ativa.",
   "factors": {
-    "execs": [4],
-    "wrong_label": [0.3333333333333333]
+    "execs": [
+      4
+    ],
+    "wrong_label": [
+      0.3333333333333333
+    ]
   },
-  "fixed": {"cond": "E7f", "workload": "workload/agent_e7.py", "policy": 1, "policy_noctx_allow": 0}
+  "fixed": {
+    "cond": "E7f",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "policy_lineage": 1
+  }
 }

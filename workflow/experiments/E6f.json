@@ -2,9 +2,28 @@
   "experiment": "E6f",
   "description": "Injeção de falhas no vínculo automático com a política por execução ativa (servidor MCP real): mede liberações (FA) e negações (FD) indevidas causadas por rótulos errados.",
   "factors": {
-    "tool": ["sync", "thread", "subproc", "async"],
-    "execs": [2, 8],
-    "wrong_label": [0.04, 0.2]
+    "tool": [
+      "sync",
+      "thread",
+      "subproc",
+      "async"
+    ],
+    "execs": [
+      2,
+      8
+    ],
+    "wrong_label": [
+      0.04,
+      0.2
+    ]
   },
-  "fixed": {"cond": "E6f", "ops": 25, "binding_mode": "auto", "workload": "workload/mcp_e4.py", "policy": 1, "policy_noctx_allow": 0}
+  "fixed": {
+    "cond": "E6f",
+    "ops": 25,
+    "binding_mode": "auto",
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "policy_lineage": 1
+  }
 }
