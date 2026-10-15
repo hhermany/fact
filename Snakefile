@@ -86,7 +86,7 @@ rule relatorio:
     shell:
         "(python3 -I analysis/collect_overhead.py campaigns --out analysis/overhead.csv || rm -f analysis/overhead.csv) && "
         "(python3 -I analysis/collect_capacity.py campaigns --out analysis/capacity.csv || rm -f analysis/capacity.csv) && "
-        "Rscript analysis/analysis.R {input} analysis/output analysis/overhead.csv analysis/output/tex"
+        "Rscript analysis/analysis.R {input} analysis/output analysis/overhead.csv analysis/output/tex && python3 -I scripts/fullwidth_tables.py analysis/output/tex"
 
 
 rule baselines:
@@ -97,7 +97,7 @@ rule baselines:
         "analysis/output/tex/tab_baselines.tex"
     shell:
         "python3 -I analysis/baselines.py campaigns/hermes-E1-confirmatory-* campaigns/hermes-E5-confirmatory-* "
-        "> {output[0]} && python3 -I analysis/baselines_table.py {output[0]} analysis/output/tex"
+        "> {output[0]} && python3 -I analysis/baselines_table.py {output[0]} analysis/output/tex && python3 -I scripts/fullwidth_tables.py analysis/output/tex"
 
 
 rule faults:
@@ -107,7 +107,7 @@ rule faults:
         "analysis/output/tex/tab_lineage.tex",
         "analysis/output/tex/fault_meta.tex"
     shell:
-        "python3 -I analysis/fault_tables.py campaigns analysis/output/tex"
+        "python3 -I analysis/fault_tables.py campaigns analysis/output/tex && python3 -I scripts/fullwidth_tables.py analysis/output/tex"
 
 
 # atalhos legíveis

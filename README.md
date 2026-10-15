@@ -1,8 +1,8 @@
 # agentnet
 
 Per-execution network attribution, accounting, and control for AI agents, with eBPF.
-Artifact of the paper *Who Opened This Connection? Per-Execution Network Attribution, Accounting,
-and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
+Artifact of the paper *Who Opened This Connection? eBPF-based Per-Execution Network Attribution,
+Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 
 ## What is here
 
@@ -15,7 +15,7 @@ and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
 | `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents on a local model (E7) |
 | `scripts/`, `workflow/`, `Snakefile`, `flake.nix` | Reproducible pipeline: Nix shell, Snakemake (preflight → pilot → campaign → validation → report) |
-| `campaigns/` | One directory per campaign with `manifest.json`, `checksums.sha256` and environment snapshot. **Raw run data are not in git** (hundreds of MB): they are archived separately (see below) and verified by the checksums |
+| `campaigns/` | One directory per campaign with `manifest.json`, `checksums.sha256` and environment snapshot. **Raw run data are not distributed** (hundreds of MB); they can be regenerated and checked against the checksums (see Data) |
 | `tests/` | Simulation test of the runtime binding; equivalence test live daemon × offline scoring |
 | `paper/` | LaTeX sources of the paper (tables in `paper/generated/` come from `analysis/analysis.R`) |
 | `docs/METODOLOGIA.md` | Experimental methodology (Portuguese), with the literature that justifies each choice |
@@ -61,17 +61,21 @@ toolchain, runs the preflight, starts Ollama for E7/E7f, and writes a log per bo
 N per experiment and the campaign seed are fixed in `workflow/config.yaml`; the comments there record how each N
 was chosen.
 
-## Raw data
+## Data
 
-Campaign archives (`<campaign_id>.tar.gz`) are kept outside git. Archive location: **Zenodo DOI to be added at publication**.
-Each archive can be checked against `campaigns/<campaign_id>/checksums.sha256`. `scripts/package_data.py ARCHIVE_DIR OUT_DIR`
-builds the deposit (archives, `SHA256SUMS`, and a `DATA_README.md` listing experiment, label, runs, and boot per campaign);
-`.zenodo.json` holds its metadata. The `git` field of each manifest refers to the development repository in which the campaign ran
-(see History).
+This repository contains everything needed to rerun the experiments and to check how each number in the paper was produced:
+the code, the workflow, one directory per campaign under `campaigns/` (manifest, run order, environment snapshot, and
+SHA-256 checksums of every raw file), the summarized results under `analysis/output/`, and the tables generated from them
+under `paper/generated/`.
+
+The raw per-run event logs (hundreds of MB) are not distributed. They can be regenerated with
+`scripts/run_confirmatory.sh` (see above), and a regenerated campaign can be compared with the original one through its
+manifest and checksums. The `git` field of each manifest refers to the development repository in which the campaign ran
+(see History). `scripts/package_data.py` remains available to package raw archives locally.
 
 ## License
 
-Code: MIT (see `LICENSE`). Data: CC BY 4.0. Citation metadata: `CITATION.cff`.
+Code: MIT (see `LICENSE`). Summarized results: CC BY 4.0. Citation metadata: `CITATION.cff`.
 
 ## History
 
