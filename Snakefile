@@ -13,7 +13,8 @@ SEED = config["campaign_seed"]
 
 rule all:
     input:
-        "analysis/output/resumo_celulas.csv"
+        "analysis/output/resumo_celulas.csv",
+        "analysis/output/fig/fig_e1.pdf"
 
 
 rule preflight:
@@ -98,6 +99,17 @@ rule baselines:
     shell:
         "python3 -I analysis/baselines.py campaigns/hermes-E1-confirmatory-* campaigns/hermes-E5-confirmatory-* "
         "> {output[0]} && python3 -I analysis/baselines_table.py {output[0]} analysis/output/tex && python3 -I scripts/fullwidth_tables.py analysis/output/tex"
+
+
+rule figures:
+    # figures of the paper (ggplot), from the summarized results only
+    input:
+        "analysis/output/resumo_celulas.csv",
+        "analysis/output/baselines.csv"
+    output:
+        expand("analysis/output/fig/{f}.pdf", f=["fig_e1", "fig_acct", "fig_e5e6", "fig_baselines"])
+    shell:
+        "Rscript analysis/figures.R analysis/output analysis/output/fig"
 
 
 rule faults:
