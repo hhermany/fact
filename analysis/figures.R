@@ -145,11 +145,11 @@ g3 <- ggplot(fw, aes(K, value, colour = binding, shape = binding, linetype = bin
   labs(x = "concurrent sessions K", y = "correct") + theme_paper()
 save_fig(g3, "fig_e5e6", 2.05)
 
-#' ## Related mechanisms vs agentnet in shared workers
+#' ## Related systems vs agentnet in shared workers
 #'
 #' Emulations of the correlation mechanisms of related systems on the same
-#' logs (`analysis/baselines.py`): share of connections credited to the wrong
-#' execution.
+#' logs (`analysis/baselines.py`) and AgentProvenance executed for real (E5ap):
+#' share of connections credited to the wrong execution.
 bl_csv <- file.path(indir, "baselines.csv")
 if (file.exists(bl_csv)) {
   bl <- read_csv(bl_csv, show_col_types = FALSE, col_types = cols(.default = "c")) |>
@@ -160,18 +160,30 @@ if (file.exists(bl_csv)) {
     filter((cell == "E1 N3" & resolver %in% c("tw-nearest-500ms", "scope-latest", "fused")) |
            (cell != "E1 N3" & binding_mode == "manual" & resolver %in% c("tw-nearest-500ms", "scope-latest")) |
            (cell != "E1 N3" & binding_mode != "manual" & resolver == "fused")) |>
-    group_by(cell, resolver) |> summarise(I = sum(I) / sum(N), .groups = "drop") |>
-    mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "fused"),
-                         c("time window (AgentSight-style)", "latest scope (AgentProvenance-style)", "agentnet")),
-           cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async")))
+    group_by(cell, resolver) |> summarise(I = sum(I) / sum(N), .groups = "drop")
+  #' AgentProvenance executed for real next to agentnet in the E5 rounds (E5ap,
+  #' `analysis/agentprov_table.py`), with eight sessions, when available.
+  ap_csv <- file.path(indir, "E5ap_agentprov.csv")
+  if (file.exists(ap_csv)) {
+    ap <- read_csv(ap_csv, show_col_types = FALSE) |> filter(system == "AgentProvenance", execs == 8) |>
+      transmute(cell = paste("E5", tool), resolver = "agentprov", I = I / N)
+    bl <- bind_rows(bl, ap)
+  }
+  bl <- bl |>
+    mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "agentprov", "fused"),
+                         c("time window (emulated)", "latest scope (emulated)",
+                           "AgentProvenance (executed)", "agentnet")),
+           cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"))) |>
+    select(cell, mech, I) |> complete(cell, mech)   # empty slot where a system was not run
   g4 <- ggplot(bl, aes(cell, I, fill = mech)) +
-    geom_col(position = position_dodge(width = 0.82), width = 0.78, colour = "black", linewidth = 0.25) +
-    geom_text(aes(label = pct(I)), position = position_dodge(width = 0.82), vjust = -0.35, size = 2.1, family = fam) +
+    geom_col(position = position_dodge(width = 0.86), width = 0.82, colour = "black", linewidth = 0.25) +
+    geom_text(aes(y = ifelse(is.na(I), 0, I), label = ifelse(is.na(I), "", round(100 * I)), group = mech), position = position_dodge(width = 0.86),
+              vjust = -0.35, size = 1.8, family = fam) +
     scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
-    scale_fill_manual(values = c(greys[1], greys[2], ours)) +
+    scale_fill_manual(values = c(greys[1], greys[2], greys[3], ours), drop = FALSE) +
     guides(fill = guide_legend(nrow = 2)) +
     labs(x = NULL, y = "credited to the wrong execution") + theme_paper()
-  save_fig(g4, "fig_baselines", 2.05)
+  save_fig(g4, "fig_baselines", 2.2)
 } else message("baselines.csv not found: run `snakemake baselines` first")
 
 #+ session

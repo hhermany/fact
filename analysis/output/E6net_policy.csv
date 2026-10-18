@@ -1,0 +1,17 @@
+binding_mode,tool,execs,runs,N,TA,TD,FA,FD,ND,ok
+auto,async,2,6,300,222,78,0,0,0,1
+auto,async,8,6,1200,888,312,0,0,0,1
+auto,subproc,2,6,300,222,78,0,0,0,1
+auto,subproc,8,6,1200,888,312,0,0,0,1
+auto,sync,2,6,300,222,78,0,0,0,1
+auto,sync,8,6,1200,888,312,0,0,0,1
+auto,thread,2,6,300,222,78,0,0,0,1
+auto,thread,8,6,1200,888,312,0,0,0,1
+manual,async,2,6,300,94,50,28,128,0,0.48
+manual,async,8,6,1200,324,198,114,564,0,0.435
+manual,subproc,2,6,300,222,78,0,0,0,1
+manual,subproc,8,6,1200,888,312,0,0,0,1
+manual,sync,2,6,300,222,78,0,0,0,1
+manual,sync,8,6,1200,888,312,0,0,0,1
+manual,thread,2,6,300,222,78,0,0,0,1
+manual,thread,8,6,1200,888,312,0,0,0,1

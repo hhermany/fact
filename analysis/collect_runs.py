@@ -14,7 +14,7 @@ import json
 import os
 
 FACTORS = ["cond", "wrong_label", "mode", "execs", "jitter", "threads", "ops_per_exec", "binding", "seed",
-           "tool", "mcp_version", "binding_mode"]
+           "tool", "mcp_version", "binding_mode", "model", "listen_addr"]
 
 
 def main():

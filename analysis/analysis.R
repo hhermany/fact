@@ -392,6 +392,84 @@ if (file.exists(eqf)) {
                 sprintf("\\def\\AgentnetdEqual{%d}", num("equivalent")))
 }
 
+# --- Experimentos adicionais: placa de rede real (E5net, E6net, E3net), modelos maiores
+# com GPU em outra máquina (E7m) e AgentProvenance executado ao lado do agentnet (E5ap)
+cpu <- function(x, n) ifelse(n > 0, qbeta(0.95, x + 1, pmax(n - x, 1e-9)), NA)
+e5n <- runs |> filter(experiment == "E5net", resolver == "fused")
+if (nrow(e5n) > 0) {
+  lab5n <- pick_label(unique(e5n$label))
+  t5n <- e5n |> filter(label == lab5n) |> group_by(binding_mode, tool, execs) |>
+    summarise(runs = n(), boots = n_distinct(boot_id), N = sum(N), C = sum(C), I = sum(I), A = sum(A), M = sum(M),
+              captured = sum(captured), attempted = sum(attempted), tool_ms = median(tool_ms_p50), .groups = "drop") |>
+    mutate(C_N = C / N, I_N = I / N, I_up = cpu(I, N))
+  write_csv(t5n, file.path(outdir, "E5net_framework.csv"))
+  lo <- runs |> filter(experiment == "E5", resolver == "fused", label == pick_label(unique(e5r$label))) |>
+    group_by(binding_mode, tool, execs) |> summarise(C_N_lo = sum(C) / sum(N), .groups = "drop")
+  dif <- t5n |> inner_join(lo, by = c("binding_mode", "tool", "execs"))
+  au <- t5n |> filter(binding_mode == "auto")
+  ma <- t5n |> filter(binding_mode == "manual", tool == "async")
+  tex_meta <- c(tex_meta, sprintf("\\def\\EFiveNetLabel{%s}", lab5n), sprintf("\\def\\EFiveNetRuns{%d}", sum(t5n$runs)),
+                sprintf("\\def\\EFiveNetConnAuto{%d}", sum(au$N)), sprintf("\\def\\EFiveNetWrongAuto{%d}", sum(au$I)),
+                sprintf("\\def\\EFiveNetCapture{%d}", sum(t5n$captured)), sprintf("\\def\\EFiveNetAttempted{%d}", sum(t5n$attempted)),
+                sprintf("\\def\\EFiveNetAsyncManMin{%.0f}", 100 * min(ma$C_N)), sprintf("\\def\\EFiveNetAsyncManMax{%.0f}", 100 * max(ma$C_N)),
+                sprintf("\\def\\EFiveNetMaxDiff{%.0f}", 100 * max(abs(dif$C_N - dif$C_N_lo))))
+}
+e6n <- runs |> filter(experiment == "E6net", resolver == "fused")
+if (nrow(e6n) > 0) {
+  lab6n <- pick_label(unique(e6n$label))
+  t6n <- e6n |> filter(label == lab6n) |> group_by(binding_mode, tool, execs) |>
+    summarise(runs = n(), N = sum(pol_N), TA = sum(pol_TA), TD = sum(pol_TD), FA = sum(pol_FA),
+              FD = sum(pol_FD), ND = sum(pol_ND), .groups = "drop") |> mutate(ok = (TA + TD) / N)
+  write_csv(t6n, file.path(outdir, "E6net_policy.csv"))
+  au <- t6n |> filter(binding_mode == "auto")
+  tex_meta <- c(tex_meta, sprintf("\\def\\ESixNetLabel{%s}", lab6n), sprintf("\\def\\ESixNetRuns{%d}", sum(t6n$runs)),
+                sprintf("\\def\\ESixNetDecAuto{%d}", sum(au$N)),
+                sprintf("\\def\\ESixNetErrAuto{%d}", sum(au$FA + au$FD + au$ND)))
+}
+e7m <- runs |> filter(experiment == "E7m", resolver == "fused")
+if (nrow(e7m) > 0) {
+  lab7m <- pick_label(unique(e7m$label))
+  t7m <- e7m |> filter(label == lab7m) |> group_by(model, execs) |>
+    summarise(runs = n(), boots = n_distinct(boot_id), N = sum(N), C = sum(C), I = sum(I), A = sum(A), M = sum(M),
+              pN = sum(pol_N), TA = sum(pol_TA), TD = sum(pol_TD), FA = sum(pol_FA), FD = sum(pol_FD), ND = sum(pol_ND),
+              tool_ms = median(tool_ms_p50, na.rm = TRUE), .groups = "drop")
+  write_csv(t7m, file.path(outdir, "E7m_agents.csv"))
+  tex_meta <- c(tex_meta, sprintf("\\def\\ESevenMLabel{%s}", lab7m), sprintf("\\def\\ESevenMRuns{%d}", sum(t7m$runs)),
+                sprintf("\\def\\ESevenMConn{%d}", sum(t7m$N)), sprintf("\\def\\ESevenMWrong{%d}", sum(t7m$I)),
+                sprintf("\\def\\ESevenMAmb{%d}", sum(t7m$A + t7m$M)),
+                sprintf("\\def\\ESevenMDec{%d}", sum(t7m$pN)), sprintf("\\def\\ESevenMDecOK{%d}", sum(t7m$TA + t7m$TD)),
+                sprintf("\\def\\ESevenMFA{%d}", sum(t7m$FA)), sprintf("\\def\\ESevenMFD{%d}", sum(t7m$FD)),
+                sprintf("\\def\\ESevenMND{%d}", sum(t7m$ND)),
+                sprintf("\\def\\ESevenMToolMs{%.0f}", median(e7m$tool_ms_p50[e7m$label == lab7m], na.rm = TRUE)))
+}
+if (file.exists(ovh_csv)) {
+  o3n <- read_csv(ovh_csv, show_col_types = FALSE) |> filter(campaign_runs_failed == 0, experiment == "E3net")
+  if (nrow(o3n) > 0) {
+    lab3n <- pick_label(unique(o3n$label))
+    t3n <- o3n |> filter(label == lab3n) |> group_by(instr, markers) |>
+      summarise(runs = n(), boots = n_distinct(boot_id), p50_us = mean(p50_ns) / 1000, p50_ic = ci95(p50_ns) / 1000,
+                p99_us = mean(p99_ns) / 1000, thr_k = mean(throughput_cps) / 1000, .groups = "drop")
+    write_csv(t3n, file.path(outdir, "E3net_overhead.csv"))
+    b0 <- t3n$p50_us[t3n$instr == "none" & t3n$markers == 0]; c0 <- t3n$p50_us[t3n$instr == "collector" & t3n$markers == 0]
+    b1 <- t3n$p50_us[t3n$instr == "none" & t3n$markers == 1]; c1 <- t3n$p50_us[t3n$instr == "collector" & t3n$markers == 1]
+    tex_meta <- c(tex_meta, sprintf("\\def\\EThreeNetLabel{%s}", lab3n), sprintf("\\def\\EThreeNetRuns{%d}", sum(t3n$runs)),
+                  sprintf("\\def\\EThreeNetBase{%.0f}", b0), sprintf("\\def\\EThreeNetAdd{%.1f}", c0 - b0),
+                  sprintf("\\def\\EThreeNetAddMk{%.1f}", c1 - b0), sprintf("\\def\\EThreeNetRel{%.0f}", 100 * (c0 / b0 - 1)))
+  }
+}
+apf <- file.path(outdir, "E5ap_agentprov.csv")
+if (file.exists(apf)) {
+  ap <- read_csv(apf, show_col_types = FALSE)
+  apa <- ap |> filter(system == "AgentProvenance"); ann <- ap |> filter(system == "agentnet")
+  hi <- apa |> filter(tool != "subproc", execs >= 4); sp <- apa |> filter(tool == "subproc")
+  tex_meta <- c(tex_meta, sprintf("\\def\\APRuns{%d}", sum(apa$runs)), sprintf("\\def\\APConn{%d}", sum(apa$N)),
+                sprintf("\\def\\APWrongMin{%.0f}", 100 * min(hi$I_N)), sprintf("\\def\\APWrongMax{%.0f}", 100 * max(hi$I_N)),
+                sprintf("\\def\\APWrongTwoMin{%.0f}", 100 * min(apa$I_N[apa$tool != "subproc" & apa$execs == 2])),
+                sprintf("\\def\\APWrongTwoMax{%.0f}", 100 * max(apa$I_N[apa$tool != "subproc" & apa$execs == 2])),
+                sprintf("\\def\\APSubMin{%.0f}", 100 * min(sp$I_N)), sprintf("\\def\\APSubMax{%.0f}", 100 * max(sp$I_N)),
+                sprintf("\\def\\APAgentnetWrong{%d}", sum(ann$I)), sprintf("\\def\\APAgentnetConn{%d}", sum(ann$N)))
+}
+
 labs_exp <- c(E1 = if (exists("e1") && nrow(e1) > 0) pick_label(unique(e1$label)) else NA,
               E2 = if (nrow(e2r) > 0) pick_label(unique(e2r$label)) else NA,
               E3 = if (file.exists(ovh_csv)) pick_label(unique(read_csv(ovh_csv, show_col_types = FALSE)$label)) else NA,
@@ -401,7 +479,9 @@ labs_exp <- c(E1 = if (exists("e1") && nrow(e1) > 0) pick_label(unique(e1$label)
               E5 = if (nrow(e5r) > 0) pick_label(unique(e5r$label)) else NA,
               E6 = if (nrow(e6r) > 0) pick_label(unique(e6r$label)) else NA,
               E7 = if (nrow(e7r) > 0) pick_label(unique(e7r$label)) else NA,
-              E2b = if (exists("labc")) labc else NA)
+              E2b = if (exists("labc")) labc else NA,
+              E5net = if (exists("lab5n")) lab5n else NA, E6net = if (exists("lab6n")) lab6n else NA,
+              E7m = if (exists("lab7m")) lab7m else NA, E3net = if (exists("lab3n")) lab3n else NA)
 labs_exp <- labs_exp[!is.na(labs_exp)]
 nao_conf <- labs_exp[labs_exp != "confirmatory"]
 banner <- if (length(nao_conf) == 0) "\\def\\ResultsBanner{}" else
