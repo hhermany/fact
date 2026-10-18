@@ -90,7 +90,7 @@ ANTHROPIC_KEY_FILE = "/etc/agentnet/anthropic.key"   # fora do repositório, só
 
 
 def anthropic_chat(model, messages, tools, max_tokens):
-    """Mesma interface do ollama_chat, com a API de Mensagens da Anthropic (temperatura 0,
+    """Mesma interface do ollama_chat, com a API de Mensagens da Anthropic (sem o parâmetro temperature, que esses modelos não aceitam;
     sem raciocínio estendido). Devolve {"message": {...}, "usage": {...}, "model": ...} no
     formato interno (tool_calls como no Ollama). Repete em 429/5xx com espera crescente."""
     key = open(ANTHROPIC_KEY_FILE).read().strip()
@@ -111,7 +111,7 @@ def anthropic_chat(model, messages, tools, max_tokens):
                 conv[-1]["content"].append(res)
             else:
                 conv.append({"role": "user", "content": [res]})
-    body = json.dumps({"model": model, "max_tokens": max_tokens or 1024, "temperature": 0, "system": system,
+    body = json.dumps({"model": model, "max_tokens": max_tokens or 1024, "system": system,
                        "messages": conv,
                        "tools": [{"name": t["function"]["name"], "description": t["function"]["description"],
                                   "input_schema": t["function"]["parameters"]} for t in tools]}).encode()
