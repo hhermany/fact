@@ -109,12 +109,21 @@ rule agentprov:
         "python3 -I analysis/agentprov_table.py --label confirmatory --out analysis/output > /dev/null"
 
 
+rule e7c_tokens:
+    # tokens informados pela API da Anthropic em cada chamada do E7c, e o custo
+    output:
+        "analysis/output/E7c_tokens.csv"
+    shell:
+        "python3 -I analysis/e7c_tokens.py --label confirmatory --out analysis/output > /dev/null"
+
+
 rule figures:
     # figures of the paper (ggplot), from the summarized results only
     input:
         "analysis/output/resumo_celulas.csv",
         "analysis/output/baselines.csv",
-        "analysis/output/E5ap_agentprov.csv"
+        "analysis/output/E5ap_agentprov.csv",
+        "analysis/output/E7c_tokens.csv"
     output:
         expand("analysis/output/fig/{f}.pdf", f=["fig_e1", "fig_acct", "fig_e5e6", "fig_baselines"])
     shell:

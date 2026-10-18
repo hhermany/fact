@@ -54,6 +54,8 @@ for e in $EXPS; do
   n=$(python3 -c "import yaml; print(yaml.safe_load(open(\"workflow/config.yaml\"))[\"experiments\"][\"$e\"][\"n\"])")
   spec=$(python3 -c "import yaml; print(yaml.safe_load(open(\"workflow/config.yaml\"))[\"experiments\"][\"$e\"][\"spec\"])")
   echo "== $e n=$n $(date -u +%H:%M:%S)"
+  # modelos servidos por API: uma chamada real antes da campanha; se a API recusar, nada roda
+  python3 scripts/check_llm_api.py "$spec" || { echo "checagem da API falhou: $e nao executado"; status=1; continue; }
   python3 scripts/campaign.py --spec "$spec" --n "$n" --seed "$SEED" --label confirmatory --preflight preflight/last \
     | tail -2 || status=1
 done

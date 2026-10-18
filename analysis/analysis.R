@@ -442,6 +442,26 @@ if (nrow(e7m) > 0) {
                 sprintf("\\def\\ESevenMND{%d}", sum(t7m$ND)),
                 sprintf("\\def\\ESevenMToolMs{%.0f}", median(e7m$tool_ms_p50[e7m$label == lab7m], na.rm = TRUE)))
 }
+e7c <- runs |> filter(experiment == "E7c", resolver == "fused")
+if (nrow(e7c) > 0) {
+  lab7c <- pick_label(unique(e7c$label))
+  t7c <- e7c |> filter(label == lab7c) |> group_by(model, execs) |>
+    summarise(runs = n(), boots = n_distinct(boot_id), N = sum(N), C = sum(C), I = sum(I), A = sum(A), M = sum(M),
+              pN = sum(pol_N), TA = sum(pol_TA), TD = sum(pol_TD), FA = sum(pol_FA), FD = sum(pol_FD), ND = sum(pol_ND),
+              tool_ms = median(tool_ms_p50, na.rm = TRUE), .groups = "drop")
+  write_csv(t7c, file.path(outdir, "E7c_agents.csv"))
+  tex_meta <- c(tex_meta, sprintf("\\def\\ESevenCLabel{%s}", lab7c), sprintf("\\def\\ESevenCRuns{%d}", sum(t7c$runs)),
+                sprintf("\\def\\ESevenCConn{%d}", sum(t7c$N)), sprintf("\\def\\ESevenCWrong{%d}", sum(t7c$I)),
+                sprintf("\\def\\ESevenCAmb{%d}", sum(t7c$A + t7c$M)),
+                sprintf("\\def\\ESevenCDec{%d}", sum(t7c$pN)), sprintf("\\def\\ESevenCDecOK{%d}", sum(t7c$TA + t7c$TD)))
+  tkf <- file.path(outdir, "E7c_tokens.csv")
+  if (file.exists(tkf)) {
+    tk <- read_csv(tkf, show_col_types = FALSE)
+    tex_meta <- c(tex_meta, sprintf("\\def\\ESevenCUSD{%.2f}", sum(tk$usd)),
+                  sprintf("\\def\\ESevenCInTok{%.0f}", sum(tk$input_tokens) / sum(tk$agents)),
+                  sprintf("\\def\\ESevenCOutTok{%.0f}", sum(tk$output_tokens) / sum(tk$agents)))
+  }
+}
 if (file.exists(ovh_csv)) {
   o3n <- read_csv(ovh_csv, show_col_types = FALSE) |> filter(campaign_runs_failed == 0, experiment == "E3net")
   if (nrow(o3n) > 0) {
@@ -481,7 +501,7 @@ labs_exp <- c(E1 = if (exists("e1") && nrow(e1) > 0) pick_label(unique(e1$label)
               E7 = if (nrow(e7r) > 0) pick_label(unique(e7r$label)) else NA,
               E2b = if (exists("labc")) labc else NA,
               E5net = if (exists("lab5n")) lab5n else NA, E6net = if (exists("lab6n")) lab6n else NA,
-              E7m = if (exists("lab7m")) lab7m else NA, E3net = if (exists("lab3n")) lab3n else NA)
+              E7m = if (exists("lab7m")) lab7m else NA, E7c = if (exists("lab7c")) lab7c else NA, E3net = if (exists("lab3n")) lab3n else NA)
 labs_exp <- labs_exp[!is.na(labs_exp)]
 nao_conf <- labs_exp[labs_exp != "confirmatory"]
 banner <- if (length(nao_conf) == 0) "\\def\\ResultsBanner{}" else
