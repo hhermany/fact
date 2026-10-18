@@ -30,7 +30,7 @@ make -s -C policy
 # 2. everything else runs inside the pinned Nix environment
 EXPS="$*"
 nix --extra-experimental-features 'nix-command flakes' develop -c env EXPS="$EXPS" SEED="$SEED" bash -c '
-set -u
+set -u -o pipefail
 if [ -z "$EXPS" ]; then
   EXPS=$(python3 -c "import yaml; c=yaml.safe_load(open(\"workflow/config.yaml\"))[\"experiments\"]; print(\" \".join(e for e, v in c.items() if v.get(\"n\")))")
 fi
@@ -54,10 +54,8 @@ for e in $EXPS; do
   n=$(python3 -c "import yaml; print(yaml.safe_load(open(\"workflow/config.yaml\"))[\"experiments\"][\"$e\"][\"n\"])")
   spec=$(python3 -c "import yaml; print(yaml.safe_load(open(\"workflow/config.yaml\"))[\"experiments\"][\"$e\"][\"spec\"])")
   echo "== $e n=$n $(date -u +%H:%M:%S)"
-  # modelos servidos por API: uma chamada real antes da campanha; se a API recusar, nada roda
-  python3 scripts/check_llm_api.py "$spec" || { echo "checagem da API falhou: $e nao executado"; status=1; continue; }
   python3 scripts/campaign.py --spec "$spec" --n "$n" --seed "$SEED" --label confirmatory --preflight preflight/last \
-    | tail -2 || status=1
+    | grep -v "^\[" || status=1
 done
 exit $status
 '

@@ -57,6 +57,7 @@ Números de smoke e piloto citados em documentos internos vêm sempre rotulados 
 | E3net | 4 | = E3 (instrumentação × marcadores) | aceitador na 2ª máquina; 20.000 connects/rodada |
 | E5ap | 5 | ferramenta × K ∈ {2,4,8} | vínculo automático; AgentProvenance v0.9.0 executado na mesma rodada |
 | E7m | 5 | modelo ∈ {qwen2.5:7b, llama3.1:8b} × K ∈ {4,8} | Ollama com GPU na 2ª máquina; vínculo automático + política; num_predict=512 |
+| E7c | 5 | modelo ∈ {claude-opus-5-5, claude-haiku-5-5} × K ∈ {4,8} | API da Anthropic; vínculo automático + política; max_tokens=512; tokens e custo registrados |
 
 E1, E5 e E6 são fatoriais completos, o que permite estimar efeitos e interações sem confundimento [Montgomery 2017, caps. 5–6; Jain 1991, parte IV].
 
@@ -87,6 +88,7 @@ Aplicação: no E5 e no E6, a menor célula (K=2, 25 ops) tem 50 casos por rodad
 - **E5net, E6net:** mesmos níveis e N do E5 e do E6 (6 rodadas por célula; K=2 dá 300 casos ≥ 299). Os níveis são os mesmos para que a comparação loopback × placa de rede seja célula a célula.
 - **E5ap:** mesmas células do E5 no modo automático, 6 rodadas. Para o agentnet vale o critério de propriedade (≥ 299 conexões por célula). Para o AgentProvenance, cuja taxa de erro não é zero, o objetivo é estimar a proporção: com ≥ 300 conexões por célula, a meia-largura do IC95% de uma proporção é ≤ 1,96·√(0,25/300) ≈ 5,7 pontos percentuais no pior caso (p = 0,5) [Jain 1991, cap. 13]; as conclusões do artigo (92–96% de erro com K ≥ 4) ficam longe desse limite.
 - **E3net:** mesmos níveis e N do E3 (5 rodadas por boot, 2 boots), dimensionado pelo piloto do E3 para meia-largura do IC95% da mediana ≤ 5%. Verificação a posteriori: as meias-larguras obtidas foram 1,9–3,6% da média nas quatro células, abaixo do alvo.
+- **E7c:** mesmo desenho e mesmo N do E7m (26 rodadas por célula em dois boots; 312 decisões com K=4). Os dois modelos são o maior e o menor da linha atual da Anthropic com chamada de ferramentas; o custo medido no piloto (≈ US$ 4,80 para a campanha inteira) foi o critério para não incluir um terceiro modelo.
 - **E7m:** mesmo critério do E7, aplicado às decisões de política: com K=4 há 12 decisões por rodada (piloto), logo 26 rodadas = 312 ≥ 299; com K=8, 624. As conexões atribuídas por célula variam com o modelo (260–912), porque o modelo decide quantas ferramentas chamar; o critério é aplicado às decisões, como no E7. K=4 repete o E7; K=8 é o maior K do E5 e o paralelismo configurado no Ollama (`OLLAMA_NUM_PARALLEL=8`). Os dois modelos são os de chamada de ferramentas com até 8B parâmetros que cabem na GPU de 12 GB (quantização Q4_K_M).
 
 ### 3.4 Métricas
@@ -113,7 +115,10 @@ Aplicação: no E5 e no E6, a menor célula (K=2, 25 ops) tem 50 casos por rodad
 ## 5. Reprodutibilidade
 
 - **Segunda máquina (E3net, E5net, E6net, E7m):** VM no mesmo host físico e segmento L2 (Sisyphus, 172.28.255.13). Serviços de destino: `workload/remote_farm.py --addr 0.0.0.0` (portas 61000–61999 e 65000–65499). Modelos: Ollama v0.40.6 com GPU (RTX 3060 12 GB), `OLLAMA_HOST=0.0.0.0:11434`, `OLLAMA_NUM_PARALLEL=8`; qwen2.5:7b (digest 845dbda0ea48ed74) e llama3.1:8b (46e0c10c039e0191), ambos Q4_K_M. O IP do destino está nos specs (`dest_host`, `ollama`).
-- **AgentProvenance (E5ap):** release v0.9.0 (commit fb83e641), `agentprov_v0.9.0_linux_amd64.tar.gz` com SHA-256 8963e25bfbad050de9aff2bf8eba8d77bb660c45697efc00436bf55020a124ae, extraído em `/opt/agentprov` (caminho nos specs).
+- **Independência do agentnet:** coletor, atribuição, vínculo por tarefa e política dependem só do host medido e deste repositório. O AgentProvenance é usado **apenas no experimento comparativo E5ap**; a segunda máquina e a API da Anthropic, apenas nas variantes (E3net, E5net, E6net, E7m, E7c).
+- **Checagem de dependências:** antes da primeira rodada de qualquer campanha, `scripts/campaign.py` chama `scripts/check_deps.py`, que testa cada dependência externa do experimento (chamada real mínima a cada modelo com o mesmo código e as mesmas ferramentas dos agentes; portas da segunda máquina; versão do AgentProvenance). Se algo falhar, a campanha não é criada; o resultado fica em `deps_check.txt` na campanha. Motivo: o primeiro piloto do E7c falhou inteiro porque a API recusou o parâmetro `temperature` nesses modelos (incidente 10).
+- **API da Anthropic (E7c):** chave em `/etc/agentnet/anthropic.key` (root, modo 600, fora do repositório). Sem o parâmetro `temperature` (recusado pela API nesses modelos), sem raciocínio estendido, `max_tokens` 512. Tokens de entrada e saída informados pela API são registrados por agente; custo por célula em `analysis/output/E7c_tokens.csv` (preços de 18/10/2026).
+- **AgentProvenance (E5ap, só comparação):** release v0.9.0 (commit fb83e641), `agentprov_v0.9.0_linux_amd64.tar.gz` com SHA-256 8963e25bfbad050de9aff2bf8eba8d77bb660c45697efc00436bf55020a124ae, extraído em `/opt/agentprov` (caminho nos specs).
 - **CSVs versionados:** várias campanhas antigas só existem como `.tar.gz` em `campaigns/`. Para regenerar `analysis/runs.csv` e `analysis/overhead.csv` do zero, extraia os pacotes antes (`scripts/extract_campaigns.sh`) e rode `collect_runs.py`/`collect_overhead.py` sobre o diretório resultante.
 
 - **Duas camadas.** O Nix flake fixa Python, R, Snakemake, Jupyter e Ollama. Kernel, bpftrace, clang e libbpf vêm do host e são registrados.
@@ -153,6 +158,7 @@ Aplicação: no E5 e no E6, a menor célula (K=2, 25 ops) tem 50 casos por rodad
 7. **E7m, boot 1:** 4 rodadas com llama3.1:8b falharam porque uma resposta do modelo não terminava e a chamada ao Ollama estourava 600 s. A campanha (131239Z, sem manifest) foi descartada; corrigido com `num_predict=512` (commit 6e0a24f), registrado no plano de cada rodada.
 8. **E7m, boot 2:** a abertura da sessão MCP de um agente travou sem erro nem timeout do cliente, antes do primeiro passo do modelo. A campanha (152437Z) foi descartada; corrigido com prazo de 60 s e até 3 tentativas apenas antes do primeiro passo (commit 40ca786).
 9. **Conexões de sondagem no E5net:** antes de cada rodada, o driver confere se o destino remoto responde, conectando à primeira e à última porta do plano. Essas 2 conexões por rodada (144 no total) não têm identidade e aparecem como não atribuídas (M) para o resolver fused; não são erros (I = 0).
+10. **E7c, primeiro piloto (203816Z):** as 4 rodadas falharam porque a API da Anthropic recusa o parâmetro `temperature` nos modelos Opus 5.5 e Haiku 5.5. Corrigido no commit 2c98973 (parâmetro removido); o piloto seguinte (204028Z) passou. Para que nenhuma campanha comece com dependência quebrada, `scripts/check_deps.py` passou a rodar antes de toda campanha (modelos, segunda máquina, AgentProvenance), e `run_confirmatory.sh` passou a propagar falhas de campanha (`pipefail`).
 
 ## 8. Pendências [decidir]
 

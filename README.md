@@ -64,7 +64,26 @@ toolchain, runs the preflight, starts Ollama for E7/E7f, and writes a log per bo
 N per experiment and the campaign seed are fixed in `workflow/config.yaml`; the comments there record how each N
 was chosen.
 
-## Second machine (E3net, E5net, E6net, E7m) and AgentProvenance (E5ap)
+## External dependencies of some experiments
+
+agentnet itself is self-contained: the collector, the attribution, the task-scoped binding and the egress
+policy need only the measured host (Linux with eBPF/bpftrace) and this repository. Nothing below is required
+to use agentnet or to run E1-E7. The items below exist only for the comparison and variant experiments:
+
+| Experiment | Needs | Role |
+|---|---|---|
+| E5ap | AgentProvenance v0.9.0 on the measured host | **comparison only**: a related system run next to agentnet on the same rounds, to measure its attribution against the same reference |
+| E3net, E5net, E6net | second machine running `workload/remote_farm.py` | destinations outside loopback |
+| E7m | second machine with Ollama and GPU | larger local models |
+| E7c | Anthropic API key in `/etc/agentnet/anthropic.key` (root, mode 600) | commercial models (Claude Opus 5.5, Haiku 5.5); cost and tokens are recorded per run |
+
+Before the first run of any campaign (pilot or confirmatory), `scripts/campaign.py` calls
+`scripts/check_deps.py`, which checks every external dependency the experiment uses (a real minimal call per
+model, through the same code and tools as the agents; the remote ports; the AgentProvenance version). If any
+check fails, the campaign is not created and the reason is printed; the result of the check is stored in the
+campaign as `deps_check.txt`.
+
+## Second machine (E3net, E5net, E6net, E7m), AgentProvenance (E5ap) and Anthropic API (E7c)
 
 These experiments use a second VM on the same layer-2 segment (`172.28.255.13` in the specs under `workflow/experiments/`; change `dest_host`/`ollama` there for another address):
 
@@ -76,6 +95,9 @@ ollama pull qwen2.5:7b && ollama pull llama3.1:8b          # digests 845dbda0ea4
 # on the measured host: AgentProvenance v0.9.0 release, extracted to /opt/agentprov
 sha256sum agentprov_v0.9.0_linux_amd64.tar.gz   # 8963e25bfbad050de9aff2bf8eba8d77bb660c45697efc00436bf55020a124ae
 sudo scripts/run_confirmatory.sh E5ap E5net E6net E3net E7m   # once per boot, two boots
+# E7c: an Anthropic API key, readable only by root
+sudo install -d -m 700 /etc/agentnet && sudo sh -c 'read -s K; printf %s "$K" > /etc/agentnet/anthropic.key; chmod 600 /etc/agentnet/anthropic.key'
+sudo scripts/run_confirmatory.sh E7c                           # once per boot, two boots (about US$ 2.3 per boot)
 ```
 
 ## Regenerating the summarized CSVs

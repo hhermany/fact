@@ -82,8 +82,14 @@ def ollama_chat(host, model, messages, tools, seed, num_predict=None):
     body = json.dumps({"model": model, "messages": messages, "tools": tools, "stream": False,
                        "options": opts}).encode()
     req = urllib.request.Request(f"http://{host}/api/chat", data=body, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=600) as r:
-        return json.loads(r.read())
+    for attempt in range(3):   # falha de conexão com o servidor: repete (2 s, 4 s); erro do modelo não é repetido
+        try:
+            with urllib.request.urlopen(req, timeout=600) as r:
+                return json.loads(r.read())
+        except urllib.error.URLError as e:
+            if isinstance(e, urllib.error.HTTPError) or attempt == 2:
+                raise
+            time.sleep(2 ** (attempt + 1))
 
 
 ANTHROPIC_KEY_FILE = "/etc/agentnet/anthropic.key"   # fora do repositório, só root lê (chmod 600)

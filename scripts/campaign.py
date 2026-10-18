@@ -83,10 +83,20 @@ def main():
         if not a.preflight or "RESULTADO PASS" not in open(os.path.join(a.preflight, "preflight.txt")).read():
             sys.exit("campanha confirmatória exige --preflight com RESULTADO PASS")
 
+    # dependências externas (modelos, segunda máquina, AgentProvenance): checadas antes
+    # de criar a campanha; se alguma faltar, nenhuma rodada é executada
+    chk = subprocess.run([sys.executable, os.path.join(HERE, "scripts", "check_deps.py"), a.spec],
+                         capture_output=True, text=True)
+    print(chk.stdout, end="", flush=True)
+    if chk.returncode != 0:
+        sys.exit("dependências externas indisponíveis (acima): campanha não iniciada\n" + chk.stderr[-2000:])
+
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     cid = f"{socket.gethostname()}-{spec['experiment']}-{a.label}-{stamp}"
     cdir = os.path.join(a.campaigns_dir, cid)
     os.makedirs(cdir, exist_ok=False)
+    with open(os.path.join(cdir, "deps_check.txt"), "w") as f:
+        f.write(chk.stdout)
 
     # desenho
     names = list(spec["factors"])
