@@ -1,0 +1,10 @@
+{
+  "experiment": "E5ap",
+  "description": "Sistema relacionado executado de verdade: AgentProvenance v0.9.0 (sensor eBPF próprio + vínculos ToolCallScope por chamada de ferramenta, com pid/cgroup do servidor e a janela exata da chamada) roda ao lado do agentnet nas mesmas rodadas do E5 (vínculo automático). Mesmas conexões, mesma referência (porta de destino -> execução).",
+  "factors": {
+    "tool": ["sync", "thread", "subproc", "async"],
+    "execs": [2, 4, 8]
+  },
+  "fixed": {"cond": "E5", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py",
+            "agentprov": "/opt/agentprov/agentprov"}
+}

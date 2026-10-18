@@ -139,7 +139,9 @@ def main():
 
     remote = a.dest_host != "127.0.0.1"
     if remote:   # serviços na outra máquina: confere que a faixa do plano responde antes de medir
-        for p in (min(ports), max(ports)):
+        # com a política ativa, as portas do plano (61000-64998) sem identidade são negadas
+        # já aqui; confere então uma porta do remote_farm fora da faixa policiada
+        for p in ((65000,) if a.policy else (min(ports), max(ports))):
             s = socket.socket()
             s.settimeout(2)
             try:

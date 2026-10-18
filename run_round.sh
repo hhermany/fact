@@ -46,10 +46,37 @@ if [ "${POLICY:-0}" = 1 ]; then
   EXTRA=(--policy 1)
 fi
 
+# Sistema relacionado executado de verdade (opcional): AGENTPROV=<binário do
+# AgentProvenance>. O sensor dele roda ao lado do coletor, num cgroup próprio
+# (o sensor descarta eventos do próprio cgroup como ruído), e retém os eventos
+# até os vínculos por chamada de ferramenta, registrados depois do workload.
+APID=""
+if [ -n "${AGENTPROV:-}" ]; then
+  mkdir -p "$OUT/agentprov" /sys/fs/cgroup/agentprov_sensor
+  "$AGENTPROV" --data-dir "$OUT/agentprov/store" init > "$OUT/agentprov/init.log" 2>&1
+  "$AGENTPROV" --version > "$OUT/agentprov/version.txt" 2>&1 || true
+  bash -c 'echo $$ > /sys/fs/cgroup/agentprov_sensor/cgroup.procs; exec "$@"' _ \
+    "$AGENTPROV" --data-dir "$OUT/agentprov/store" sensor stream --pending-ttl 30m \
+    --flush-interval 250ms --auto-tls=false > "$OUT/agentprov/sensor.log" 2>&1 &
+  APID=$!
+  trap 'kill -INT "$BPID" $PPOL $APID 2>/dev/null || true; wait "$BPID" $PPOL $APID 2>/dev/null || true' EXIT
+  for i in $(seq 1 300); do
+    grep -q 'ready probes-attached' "$OUT/agentprov/sensor.log" 2>/dev/null && break
+    kill -0 "$APID" 2>/dev/null || { echo "sensor AgentProvenance morreu:"; cat "$OUT/agentprov/sensor.log"; exit 1; }
+    sleep 0.1
+  done
+  grep -q 'ready probes-attached' "$OUT/agentprov/sensor.log" || { echo "sensor AgentProvenance sem ready"; exit 1; }
+fi
+
 WORKLOAD="${WORKLOAD:-workload/workload.py}"   # E4: workload/mcp_e4.py
 "${AGENTNET_PYTHON:-python3}" -I "$HERE/$WORKLOAD" --cond "$COND" --out "$OUT" "$@" "${EXTRA[@]}"
 sleep 1                               # drena eventos finais do buffer
 kill -INT "$BPID"; wait "$BPID" || true
+if [ -n "$APID" ]; then
+  "${AGENTNET_PYTHON:-python3}" -I "$HERE/analysis/agentprov_bind.py" "$OUT" "$AGENTPROV" "$APID"
+  wait "$APID" 2>/dev/null || true
+  "${AGENTNET_PYTHON:-python3}" -I "$HERE/analysis/score_agentprov.py" "$OUT" | tee "$OUT/agentprov_summary.txt"
+fi
 if [ -n "$PPOL" ]; then
   kill -INT "$PPOL"; wait "$PPOL" || true
   "${AGENTNET_PYTHON:-python3}" -I "$HERE/analysis/score_policy.py" "$OUT" | tee "$OUT/policy_summary.txt"

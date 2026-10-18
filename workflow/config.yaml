@@ -102,7 +102,11 @@ experiments:
     pilot_n: 1
     n: 13   # por boot (2 boots): K=4 tem 12 decisões por rodada -> 26 rodadas = 312 >= 299, como no E7
 
+  # sistema relacionado executado de verdade ao lado do agentnet (mesmo critério do E5)
+  E5ap:
+    spec: workflow/experiments/E5ap.json
+    pilot_n: 1
+    n: 3   # por boot
+
 # precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
 precision_target: 0.05
-
-

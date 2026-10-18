@@ -143,6 +143,8 @@ def main():
             env["COLLECTOR"] = str(p["collector"])
         if p.get("workload"):
             env["WORKLOAD"] = str(p["workload"])
+        if p.get("agentprov"):         # sistema relacionado executado de verdade, ao lado do agentnet
+            env["AGENTPROV"] = str(p["agentprov"])
         if p.get("policy"):
             env["POLICY"] = "1"
             env["POLICY_NOCTX_ALLOW"] = str(p.get("policy_noctx_allow", 0))
