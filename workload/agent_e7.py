@@ -74,9 +74,12 @@ class ServiceFarm(threading.Thread):
         loop.run_forever()
 
 
-def ollama_chat(host, model, messages, tools, seed):
+def ollama_chat(host, model, messages, tools, seed, num_predict=None):
+    opts = {"temperature": 0, "seed": seed}
+    if num_predict:   # limita respostas que não param (visto com llama3.1:8b em temperatura 0)
+        opts["num_predict"] = num_predict
     body = json.dumps({"model": model, "messages": messages, "tools": tools, "stream": False,
-                       "options": {"temperature": 0, "seed": seed}}).encode()
+                       "options": opts}).encode()
     req = urllib.request.Request(f"http://{host}/api/chat", data=body, headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=600) as r:
         return json.loads(r.read())
@@ -110,7 +113,7 @@ async def agent(url, exec_id, task, a, log, plan_ports):
             for step in range(a.max_steps):
                 rec["steps"] = step + 1
                 t0 = time.time()
-                resp = await asyncio.to_thread(ollama_chat, a.ollama, a.model, msgs, tools, a.seed)
+                resp = await asyncio.to_thread(ollama_chat, a.ollama, a.model, msgs, tools, a.seed, a.num_predict)
                 rec["llm_s"] += time.time() - t0
                 m = resp.get("message", {})
                 msgs.append(m)
@@ -163,6 +166,8 @@ def main():
     ap.add_argument("--model", default="qwen2.5:3b")
     ap.add_argument("--ollama", default="127.0.0.1:11434")
     ap.add_argument("--max-steps", type=int, default=6)
+    ap.add_argument("--num-predict", type=int, default=0,
+                    help="máximo de tokens por resposta do modelo (0: sem limite, como no E7)")
     ap.add_argument("--base-port", type=int, default=61000)
     ap.add_argument("--server-port", type=int, default=64999)
     ap.add_argument("--policy", type=int, default=0)
@@ -188,7 +193,7 @@ def main():
     plan = {"cond": a.cond, "mode": "agent", "tool": "llm", "binding": True, "binding_mode": "auto",
             "seed": a.seed, "ops_per_exec": 3, "execs": len(execs), "exec_ids": execs, "wrong_label": a.wrong_label,
             "wrong_calls": a.wrong_calls,
-            "listen_addr": "127.0.0.1", "mcp_version": version("mcp"), "model": a.model,
+            "listen_addr": "127.0.0.1", "mcp_version": version("mcp"), "model": a.model, "num_predict": a.num_predict,
             "dport_map": {str(p): [e, f"{e}-svc{j}"] for e in execs for j, p in enumerate(own[e])},
             "tasks": tasks}
     if a.policy:
