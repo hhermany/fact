@@ -1,0 +1,5 @@
+model,execs,runs,agents,llm_calls,input_tokens,output_tokens,reasoning_tokens,api_retries,in_per_agent,out_per_agent,usd
+gpt-6-luna,4,26,104,208,74724,12255,163,0,718.5,117.8,0.0136
+gpt-6-luna,8,26,208,416,149448,24586,390,0,718.5,118.2,0.0272
+gpt-6.1-sol,4,26,104,218,78349,12024,0,0,753.4,115.6,0.2769
+gpt-6.1-sol,8,26,208,426,153073,24086,0,0,735.9,115.8,0.547
