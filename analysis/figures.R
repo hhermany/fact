@@ -73,13 +73,27 @@ e1 <- read_csv(file.path(indir, "resumo_celulas.csv"), show_col_types = FALSE) |
          p = factor(paste0("p = ", wrong_label), paste0("p = ", c(0, 0.05, 0.2))),
          resolver = factor(resolver, c("cgroup", "lineage", "context", "fused"),
                            c("cgroup only", "lineage only", "context only", "agentnet (fused)")))
-g1 <- ggplot(e1, aes(cond, share, colour = resolver, shape = resolver)) +
-  geom_point(position = position_dodge(width = 0.7), size = 1.7, stroke = 0.7) +
+#' Drawn as an annotated heat map (the usual NOMS form for a parameter sweep):
+#' rows are resolvers, columns the execution structures, and each cell gives
+#' the share in percent; agentnet's row is set in bold.
+e1 <- e1 |> mutate(resolver = factor(resolver, rev(levels(resolver))),
+                   lab = paste0(round(100 * share)),
+                   face = ifelse(resolver == "agentnet (fused)", "bold", "plain"))
+g1 <- ggplot(e1, aes(cond, resolver, fill = share)) +
+  geom_tile(colour = "black", linewidth = 0.25) +
+  geom_text(aes(label = lab, colour = share > 0.5, fontface = face), size = 2.3, family = fam) +
   facet_grid(metric ~ p) +
-  scale_y_continuous(labels = pct, limits = c(0, 1), breaks = c(0, 0.2, 1), expand = expansion(mult = 0.1)) +
-  scale_colour_manual(values = c(greys, ours)) + scale_shape_manual(values = c(1, 2, 0, 16)) +
-  guides(colour = guide_legend(nrow = 2), shape = guide_legend(nrow = 2)) +
-  labs(x = "execution structure", y = "share of connections") + theme_paper()
+  scale_fill_gradient(low = "white", high = "grey25", limits = c(0, 1), labels = pct,
+                      breaks = c(0, 0.5, 1), name = "share of connections") +
+  scale_colour_manual(values = c("black", "white"), guide = "none") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, 0), labels = c("agentnet (fused)" = expression(bold("agentnet (fused)")),
+                                                 "context only" = "context only", "lineage only" = "lineage only",
+                                                 "cgroup only" = "cgroup only")) +
+  guides(fill = guide_colourbar(barheight = unit(5, "pt"), barwidth = unit(60, "pt"),
+                                title.position = "left", title.vjust = 1)) +
+  labs(x = "execution structure", y = NULL) + theme_paper() +
+  theme(legend.title = element_text(size = 7), panel.grid.major = element_blank())
 save_fig(g1, "fig_e1", 2.35)
 
 #' ## E1: accounting decomposition
@@ -120,6 +134,9 @@ fw <- bind_rows(e5, e6) |>
          metric = factor(metric, c("attribution", "policy")))
 g3 <- ggplot(fw, aes(K, value, colour = binding, shape = binding, linetype = binding)) +
   geom_line(linewidth = 0.6) + geom_point(size = 1.7, stroke = 0.7) +
+  geom_text(data = filter(fw, binding_mode == "manual", tool == "async"),
+            aes(label = pct(value), hjust = ifelse(K == 2, -0.15, ifelse(K == 8, 1.15, 0.5))),
+            vjust = -0.8, size = 2.1, family = fam, colour = "black", show.legend = FALSE) +
   facet_grid(metric ~ tool) +
   scale_x_continuous(breaks = c(2, 4, 8), trans = "log2") +
   scale_y_continuous(labels = pct, limits = c(0, 1), breaks = c(0, 0.5, 1), expand = expansion(mult = 0.1)) +
