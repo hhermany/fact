@@ -1,0 +1,5 @@
+model,execs,runs,agents,llm_calls,input_tokens,output_tokens,api_retries,in_per_agent,out_per_agent,usd
+claude-haiku-5-5,4,26,104,208,202956,23844,0,1951.5,229.3,0.0322
+claude-haiku-5-5,8,26,208,416,405912,47649,0,1951.5,229.1,0.0644
+claude-opus-5-5,4,26,104,208,202956,35555,0,1951.5,341.9,1.5229
+claude-opus-5-5,8,26,208,416,405912,67741,0,1951.5,325.7,2.9785

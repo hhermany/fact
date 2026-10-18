@@ -29,6 +29,9 @@ hermes-E6net-pilot-20261018T121647Z,pilot,0,16,2000,1391,609,240,TRUE
 hermes-E7-confirmatory-20261012T183918Z,confirmatory,0,13,156,130,26,352,FALSE
 hermes-E7-confirmatory-20261012T202426Z,confirmatory,0,13,156,130,26,356,FALSE
 hermes-E7-pilot-20261012T183608Z,pilot,0,2,24,20,4,54,FALSE
+hermes-E7c-confirmatory-20261018T204237Z,confirmatory,0,52,936,780,156,854,FALSE
+hermes-E7c-confirmatory-20261018T210332Z,confirmatory,0,52,936,780,156,837,FALSE
+hermes-E7c-pilot-20261018T204028Z,pilot,0,4,72,60,12,67,FALSE
 hermes-E7m-confirmatory-20261018T142204Z,confirmatory,0,52,936,780,156,1795,FALSE
 hermes-E7m-confirmatory-20261018T161814Z,confirmatory,0,52,936,780,156,1799,FALSE
 hermes-E7m-pilot-20261018T115924Z,pilot,0,4,72,60,12,151,TRUE
