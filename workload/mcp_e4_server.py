@@ -35,7 +35,8 @@ from mcp.server.fastmcp import FastMCP
 
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
-LISTEN = "127.0.0.1"
+LISTEN = "127.0.0.1"                                  # escuta do servidor MCP
+TARGET = os.environ.get("AGENTNET_DEST", "127.0.0.1")   # destino das ferramentas (loopback ou outra máquina)
 SUB = ("import socket,sys;s=socket.socket();s.settimeout(2);"
        "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)")
 
@@ -55,7 +56,7 @@ def mark(path):
 def blocking_connect(port):
     s = socket.socket()
     s.settimeout(2)
-    ok = s.connect_ex((LISTEN, port)) == 0
+    ok = s.connect_ex((TARGET, port)) == 0
     s.close()
     return ok
 
@@ -92,7 +93,7 @@ def main():
     async def subproc_get(exec_id: str, port: int) -> str:
         mark(CTX_BEGIN + exec_id)
         try:
-            p = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", SUB, LISTEN, str(port))
+            p = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", SUB, TARGET, str(port))
             rc = await p.wait()
             return "ok" if rc == 0 else "fail"
         finally:
@@ -103,7 +104,7 @@ def main():
         mark(CTX_BEGIN + exec_id)
         try:
             await asyncio.sleep(random.uniform(0, 0.005))   # ponto de intercalação realista (I/O pendente)
-            r, w = await asyncio.open_connection(LISTEN, port)
+            r, w = await asyncio.open_connection(TARGET, port)
             w.close()
             await w.wait_closed()
             return "ok"

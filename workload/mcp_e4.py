@@ -83,6 +83,8 @@ def main():
     ap.add_argument("--base-port", type=int, default=61000)
     ap.add_argument("--server-port", type=int, default=64999)
     ap.add_argument("--binding-mode", choices=["manual", "auto"], default="manual")
+    ap.add_argument("--dest-host", default="127.0.0.1",
+                    help="destino das ferramentas; fora do loopback, os serviços rodam em outra máquina (workload/remote_farm.py)")
     ap.add_argument("--policy", type=int, default=0,
                     help="1: carrega a política por execução (exige o agentnet_policy ativo)")
     ap.add_argument("--out", required=True)
@@ -116,7 +118,7 @@ def main():
     plan = {"cond": a.cond, "mode": "mcp", "tool": a.tool, "binding": True, "binding_mode": a.binding_mode, "seed": a.seed,
             "ops_per_exec": a.ops, "execs": len(execs), "exec_ids": execs, "wrong_label": a.wrong_label,
             "wrong_per_exec": n_wrong,
-            "listen_addr": "127.0.0.1", "mcp_version": version("mcp"),
+            "listen_addr": a.dest_host, "mcp_version": version("mcp"),
             "dport_map": {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
     if a.policy:
         # classes alternadas: P (permissiva: todos os destinos do plano) e R (restrita:
@@ -135,12 +137,25 @@ def main():
         import policyctl
         policyctl.load_dict(plan["policy"]["allow"])
 
-    listener = Listener(ports)
-    listener.start()
+    remote = a.dest_host != "127.0.0.1"
+    if remote:   # serviços na outra máquina: confere que a faixa do plano responde antes de medir
+        for p in (min(ports), max(ports)):
+            s = socket.socket()
+            s.settimeout(2)
+            try:
+                if s.connect_ex((a.dest_host, p)) != 0:
+                    sys.exit(f"destino remoto {a.dest_host}:{p} não responde (remote_farm.py ativo?)")
+            finally:
+                s.close()
+        listener = None
+    else:
+        listener = Listener(ports)
+        listener.start()
     cg_path, cg_id = cg_create("E4-server")
     here = os.path.dirname(os.path.abspath(__file__))
     srv = subprocess.Popen([sys.executable, "-I", os.path.join(here, "mcp_e4_server.py"),
                             "--port", str(a.server_port), "--binding", a.binding_mode],
+                           env=dict(os.environ, AGENTNET_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)
     cg_move(cg_path, srv.pid)
     json.dump({"roots": {str(srv.pid): execs}, "cgroups": {str(cg_id): execs}},
@@ -156,7 +171,8 @@ def main():
             srv.wait(timeout=5)
         except subprocess.TimeoutExpired:
             srv.kill()
-        listener.stop = True
+        if listener:
+            listener.stop = True
     allv = [x for l in lats for x in l]
     json.dump({"tool": a.tool, "calls": len(allv), "tool_ms_p50": st.median(allv),
                "tool_ms_mean": st.mean(allv), "tool_ms_p90": sorted(allv)[int(0.9 * (len(allv) - 1))]},

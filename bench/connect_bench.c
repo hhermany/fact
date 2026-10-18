@@ -6,7 +6,9 @@
 // cada connect, exatamente como o workload do agentnet faz, para medir o custo
 // do vínculo de contexto do lado do runtime.
 //
-// Uso: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1 --out lat.csv
+// Uso: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1 --out lat.csv [--host IP]
+// Com --host, não há aceitador local: conecta ao IP dado (placa de rede real; o
+// aceitador remoto é workload/remote_farm.py).
 // Fechamento do cliente com SO_LINGER=0 (RST), para não acumular TIME_WAIT.
 // Saída: CSV com uma linha por iteração medida (iter,ns) e resumo em stdout (JSON).
 #define _GNU_SOURCE
@@ -43,13 +45,14 @@ static int cmp_u64(const void *a, const void *b) {
 int main(int argc, char **argv) {
     long n = 20000, warmup = 1000;
     int port = 40999, markers = 0;
-    const char *out = NULL;
+    const char *out = NULL, *host = NULL;
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--n") && i + 1 < argc) n = atol(argv[++i]);
         else if (!strcmp(argv[i], "--warmup") && i + 1 < argc) warmup = atol(argv[++i]);
         else if (!strcmp(argv[i], "--port") && i + 1 < argc) port = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--markers") && i + 1 < argc) markers = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--out") && i + 1 < argc) out = argv[++i];
+        else if (!strcmp(argv[i], "--host") && i + 1 < argc) host = argv[++i];
         else { fprintf(stderr, "argumento desconhecido: %s\n", argv[i]); return 2; }
     }
 
@@ -57,6 +60,11 @@ int main(int argc, char **argv) {
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    pid_t child = -1;
+    if (host) {
+        if (inet_pton(AF_INET, host, &addr.sin_addr) != 1) { fprintf(stderr, "host inválido: %s\n", host); return 2; }
+        goto measure;
+    }
 
     int ls = socket(AF_INET, SOCK_STREAM, 0);
     int one = 1;
@@ -65,7 +73,7 @@ int main(int argc, char **argv) {
         perror("bind/listen");
         return 1;
     }
-    pid_t child = fork();
+    child = fork();
     if (child == 0) {                       // aceitador
         for (;;) {
             int c = accept(ls, NULL, NULL);
@@ -74,6 +82,7 @@ int main(int argc, char **argv) {
     }
     close(ls);
 
+measure:;
     uint64_t *lat = malloc(sizeof(uint64_t) * (size_t)n);
     long failures = 0;
     uint64_t t_start = 0;
@@ -94,8 +103,10 @@ int main(int argc, char **argv) {
         if (i >= 0) lat[i] = t1 - t0;
     }
     uint64_t wall = now_ns() - t_start;
-    kill(child, SIGKILL);
-    waitpid(child, NULL, 0);
+    if (child > 0) {
+        kill(child, SIGKILL);
+        waitpid(child, NULL, 0);
+    }
 
     if (out) {
         FILE *f = fopen(out, "w");

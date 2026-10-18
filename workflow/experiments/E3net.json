@@ -1,0 +1,20 @@
+{
+  "experiment": "E3net",
+  "runner": "overhead",
+  "description": "Custo (E3) pela placa de rede real: connect a um aceitador em outra máquina (Sisyphus), sem/com coletor e marcadores; inclui a latência de rede real.",
+  "factors": {
+    "instr": [
+      "none",
+      "collector"
+    ],
+    "markers": [
+      0,
+      1
+    ]
+  },
+  "fixed": {
+    "n": 20000,
+    "warmup": 1000,
+    "dest_host": "172.28.255.13"
+  }
+}

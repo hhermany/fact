@@ -83,6 +83,26 @@ experiments:
     pilot_n: 1
     n: 3   # por boot (2 boots): K=2 tem 50 decisões por rodada -> 6 rodadas = 300
 
+  # experimentos adicionais (18/10/2026): placa de rede real e mais modelos no E7.
+  # N confirmatório decidido após o piloto (mesmos critérios dos experimentos de origem).
+  E5net:
+    spec: workflow/experiments/E5net.json
+    pilot_n: 1
+    n: 3   # por boot (2 boots), como o E5: K=2 tem 50 conexões por rodada -> 6 rodadas >= 299
+  E6net:
+    spec: workflow/experiments/E6net.json
+    pilot_n: 1
+    n: 3   # por boot (2 boots), como o E6
+  E3net:
+    spec: workflow/experiments/E3net.json
+    pilot_n: 3
+    n: 5   # por boot (provisório; dimensionar pelo piloto)
+  E7m:
+    spec: workflow/experiments/E7m.json
+    pilot_n: 1
+    n: 13   # por boot (2 boots): K=4 tem 12 decisões por rodada -> 26 rodadas = 312 >= 299, como no E7
+
 # precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
 precision_target: 0.05
+
 

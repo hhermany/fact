@@ -31,7 +31,7 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # fator do spec -> argumento do workload.py
 ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": "--execs",
        "jitter": "--jitter", "ops": "--ops", "threads": "--threads", "tool": "--tool",
-       "binding_mode": "--binding-mode"}
+       "binding_mode": "--binding-mode", "model": "--model", "ollama": "--ollama", "dest_host": "--dest-host"}
 
 
 def sh(cmd, cwd=None):
@@ -126,6 +126,8 @@ def main():
             cmd = [os.path.join(HERE, "scripts", "e3_round.sh"), rdir, "--instr", str(p["instr"]),
                    "--markers", str(p["markers"]), "--n", str(p.get("n", 20000)),
                    "--warmup", str(p.get("warmup", 1000)), "--seed", str(r["seed"])]
+            if p.get("dest_host"):
+                cmd += ["--host", str(p["dest_host"])]
         elif runner == "capacity":     # E2b: capacidade do coletor
             cmd = [os.path.join(HERE, "scripts", "e2b_round.sh"), rdir, "--par", str(p["par"]),
                    "--n", str(p.get("n", 50000)), "--collector", str(p["collector"]), "--seed", str(r["seed"])]

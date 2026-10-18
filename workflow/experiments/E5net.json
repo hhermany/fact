@@ -1,0 +1,27 @@
+{
+  "experiment": "E5net",
+  "description": "E5 pela placa de rede real: as ferramentas conectam a serviços em outra máquina (Sisyphus, remote_farm.py) em vez do loopback. Mesmo servidor MCP, ferramentas, fatores e referência (porta exclusiva).",
+  "factors": {
+    "binding_mode": [
+      "manual",
+      "auto"
+    ],
+    "tool": [
+      "sync",
+      "thread",
+      "subproc",
+      "async"
+    ],
+    "execs": [
+      2,
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E5net",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "dest_host": "172.28.255.13"
+  }
+}

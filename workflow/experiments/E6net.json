@@ -1,0 +1,28 @@
+{
+  "experiment": "E6net",
+  "description": "E6 pela placa de rede real: política de saída por execução com destinos em outra máquina (Sisyphus).",
+  "factors": {
+    "binding_mode": [
+      "manual",
+      "auto"
+    ],
+    "tool": [
+      "sync",
+      "thread",
+      "subproc",
+      "async"
+    ],
+    "execs": [
+      2,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E6net",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "dest_host": "172.28.255.13"
+  }
+}

@@ -8,7 +8,7 @@
 # Saídas: overhead.json (resumo), latencies.csv, bpf_prog_stats.json, collector.err.
 set -euo pipefail
 OUT="$1"; shift
-INSTR=none; MARKERS=0; N=20000; WARMUP=1000; SEED=0
+INSTR=none; MARKERS=0; N=20000; WARMUP=1000; SEED=0; HOST=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --instr) INSTR="$2"; shift 2;;
@@ -16,6 +16,7 @@ while [ $# -gt 0 ]; do
     --n) N="$2"; shift 2;;
     --warmup) WARMUP="$2"; shift 2;;
     --seed) SEED="$2"; shift 2;;
+    --host) HOST="$2"; shift 2;;
     *) echo "argumento desconhecido $1"; exit 2;;
   esac
 done
@@ -51,7 +52,8 @@ if [ -n "$BT" ]; then
 fi
 
 CPU0=$(awk '{print $14+$15}' /proc/$BPID/stat 2>/dev/null || echo 0)
-"$BIN" --n "$N" --warmup "$WARMUP" --port "$PORT" --markers "$MARKERS" --out "$OUT/latencies.csv" > "$OUT/bench.json"
+echo "${HOST:-127.0.0.1}" > "$OUT/dest_host.txt"
+"$BIN" --n "$N" --warmup "$WARMUP" --port "$PORT" --markers "$MARKERS" --out "$OUT/latencies.csv" ${HOST:+--host "$HOST"} > "$OUT/bench.json"
 
 if [ -n "$BPID" ]; then
   bpftool prog show --json > "$OUT/bpf_prog_depois.json"

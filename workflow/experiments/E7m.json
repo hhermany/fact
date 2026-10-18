@@ -1,0 +1,21 @@
+{
+  "experiment": "E7m",
+  "description": "E7 com outros modelos e mais agentes: modelos de 7-8B com chamada de ferramentas servidos por Ollama com GPU em outra máquina (Sisyphus, RTX 3060); agentes, servidor MCP, coletor e política no host medido.",
+  "factors": {
+    "model": [
+      "qwen2.5:7b",
+      "llama3.1:8b"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E7m",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "ollama": "172.28.255.13:11434"
+  }
+}
