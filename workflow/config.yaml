@@ -102,6 +102,12 @@ experiments:
     pilot_n: 1
     n: 13   # por boot (2 boots): K=4 tem 12 decisões por rodada -> 26 rodadas = 312 >= 299, como no E7
 
+  # mesmos agentes com modelos comerciais via API (Anthropic); mesmo criterio de N do E7m
+  E7c:
+    spec: workflow/experiments/E7c.json
+    pilot_n: 1
+    n: 13   # por boot (2 boots): K=4 tem 12 decisoes por rodada -> 26 rodadas = 312 >= 299, como no E7m
+
   # sistema relacionado executado de verdade ao lado do agentnet (mesmo critério do E5)
   E5ap:
     spec: workflow/experiments/E5ap.json

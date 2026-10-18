@@ -1,0 +1,21 @@
+{
+  "experiment": "E7c",
+  "description": "E7 com modelos comerciais via API: Claude Opus 5.5 e Claude Haiku 5.5 (API de Mensagens da Anthropic, temperatura 0, sem raciocínio estendido, respostas limitadas a 512 tokens), com 4 e 8 agentes. Só a chamada ao modelo sai do host; agentes, servidor MCP, serviços, coletor e política ficam no host medido, como no E7. O consumo de tokens informado pela API é registrado por agente.",
+  "factors": {
+    "model": [
+      "claude-opus-5-5",
+      "claude-haiku-5-5"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E7c",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "num_predict": 512
+  }
+}

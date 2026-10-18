@@ -27,6 +27,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -85,6 +86,60 @@ def ollama_chat(host, model, messages, tools, seed, num_predict=None):
         return json.loads(r.read())
 
 
+ANTHROPIC_KEY_FILE = "/etc/agentnet/anthropic.key"   # fora do repositório, só root lê (chmod 600)
+
+
+def anthropic_chat(model, messages, tools, max_tokens):
+    """Mesma interface do ollama_chat, com a API de Mensagens da Anthropic (temperatura 0,
+    sem raciocínio estendido). Devolve {"message": {...}, "usage": {...}, "model": ...} no
+    formato interno (tool_calls como no Ollama). Repete em 429/5xx com espera crescente."""
+    key = open(ANTHROPIC_KEY_FILE).read().strip()
+    system = "".join(m["content"] for m in messages if m["role"] == "system")
+    conv, pend = [], []
+    for m in messages:
+        if m["role"] == "user":
+            conv.append({"role": "user", "content": m["content"]})
+        elif m["role"] == "assistant":
+            blocks = [{"type": "text", "text": m["content"]}] if m.get("content") else []
+            for c in m.get("tool_calls") or []:
+                blocks.append({"type": "tool_use", "id": c["id"], "name": c["function"]["name"],
+                               "input": c["function"]["arguments"]})
+            conv.append({"role": "assistant", "content": blocks})
+        elif m["role"] == "tool":
+            res = {"type": "tool_result", "tool_use_id": m["tool_call_id"], "content": m["content"]}
+            if conv and conv[-1]["role"] == "user" and isinstance(conv[-1]["content"], list):
+                conv[-1]["content"].append(res)
+            else:
+                conv.append({"role": "user", "content": [res]})
+    body = json.dumps({"model": model, "max_tokens": max_tokens or 1024, "temperature": 0, "system": system,
+                       "messages": conv,
+                       "tools": [{"name": t["function"]["name"], "description": t["function"]["description"],
+                                  "input_schema": t["function"]["parameters"]} for t in tools]}).encode()
+    for attempt in range(6):
+        req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=body, headers={
+            "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01"})
+        try:
+            with urllib.request.urlopen(req, timeout=120) as r:
+                d = json.loads(r.read())
+            break
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503, 529) and attempt < 5:
+                time.sleep(2 ** attempt)
+                continue
+            raise RuntimeError(f"anthropic HTTP {e.code}: {e.read()[:300]!r}") from None
+    text = "".join(b.get("text", "") for b in d["content"] if b["type"] == "text")
+    calls = [{"id": b["id"], "function": {"name": b["name"], "arguments": b["input"]}}
+             for b in d["content"] if b["type"] == "tool_use"]
+    return {"message": {"role": "assistant", "content": text, "tool_calls": calls},
+            "usage": d.get("usage", {}), "model": d.get("model"), "api_retries": attempt}
+
+
+def llm_chat(a, messages, tools):
+    if a.model.startswith("claude-"):
+        return anthropic_chat(a.model, messages, tools, a.num_predict)
+    return ollama_chat(a.ollama, a.model, messages, tools, a.seed, a.num_predict)
+
+
 PORT_RE = re.compile(r":(\d{2,5})")
 
 
@@ -107,6 +162,8 @@ async def agent(url, exec_id, task, a, log, plan_ports):
     for attempt in range(1, 4):
         rec = {"exec": exec_id, "steps": 0, "tool_calls": 0, "off_plan_ports": 0, "llm_s": 0.0,
                "tool_ms": [], "final": None, "error": None, "attempts": attempt}
+        if a.model.startswith("claude-"):   # consumo medido pela própria API (custo exato)
+            rec.update({"input_tokens": 0, "output_tokens": 0, "api_retries": 0, "api_model": None})
         try:
             return await agent_once(url, exec_id, task, a, log, plan_ports, rec)
         except Exception:  # noqa: BLE001
@@ -127,8 +184,14 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
             for step in range(a.max_steps):
                 rec["steps"] = step + 1
                 t0 = time.time()
-                resp = await asyncio.to_thread(ollama_chat, a.ollama, a.model, msgs, tools, a.seed, a.num_predict)
+                resp = await asyncio.to_thread(llm_chat, a, msgs, tools)
                 rec["llm_s"] += time.time() - t0
+                if "input_tokens" in rec:
+                    u = resp.get("usage", {})
+                    rec["input_tokens"] += u.get("input_tokens", 0)
+                    rec["output_tokens"] += u.get("output_tokens", 0)
+                    rec["api_retries"] += resp.get("api_retries", 0)
+                    rec["api_model"] = resp.get("model")
                 m = resp.get("message", {})
                 msgs.append(m)
                 calls = m.get("tool_calls") or []
@@ -163,7 +226,10 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
                         op["dport"] = dport
                     log.write(json.dumps(op) + "\n")
                     log.flush()
-                    msgs.append({"role": "tool", "content": text[:400], "tool_name": name})
+                    tm = {"role": "tool", "content": text[:400], "tool_name": name}
+                    if c.get("id"):
+                        tm["tool_call_id"] = c["id"]
+                    msgs.append(tm)
     return rec
 
 
@@ -250,6 +316,9 @@ def main():
             "tool_calls": len(allms), "tool_ms_p50": st.median(allms) if allms else None,
             "tool_ms_mean": st.mean(allms) if allms else None,
             "llm_s_total": sum(r.get("llm_s", 0) for r in out)}
+    if a.model.startswith("claude-"):
+        summ["input_tokens"] = sum(r.get("input_tokens", 0) for r in out)
+        summ["output_tokens"] = sum(r.get("output_tokens", 0) for r in out)
     json.dump(summ, open(os.path.join(a.out, "e7_summary.json"), "w"), indent=1)
     if any(isinstance(r, BaseException) for r in recs):
         sys.exit("algum agente falhou (ver e7_summary.json)")
