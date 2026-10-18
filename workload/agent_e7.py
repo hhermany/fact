@@ -99,14 +99,28 @@ def port_of(args):
 
 
 async def agent(url, exec_id, task, a, log, plan_ports):
+    # Abrir a sessão MCP (SSE + initialize) às vezes trava com 8 sessões simultâneas,
+    # sem erro e sem timeout do cliente. A falha ocorre antes de qualquer passo do
+    # modelo ou chamada de ferramenta; então a abertura tem prazo de 60 s e é repetida
+    # (até 3 tentativas, registradas em "attempts"). Falhas depois do primeiro passo
+    # não são repetidas.
+    for attempt in range(1, 4):
+        rec = {"exec": exec_id, "steps": 0, "tool_calls": 0, "off_plan_ports": 0, "llm_s": 0.0,
+               "tool_ms": [], "final": None, "error": None, "attempts": attempt}
+        try:
+            return await agent_once(url, exec_id, task, a, log, plan_ports, rec)
+        except Exception:  # noqa: BLE001
+            if rec["steps"] or rec["tool_calls"] or attempt == 3:
+                raise
+
+
+async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
     from mcp import ClientSession
     from mcp.client.sse import sse_client
-    rec = {"exec": exec_id, "steps": 0, "tool_calls": 0, "off_plan_ports": 0, "llm_s": 0.0,
-           "tool_ms": [], "final": None, "error": None}
     async with sse_client(url) as (read, write):
         async with ClientSession(read, write) as s:
-            await s.initialize()
-            tl = await s.list_tools()
+            await asyncio.wait_for(s.initialize(), 60)
+            tl = await asyncio.wait_for(s.list_tools(), 60)
             tools = [{"type": "function", "function": {"name": t.name, "description": t.description or "",
                                                        "parameters": t.inputSchema}} for t in tl.tools]
             msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": task}]
