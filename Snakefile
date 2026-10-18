@@ -125,6 +125,14 @@ rule e7o_tokens:
         "python3 -I analysis/e7c_tokens.py --exp E7o --label confirmatory --out analysis/output > /dev/null"
 
 
+rule replay_compare:
+    # E7r: cada rodada reproduzida sem modelo comparada com a gravação original (E7c/E7o)
+    output:
+        "analysis/output/E7r_replay.csv"
+    shell:
+        "python3 -I analysis/replay_compare.py --label confirmatory --out analysis/output > /dev/null"
+
+
 rule figures:
     # figures of the paper (ggplot), from the summarized results only
     input:
@@ -132,7 +140,8 @@ rule figures:
         "analysis/output/baselines.csv",
         "analysis/output/E5ap_agentprov.csv",
         "analysis/output/E7c_tokens.csv",
-        "analysis/output/E7o_tokens.csv"
+        "analysis/output/E7o_tokens.csv",
+        "analysis/output/E7r_replay.csv"
     output:
         expand("analysis/output/fig/{f}.pdf", f=["fig_e1", "fig_acct", "fig_e5e6", "fig_baselines"])
     shell:

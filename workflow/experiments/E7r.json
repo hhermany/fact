@@ -1,0 +1,27 @@
+{
+  "experiment": "E7r",
+  "description": "Reprodução sem modelo do E7c e do E7o: cada rodada repete, sem chamar API nenhuma, as chamadas de ferramenta gravadas de uma rodada original (mesmo modelo, mesmo K, mesma semente e portanto mesmo plano), na mesma ordem, com os mesmos argumentos e rótulos e no mesmo instante relativo. src escolhe a gravação do 1º (0) ou do 2º (1) boot original. Mostra que o resultado do E7c/E7o pode ser reproduzido sem os modelos comerciais, que podem mudar ou deixar de existir.",
+  "factors": {
+    "model": [
+      "claude-opus-5-5",
+      "claude-haiku-5-5",
+      "gpt-6.1-sol",
+      "gpt-6-luna"
+    ],
+    "execs": [
+      4,
+      8
+    ],
+    "src": [
+      0,
+      1
+    ]
+  },
+  "fixed": {
+    "cond": "E7r",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "replay_from": "campaigns/hermes-E7c-confirmatory-20261018T204237Z,campaigns/hermes-E7c-confirmatory-20261018T210332Z,campaigns/hermes-E7o-confirmatory-20261018T214357Z,campaigns/hermes-E7o-confirmatory-20261018T215903Z"
+  }
+}

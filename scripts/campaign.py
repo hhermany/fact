@@ -31,7 +31,8 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # fator do spec -> argumento do workload.py
 ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": "--execs",
        "jitter": "--jitter", "ops": "--ops", "threads": "--threads", "tool": "--tool",
-       "binding_mode": "--binding-mode", "model": "--model", "ollama": "--ollama", "dest_host": "--dest-host", "num_predict": "--num-predict"}
+       "binding_mode": "--binding-mode", "model": "--model", "ollama": "--ollama", "dest_host": "--dest-host", "num_predict": "--num-predict",
+       "replay_from": "--replay-from", "src": "--replay-src"}
 
 
 def sh(cmd, cwd=None):

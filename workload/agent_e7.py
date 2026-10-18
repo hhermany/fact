@@ -266,6 +266,11 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
                     rec["api_retries"] += resp.get("api_retries", 0)
                     rec["api_model"] = resp.get("model")
                 m = resp.get("message", {})
+                if getattr(a, "transcript", None) is not None:   # conversa completa, para auditoria e reprodução
+                    a.transcript.write(json.dumps({"exec": exec_id, "step": step + 1, "model": resp.get("model"),
+                                                   "usage": resp.get("usage"), "content": m.get("content"),
+                                                   "tool_calls": m.get("tool_calls") or []}, default=str) + "\n")
+                    a.transcript.flush()
                 msgs.append(m)
                 calls = m.get("tool_calls") or []
                 if not calls:
@@ -306,6 +311,74 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
     return rec
 
 
+def find_recording(a):
+    """Rodada gravada (E7c/E7o) com o mesmo modelo, o mesmo K e a mesma semente; a semente
+    determina as portas do plano, então as chamadas gravadas valem para o plano novo.
+    replay_src escolhe entre as campanhas que têm o modelo, em ordem cronológica (0, 1)."""
+    import glob
+    root = os.path.dirname(HERE)   # caminhos relativos à raiz do repositório
+    camps = sorted(c if os.path.isabs(c) else os.path.join(root, c) for c in a.replay_from.split(",") if c)
+    hits = []
+    for c in camps:
+        for pj in sorted(glob.glob(os.path.join(c, "runs", "*", "plan.json"))):
+            p = json.load(open(pj))
+            if p.get("model") == a.model and p.get("execs") == a.execs and p.get("seed") == a.seed:
+                hits.append(os.path.dirname(pj))
+    if len(hits) <= a.replay_src:
+        sys.exit(f"gravação não encontrada: modelo {a.model}, K={a.execs}, semente {a.seed}, fonte {a.replay_src}")
+    return hits[a.replay_src]
+
+
+async def replay_agent(url, exec_id, ops, t0_rec, t0, log, plan_ports, rec):
+    """Repete, sem modelo, as chamadas de ferramenta gravadas de um agente: mesma ordem, mesmos
+    argumentos, mesmo rótulo e o mesmo instante relativo ao início da rodada."""
+    from mcp import ClientSession
+    from mcp.client.sse import sse_client
+    async with sse_client(url) as (read, write):
+        async with ClientSession(read, write) as s:
+            await asyncio.wait_for(s.initialize(), 60)
+            await asyncio.wait_for(s.list_tools(), 60)
+            for o in ops:
+                delay = (o["t_start"] - t0_rec) / 1e9 - (time.time() - t0)
+                if delay > 0:
+                    await asyncio.sleep(delay)
+                t1 = time.time_ns()
+                try:
+                    res = await call_tool_with_exec(s, o["tool"], o["args"], o.get("label", exec_id))
+                    text = "".join(getattr(x, "text", "") for x in res.content)
+                except Exception as e:  # noqa: BLE001
+                    text = f"error: {e}"
+                t2 = time.time_ns()
+                rec["tool_calls"] += 1
+                rec["tool_ms"].append((t2 - t1) / 1e6)
+                dport = port_of(o["args"])
+                if dport not in plan_ports:
+                    rec["off_plan_ports"] += 1
+                op = {"exec_id": exec_id, "op_id": f"{exec_id}-{rec['tool_calls']:03d}", "tool": o["tool"],
+                      "args": o["args"], "t_start": t1, "t_end": t2, "result": text[:120],
+                      "label": o.get("label", exec_id), "replay_of": o["op_id"]}
+                if dport is not None:
+                    op["dport"] = dport
+                log.write(json.dumps(op) + "\n")
+                log.flush()
+    return rec
+
+
+async def run_replay(url, tasks, a, log, plan_ports):
+    src = a.replay_run
+    ops = [json.loads(l) for l in open(os.path.join(src, "ops.jsonl"))]
+    t0_rec = min(o["t_start"] for o in ops) - int(a.replay_lead * 1e9)
+    by = {e: sorted((o for o in ops if o["exec_id"] == e), key=lambda o: o["t_start"]) for e in tasks}
+    srec = {r["exec"]: r for r in json.load(open(os.path.join(src, "e7_summary.json")))["agents"]}
+    t0 = time.time()
+    recs = []
+    for e in tasks:
+        r = {"exec": e, "steps": srec.get(e, {}).get("steps", 0), "tool_calls": 0, "off_plan_ports": 0,
+             "llm_s": 0.0, "tool_ms": [], "final": srec.get(e, {}).get("final"), "error": None, "replay": True}
+        recs.append(replay_agent(url, e, by[e], t0_rec, t0, log, plan_ports, r))
+    return await asyncio.gather(*recs, return_exceptions=True)
+
+
 async def run_agents(url, tasks, a, log, plan_ports):
     return await asyncio.gather(*(agent(url, e, t, a, log, plan_ports) for e, t in tasks.items()),
                                 return_exceptions=True)
@@ -329,6 +402,11 @@ def main():
     ap.add_argument("--wrong-label", type=float, default=0.0)
     ap.add_argument("--jitter", type=float, default=0.0)
     ap.add_argument("--threads", type=int, default=0)
+    ap.add_argument("--replay-from", default="",
+                    help="campanhas gravadas (E7c/E7o), separadas por vírgula: repete as chamadas sem chamar o modelo")
+    ap.add_argument("--replay-src", type=int, default=0, help="qual gravação usar (0 = primeira campanha, 1 = segunda)")
+    ap.add_argument("--replay-lead", type=float, default=1.0,
+                    help="segundos entre a abertura das sessões e a primeira chamada repetida")
     a = ap.parse_args()
     rng = random.Random(a.seed)
     os.makedirs(a.out, exist_ok=True)
@@ -353,6 +431,17 @@ def main():
         classes = {e: ("P" if i % 2 == 0 else "R") for i, e in enumerate(execs)}
         allow = {e: (own[e] if classes[e] == "P" else own[e][:2]) for e in execs}   # R: banco proibido
         plan["policy"] = {"classes": classes, "allow": allow}
+    if a.replay_from:   # reprodução sem modelo: mesma semente -> mesmas portas -> chamadas gravadas válidas
+        import hashlib
+        a.replay_run = find_recording(a)
+        sp = json.load(open(os.path.join(a.replay_run, "plan.json")))
+        if sp["dport_map"] != plan["dport_map"]:
+            sys.exit(f"plano da gravação {a.replay_run} difere do plano desta rodada")
+        plan.update(replay=True, replay_of=os.path.abspath(a.replay_run),
+                    replay_ops_sha256=hashlib.sha256(open(os.path.join(a.replay_run, "ops.jsonl"), "rb").read()).hexdigest())
+        a.transcript = None
+    else:
+        a.transcript = open(os.path.join(a.out, "transcript.jsonl"), "w")
     json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
     if a.policy:
         sys.path.insert(0, os.path.join(os.path.dirname(HERE), "policy"))
@@ -374,7 +463,8 @@ def main():
         if not wait_port(a.server_port):
             sys.exit("servidor MCP não subiu (ver server.log)")
         with open(os.path.join(a.out, "ops.jsonl"), "w") as log:
-            recs = asyncio.run(run_agents(f"http://127.0.0.1:{a.server_port}/sse", tasks, a, log, set(ports)))
+            runner = run_replay if a.replay_from else run_agents
+            recs = asyncio.run(runner(f"http://127.0.0.1:{a.server_port}/sse", tasks, a, log, set(ports)))
     finally:
         srv.terminate()
         try:
@@ -389,7 +479,9 @@ def main():
             "tool_calls": len(allms), "tool_ms_p50": st.median(allms) if allms else None,
             "tool_ms_mean": st.mean(allms) if allms else None,
             "llm_s_total": sum(r.get("llm_s", 0) for r in out)}
-    if is_api_model(a.model):
+    if a.replay_from:
+        summ["replay_of"] = plan["replay_of"]
+    elif is_api_model(a.model):
         summ["input_tokens"] = sum(r.get("input_tokens", 0) for r in out)
         summ["output_tokens"] = sum(r.get("output_tokens", 0) for r in out)
     json.dump(summ, open(os.path.join(a.out, "e7_summary.json"), "w"), indent=1)

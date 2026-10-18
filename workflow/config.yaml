@@ -114,6 +114,12 @@ experiments:
     pilot_n: 1
     n: 13   # por boot (2 boots): K=4 tem 12 decisoes por rodada -> 26 rodadas = 312 >= 299, como no E7c
 
+  # reproducao sem modelo das rodadas gravadas do E7c e do E7o (sem API, sem custo)
+  E7r:
+    spec: workflow/experiments/E7r.json
+    pilot_n: 1
+    n: 13   # por boot (2 boots): repete cada uma das 208 rodadas gravadas uma vez por boot; criterio: resultado identico ao gravado
+
   # sistema relacionado executado de verdade ao lado do agentnet (mesmo critério do E5)
   E5ap:
     spec: workflow/experiments/E5ap.json

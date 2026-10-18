@@ -483,6 +483,14 @@ if (nrow(e7o) > 0) {
                   sprintf("\\def\\ESevenOReasTok{%.0f}", sum(tk$reasoning_tokens) / sum(tk$agents)))
   }
 }
+rpf <- file.path(outdir, "E7r_replay.csv")
+if (file.exists(rpf)) {
+  rp <- read_csv(rpf, show_col_types = FALSE)
+  tex_meta <- c(tex_meta, sprintf("\\def\\ESevenRRuns{%d}", sum(rp$runs)), sprintf("\\def\\ESevenRSame{%d}", sum(rp$same_outcome)),
+                sprintf("\\def\\ESevenRCalls{%d}", sum(rp$same_calls)), sprintf("\\def\\ESevenRConn{%d}", sum(rp$N)),
+                sprintf("\\def\\ESevenRWrong{%d}", sum(rp$I)), sprintf("\\def\\ESevenRDec{%d}", sum(rp$pN)),
+                sprintf("\\def\\ESevenRDecOK{%d}", sum(rp$pTA + rp$pTD)))
+}
 if (file.exists(ovh_csv)) {
   o3n <- read_csv(ovh_csv, show_col_types = FALSE) |> filter(campaign_runs_failed == 0, experiment == "E3net")
   if (nrow(o3n) > 0) {

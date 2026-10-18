@@ -76,6 +76,7 @@ to use agentnet or to run E1-E7. The items below exist only for the comparison a
 | E3net, E5net, E6net | second machine running `workload/remote_farm.py` | destinations outside loopback |
 | E7m | second machine with Ollama and GPU | larger local models |
 | E7c | Anthropic API key in `/etc/agentnet/anthropic.key` (root, mode 600) | commercial models (Claude Opus 5.5, Haiku 5.5); cost and tokens are recorded per run |
+| E7r | only the recorded E7c and E7o campaigns, extracted under `campaigns/` (no API key, no model) | model-free replay of every recorded E7c/E7o run: same tool calls, arguments, labels and relative timing |
 | E7o | OpenAI API key in `/etc/agentnet/openai.key` (root, mode 600) | commercial models (gpt-6.1-sol, gpt-6-luna; Responses API, reasoning effort low); cost and tokens, including reasoning, are recorded per run |
 
 Before the first run of any campaign (pilot or confirmatory), `scripts/campaign.py` calls
@@ -101,6 +102,9 @@ sudo install -d -m 700 /etc/agentnet && sudo sh -c 'read -s K; printf %s "$K" > 
 sudo scripts/run_confirmatory.sh E7c                           # once per boot, two boots (about US$ 2.3 per boot)
 # E7o: an OpenAI API key, stored the same way in /etc/agentnet/openai.key
 sudo scripts/run_confirmatory.sh E7o                           # once per boot, two boots
+# E7r: replay of E7c/E7o without any API (extract the recorded campaigns first)
+scripts/extract_campaigns.sh campaigns ~/noms-brutos   # if they are only archived
+sudo scripts/run_confirmatory.sh E7r                           # once per boot, two boots; no cost
 ```
 
 ## Regenerating the summarized CSVs

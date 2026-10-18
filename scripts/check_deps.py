@@ -13,7 +13,8 @@ campanha só começa se todas as dependências que a especificação usa respond
   (o que também o carrega na memória antes da primeira rodada);
 - serviços na segunda máquina (dest_host: E3net, E5net, E6net): as duas faixas de
   portas do workload/remote_farm.py precisam aceitar conexões;
-- AgentProvenance (E5ap): o binário precisa existir e informar a versão esperada.
+- AgentProvenance (E5ap): o binário precisa existir e informar a versão esperada;
+- reprodução sem modelo (E7r): as campanhas gravadas precisam estar extraídas e completas.
 
 Imprime uma linha por verificação e sai com código 1 se alguma falhar.
 Uso: check_deps.py workflow/experiments/<exp>.json
@@ -49,9 +50,25 @@ def values(spec, key, default=None):
     return [default] if default is not None else []
 
 
+def check_replay(spec):
+    """Reprodução sem modelo (E7r): as campanhas gravadas precisam estar extraídas e completas."""
+    src = spec.get("fixed", {}).get("replay_from", "")
+    out = []
+    for c in (x for x in src.split(",") if x):
+        path = c if os.path.isabs(c) else os.path.join(HERE, c)
+        man = os.path.join(path, "manifest.json")
+        if os.path.isfile(man):
+            m = json.load(open(man))
+            ok = m.get("runs_failed", 1) == 0
+            out.append((ok, f"gravação {c}: {'OK' if ok else 'FALHOU'} ({m.get('runs_ok')} rodadas, {m.get('experiment')})"))
+        else:
+            out.append((False, f"gravação {c}: FALHOU (sem manifest; extraia com scripts/extract_campaigns.sh)"))
+    return out
+
+
 def check_models(spec):
     fixed = spec.get("fixed", {})
-    if not str(fixed.get("workload", "")).endswith("agent_e7.py"):
+    if not str(fixed.get("workload", "")).endswith("agent_e7.py") or fixed.get("replay_from"):
         return []
     import agent_e7   # noqa: E402
     msgs = [{"role": "system", "content": agent_e7.SYSTEM},
@@ -108,7 +125,7 @@ def check_agentprov(spec):
 
 def main():
     spec = json.load(open(sys.argv[1]))
-    res = check_models(spec) + check_dest_hosts(spec) + check_agentprov(spec)
+    res = check_models(spec) + check_replay(spec) + check_dest_hosts(spec) + check_agentprov(spec)
     if not res:
         print(f"dependências externas ({spec['experiment']}): nenhuma")
     for ok, msg in res:
