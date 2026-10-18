@@ -25,15 +25,19 @@ indir  <- if (length(args) >= 1) args[1] else "analysis/output"
 figdir <- if (length(args) >= 2) args[2] else file.path(indir, "fig")
 dir.create(figdir, showWarnings = FALSE, recursive = TRUE)
 
-#' One theme for every figure: IEEE column width (3.5 in), 8 pt text, framed
-#' panels, shades of gray only (the paper is read in print). agentnet is
-#' always the darkest series (black), and every series also has its own shape
-#' or line type.
+#' One theme for every figure: IEEE column width (3.5 in), 8 pt text in the
+#' font of the IEEEtran template (Times; TeX Gyre Termes is the free clone that
+#' the Nix shell provides through fontconfig), framed panels, shades of gray
+#' only (the paper is read in print). agentnet is always the darkest series
+#' (black), and every series also has its own shape or line type.
 col_w   <- 3.5
+fam     <- "TeX Gyre Termes"
+if (!any(grepl(fam, system("fc-list : family", intern = TRUE), fixed = TRUE)))
+  stop("font '", fam, "' not found: run inside `nix develop` (FONTCONFIG_FILE)")
 ours    <- "black"
 greys   <- c("grey78", "grey55", "grey35")
 theme_paper <- function() {
-  theme_bw(base_size = 8) +
+  theme_bw(base_size = 8, base_family = fam) +
     theme(panel.grid.minor = element_blank(),
           panel.grid.major = element_line(colour = "grey92", linewidth = 0.3),
           panel.border = element_rect(colour = "black", linewidth = 0.4),
@@ -145,7 +149,7 @@ if (file.exists(bl_csv)) {
            cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async")))
   g4 <- ggplot(bl, aes(cell, I, fill = mech)) +
     geom_col(position = position_dodge(width = 0.82), width = 0.78, colour = "black", linewidth = 0.25) +
-    geom_text(aes(label = pct(I)), position = position_dodge(width = 0.82), vjust = -0.35, size = 1.9) +
+    geom_text(aes(label = pct(I)), position = position_dodge(width = 0.82), vjust = -0.35, size = 2.1, family = fam) +
     scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
     scale_fill_manual(values = c(greys[1], greys[2], ours)) +
     guides(fill = guide_legend(nrow = 2)) +

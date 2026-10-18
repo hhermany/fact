@@ -18,8 +18,10 @@
         # Camada 2 (do host, registrada por campanha): kernel, bpftrace, bpftool.
         packages = with pkgs; [
           pyEnv bashInteractive coreutils findutils gawk gnugrep gnused gnutar gzip jq which git
-          snakemake pandoc rEnv gcc ollama   # ollama: modelo local do E7 (sem tokens pagos)
+          snakemake pandoc rEnv gcc fontconfig ollama   # ollama: modelo local do E7 (sem tokens pagos)
         ];
+        # fonte das figuras (Times do template IEEEtran): fontconfig fixado pelo Nix
+        FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.gyre-fonts ]; };
         shellHook = ''
           # interpretador exato dos workloads (o wrapper do snakemake reordena o PATH)
           export AGENTNET_PYTHON=${pyEnv}/bin/python3
