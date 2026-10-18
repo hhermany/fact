@@ -101,11 +101,20 @@ rule baselines:
         "> {output[0]} && python3 -I analysis/baselines_table.py {output[0]} analysis/output/tex && python3 -I scripts/fullwidth_tables.py analysis/output/tex"
 
 
+rule agentprov:
+    # AgentProvenance v0.9.0 executed next to agentnet in the E5 rounds (E5ap)
+    output:
+        "analysis/output/E5ap_agentprov.csv"
+    shell:
+        "python3 -I analysis/agentprov_table.py --label confirmatory --out analysis/output > /dev/null"
+
+
 rule figures:
     # figures of the paper (ggplot), from the summarized results only
     input:
         "analysis/output/resumo_celulas.csv",
-        "analysis/output/baselines.csv"
+        "analysis/output/baselines.csv",
+        "analysis/output/E5ap_agentprov.csv"
     output:
         expand("analysis/output/fig/{f}.pdf", f=["fig_e1", "fig_acct", "fig_e5e6", "fig_baselines"])
     shell:

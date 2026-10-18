@@ -96,7 +96,7 @@ experiments:
   E3net:
     spec: workflow/experiments/E3net.json
     pilot_n: 3
-    n: 5   # por boot (provisório; dimensionar pelo piloto)
+    n: 5   # por boot (2 boots), como o E3 (dimensionado pelo piloto do E3); IC95% obtido 1,9-3,6% < 5%
   E7m:
     spec: workflow/experiments/E7m.json
     pilot_n: 1
@@ -106,7 +106,7 @@ experiments:
   E5ap:
     spec: workflow/experiments/E5ap.json
     pilot_n: 1
-    n: 3   # por boot
+    n: 3   # por boot (2 boots): K=2 tem 50 conexoes por rodada -> 300 >= 299; IC95% da taxa de erro do AgentProvenance <= 5,7 p.p.
 
 # precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
 precision_target: 0.05

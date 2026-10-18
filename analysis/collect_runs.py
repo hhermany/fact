@@ -21,11 +21,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("campaigns_dir")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--exclude-experiments", default="",
+                    help="lista separada por vírgulas; os experimentos de falhas (E5f, E6f, E6n, E6L, E6Ls, E7f) "
+                         "são analisados por fault_tables.py e ficam fora do runs.csv versionado")
     a = ap.parse_args()
+    skip = {e for e in a.exclude_experiments.split(",") if e}
 
     rows = []
     for man_path in sorted(glob.glob(os.path.join(a.campaigns_dir, "*", "manifest.json"))):
         man = json.load(open(man_path))
+        if man["experiment"] in skip:
+            continue
         cdir = os.path.dirname(man_path)
         status = {r["run_id"]: r for r in man.get("runs", [])}
         for score_path in sorted(glob.glob(os.path.join(cdir, "runs", "*", "score.json"))):

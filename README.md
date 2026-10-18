@@ -13,7 +13,7 @@ Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 | `policy/` | Per-execution egress policy: `cgroup/connect4` eBPF program (libbpf) + loader + `policyctl.py` |
 | `agentnetd/` | Live attribution and per-execution accounting daemon |
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper, and `figures.R`, a literate R script (knitr::spin) that draws every figure with ggplot from the summarized CSVs; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
-| `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents on a local model (E7) |
+| `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents (E7, E7m); `remote_farm.py` serves the destinations on a second machine (E3net, E5net, E6net) |
 | `scripts/`, `workflow/`, `Snakefile`, `flake.nix` | Reproducible pipeline: Nix shell, Snakemake (preflight → pilot → campaign → validation → report) |
 | `campaigns/` | One directory per campaign with `manifest.json`, `checksums.sha256` and environment snapshot. **Raw run data are not distributed** (hundreds of MB); they can be regenerated and checked against the checksums (see Data) |
 | `tests/` | Simulation test of the runtime binding; equivalence test live daemon × offline scoring |
@@ -43,6 +43,8 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | Fig. of related mechanisms | `hermes-E1-confirmatory-*`, `hermes-E5-confirmatory-*` | `analysis/baselines.py`, `analysis/figures.R` |
 | E7 | `hermes-E7-confirmatory-*` | `analysis/score_policy.py`, `analysis/analysis.R` |
 | Binding faults (E5f, E6f, E7f) and lineage-checked policy (E6L, E6Ls) | `hermes-E5f-confirmatory-*`, `hermes-E6f-confirmatory-*`, `hermes-E7f-confirmatory-*`, `hermes-E6L-confirmatory-*`, `hermes-E6Ls-confirmatory-*` | `analysis/fault_tables.py` |
+| Real network interface (E5net, E6net, E3net) | `hermes-E5net-confirmatory-*`, `hermes-E6net-confirmatory-*`, `hermes-E3net-confirmatory-*` | `analysis/analysis.R` |
+| AgentProvenance executed (E5ap); larger models (E7m) | `hermes-E5ap-confirmatory-*`, `hermes-E7m-confirmatory-*` | `analysis/agentprov_table.py`, `analysis/analysis.R`, `analysis/figures.R` |
 | Live accounting (`agentnetd`) | all confirmatory campaigns (`analysis/output/agentnetd_equiv.json`) | `tests/test_agentnetd_equiv.py` |
 
 ## Re-running the confirmatory campaigns
@@ -61,6 +63,33 @@ nix --extra-experimental-features 'nix-command flakes' develop -c \
 toolchain, runs the preflight, starts Ollama for E7/E7f, and writes a log per boot under `campaigns/logs/`.
 N per experiment and the campaign seed are fixed in `workflow/config.yaml`; the comments there record how each N
 was chosen.
+
+## Second machine (E3net, E5net, E6net, E7m) and AgentProvenance (E5ap)
+
+These experiments use a second VM on the same layer-2 segment (`172.28.255.13` in the specs under `workflow/experiments/`; change `dest_host`/`ollama` there for another address):
+
+```sh
+# on the second machine
+python3 workload/remote_farm.py --addr 0.0.0.0            # destinations: ports 61000-61999 and 65000-65499
+OLLAMA_HOST=0.0.0.0:11434 OLLAMA_NUM_PARALLEL=8 ollama serve   # Ollama v0.40.6 with GPU
+ollama pull qwen2.5:7b && ollama pull llama3.1:8b          # digests 845dbda0ea48, 46e0c10c039e (Q4_K_M)
+# on the measured host: AgentProvenance v0.9.0 release, extracted to /opt/agentprov
+sha256sum agentprov_v0.9.0_linux_amd64.tar.gz   # 8963e25bfbad050de9aff2bf8eba8d77bb660c45697efc00436bf55020a124ae
+sudo scripts/run_confirmatory.sh E5ap E5net E6net E3net E7m   # once per boot, two boots
+```
+
+## Regenerating the summarized CSVs
+
+Older campaigns are archived as `.tar.gz` (in `campaigns/` and in the raw-data archive, with `SHA256SUMS`).
+To rebuild `analysis/runs.csv` and `analysis/overhead.csv` from all of them:
+
+```sh
+scripts/extract_campaigns.sh /tmp/all ~/noms-brutos
+python3 -I analysis/collect_runs.py /tmp/all --out analysis/runs.csv --exclude-experiments E5f,E6f,E6n,E6L,E6Ls,E7f
+python3 -I analysis/collect_overhead.py /tmp/all --out analysis/overhead.csv
+```
+
+On 18/10/2026 this reproduced every row of the versioned files (5900 and 224 rows, no difference).
 
 ## Data
 
