@@ -1,0 +1,21 @@
+{
+  "experiment": "E7o",
+  "description": "E7 com modelos comerciais da OpenAI via API: gpt-6.1-sol e gpt-6-luna (Responses API, onde a chamada de ferramentas desses modelos é servida; sem temperature; esforço de raciocínio low, o menor aceito pelos dois; max_output_tokens 4096, que inclui o raciocínio), com 4 e 8 agentes. Mesmo desenho do E7c. Só a chamada ao modelo sai do host. O consumo de tokens informado pela API (inclusive os de raciocínio) é registrado por agente.",
+  "factors": {
+    "model": [
+      "gpt-6.1-sol",
+      "gpt-6-luna"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E7o",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "num_predict": 512
+  }
+}

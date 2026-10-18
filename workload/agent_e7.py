@@ -140,9 +140,74 @@ def anthropic_chat(model, messages, tools, max_tokens):
             "usage": d.get("usage", {}), "model": d.get("model"), "api_retries": attempt}
 
 
+OPENAI_KEY_FILE = "/etc/agentnet/openai.key"         # fora do repositório, só root lê (chmod 600)
+OPENAI_EFFORT = "low"            # menor esforço de raciocínio aceito pelos dois modelos (gpt-6.1-sol recusa none/minimal)
+OPENAI_MAX_OUTPUT = 4096         # inclui os tokens de raciocínio, que a API conta como saída
+
+
+def openai_chat(model, messages, tools):
+    """Mesma interface do ollama_chat, com a Responses API da OpenAI (a chamada de ferramentas
+    desses modelos é servida só nela). Sem temperature (não aceito com raciocínio), esforço de
+    raciocínio "low", store=false. Os itens de saída de cada passo (raciocínio cifrado e chamadas
+    de função) são devolvidos no passo seguinte, como a API recomenda. Repete em 429/5xx."""
+    key = open(OPENAI_KEY_FILE).read().strip()
+    system = "".join(m["content"] for m in messages if m["role"] == "system")
+    items = []
+    for m in messages:
+        if m["role"] == "user":
+            items.append({"role": "user", "content": m["content"]})
+        elif m["role"] == "assistant":
+            if m.get("_oa_items") is not None:
+                items.extend(m["_oa_items"])
+            elif m.get("content"):
+                items.append({"role": "assistant", "content": m["content"]})
+        elif m["role"] == "tool":
+            items.append({"type": "function_call_output", "call_id": m["tool_call_id"], "output": m["content"]})
+    body = json.dumps({"model": model, "instructions": system, "input": items, "store": False,
+                       "reasoning": {"effort": OPENAI_EFFORT}, "max_output_tokens": OPENAI_MAX_OUTPUT,
+                       "include": ["reasoning.encrypted_content"],
+                       "tools": [{"type": "function", "name": t["function"]["name"],
+                                  "description": t["function"]["description"],
+                                  "parameters": t["function"]["parameters"]} for t in tools]}).encode()
+    for attempt in range(6):
+        req = urllib.request.Request("https://api.openai.com/v1/responses", data=body, headers={
+            "content-type": "application/json", "authorization": "Bearer " + key})
+        try:
+            with urllib.request.urlopen(req, timeout=180) as r:
+                d = json.loads(r.read())
+            break
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503) and attempt < 5:
+                time.sleep(2 ** attempt)
+                continue
+            raise RuntimeError(f"openai HTTP {e.code}: {e.read()[:300]!r}") from None
+    out = d.get("output", [])
+    text = "".join(c.get("text", "") for o in out if o.get("type") == "message"
+                   for c in o.get("content", []) if c.get("type") == "output_text")
+    calls = []
+    for o in out:
+        if o.get("type") == "function_call":
+            try:
+                args = json.loads(o.get("arguments") or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            calls.append({"id": o["call_id"], "function": {"name": o["name"], "arguments": args}})
+    u = d.get("usage", {})
+    usage = {"input_tokens": u.get("input_tokens", 0), "output_tokens": u.get("output_tokens", 0),
+             "reasoning_tokens": (u.get("output_tokens_details") or {}).get("reasoning_tokens", 0)}
+    return {"message": {"role": "assistant", "content": text, "tool_calls": calls, "_oa_items": out},
+            "usage": usage, "model": d.get("model"), "api_retries": attempt, "status": d.get("status")}
+
+
+def is_api_model(model):
+    return model.startswith("claude-") or model.startswith("gpt-")
+
+
 def llm_chat(a, messages, tools):
     if a.model.startswith("claude-"):
         return anthropic_chat(a.model, messages, tools, a.num_predict)
+    if a.model.startswith("gpt-"):
+        return openai_chat(a.model, messages, tools)
     return ollama_chat(a.ollama, a.model, messages, tools, a.seed, a.num_predict)
 
 
@@ -168,8 +233,9 @@ async def agent(url, exec_id, task, a, log, plan_ports):
     for attempt in range(1, 4):
         rec = {"exec": exec_id, "steps": 0, "tool_calls": 0, "off_plan_ports": 0, "llm_s": 0.0,
                "tool_ms": [], "final": None, "error": None, "attempts": attempt}
-        if a.model.startswith("claude-"):   # consumo medido pela própria API (custo exato)
-            rec.update({"input_tokens": 0, "output_tokens": 0, "api_retries": 0, "api_model": None})
+        if is_api_model(a.model):   # consumo medido pela própria API (custo exato)
+            rec.update({"input_tokens": 0, "output_tokens": 0, "reasoning_tokens": 0, "api_retries": 0,
+                        "api_model": None})
         try:
             return await agent_once(url, exec_id, task, a, log, plan_ports, rec)
         except Exception:  # noqa: BLE001
@@ -196,6 +262,7 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
                     u = resp.get("usage", {})
                     rec["input_tokens"] += u.get("input_tokens", 0)
                     rec["output_tokens"] += u.get("output_tokens", 0)
+                    rec["reasoning_tokens"] += u.get("reasoning_tokens", 0)
                     rec["api_retries"] += resp.get("api_retries", 0)
                     rec["api_model"] = resp.get("model")
                 m = resp.get("message", {})
@@ -322,7 +389,7 @@ def main():
             "tool_calls": len(allms), "tool_ms_p50": st.median(allms) if allms else None,
             "tool_ms_mean": st.mean(allms) if allms else None,
             "llm_s_total": sum(r.get("llm_s", 0) for r in out)}
-    if a.model.startswith("claude-"):
+    if is_api_model(a.model):
         summ["input_tokens"] = sum(r.get("input_tokens", 0) for r in out)
         summ["output_tokens"] = sum(r.get("output_tokens", 0) for r in out)
     json.dump(summ, open(os.path.join(a.out, "e7_summary.json"), "w"), indent=1)

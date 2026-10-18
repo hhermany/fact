@@ -4,7 +4,7 @@
 Chamada por scripts/campaign.py para toda campanha (piloto ou confirmatória). A
 campanha só começa se todas as dependências que a especificação usa responderem:
 
-- modelos servidos pela API da Anthropic (prefixo "claude-"): uma chamada real e
+- modelos servidos por API (Anthropic, prefixo "claude-"; OpenAI, prefixo "gpt-"): uma chamada real e
   mínima, com o mesmo código, as mesmas ferramentas e os mesmos parâmetros dos
   agentes (workload/agent_e7.py); falha se a API recusar algo (parâmetro não
   aceito, modelo inexistente, chave inválida, falta de saldo);
@@ -60,21 +60,21 @@ def check_models(spec):
     for model in values(spec, "model", DEFAULT_E7_MODEL):
         for host in values(spec, "ollama", DEFAULT_OLLAMA):
             a = types.SimpleNamespace(model=model, ollama=host, seed=0, num_predict=fixed.get("num_predict", 0))
-            where = "API da Anthropic" if model.startswith("claude-") else f"Ollama {host}"
+            where = ("API da Anthropic" if model.startswith("claude-") else "API da OpenAI") if agent_e7.is_api_model(model) else f"Ollama {host}"
             try:
-                if not model.startswith("claude-"):
+                if not agent_e7.is_api_model(model):
                     tags = json.loads(urllib.request.urlopen(f"http://{host}/api/tags", timeout=10).read())
                     names = {m["name"]: m.get("digest", "")[:16] for m in tags.get("models", [])}
                     if model not in names:
                         raise RuntimeError(f"modelo não instalado (instalados: {sorted(names)})")
                 r = agent_e7.llm_chat(a, msgs, TOOLS)
                 calls = r["message"].get("tool_calls") or []
-                extra = f", digest {names[model]}" if not model.startswith("claude-") else \
+                extra = f", digest {names[model]}" if not agent_e7.is_api_model(model) else \
                     f", uso {r.get('usage', {}).get('input_tokens')}+{r.get('usage', {}).get('output_tokens')} tokens"
                 out.append((True, f"modelo {model} ({where}): OK, {len(calls)} chamada(s) de ferramenta{extra}"))
             except Exception as e:  # noqa: BLE001
                 out.append((False, f"modelo {model} ({where}): FALHOU: {e}"))
-            if model.startswith("claude-"):
+            if agent_e7.is_api_model(model):
                 break   # a API não depende do servidor Ollama
     return out
 

@@ -117,13 +117,22 @@ rule e7c_tokens:
         "python3 -I analysis/e7c_tokens.py --label confirmatory --out analysis/output > /dev/null"
 
 
+rule e7o_tokens:
+    # idem para o E7o (OpenAI); tokens de raciocínio incluídos na saída
+    output:
+        "analysis/output/E7o_tokens.csv"
+    shell:
+        "python3 -I analysis/e7c_tokens.py --exp E7o --label confirmatory --out analysis/output > /dev/null"
+
+
 rule figures:
     # figures of the paper (ggplot), from the summarized results only
     input:
         "analysis/output/resumo_celulas.csv",
         "analysis/output/baselines.csv",
         "analysis/output/E5ap_agentprov.csv",
-        "analysis/output/E7c_tokens.csv"
+        "analysis/output/E7c_tokens.csv",
+        "analysis/output/E7o_tokens.csv"
     output:
         expand("analysis/output/fig/{f}.pdf", f=["fig_e1", "fig_acct", "fig_e5e6", "fig_baselines"])
     shell:

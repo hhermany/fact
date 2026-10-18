@@ -76,6 +76,7 @@ to use agentnet or to run E1-E7. The items below exist only for the comparison a
 | E3net, E5net, E6net | second machine running `workload/remote_farm.py` | destinations outside loopback |
 | E7m | second machine with Ollama and GPU | larger local models |
 | E7c | Anthropic API key in `/etc/agentnet/anthropic.key` (root, mode 600) | commercial models (Claude Opus 5.5, Haiku 5.5); cost and tokens are recorded per run |
+| E7o | OpenAI API key in `/etc/agentnet/openai.key` (root, mode 600) | commercial models (gpt-6.1-sol, gpt-6-luna; Responses API, reasoning effort low); cost and tokens, including reasoning, are recorded per run |
 
 Before the first run of any campaign (pilot or confirmatory), `scripts/campaign.py` calls
 `scripts/check_deps.py`, which checks every external dependency the experiment uses (a real minimal call per
@@ -83,7 +84,7 @@ model, through the same code and tools as the agents; the remote ports; the Agen
 check fails, the campaign is not created and the reason is printed; the result of the check is stored in the
 campaign as `deps_check.txt`.
 
-## Second machine (E3net, E5net, E6net, E7m), AgentProvenance (E5ap) and Anthropic API (E7c)
+## Second machine (E3net, E5net, E6net, E7m), AgentProvenance (E5ap) and model APIs (E7c, E7o)
 
 These experiments use a second VM on the same layer-2 segment (`172.28.255.13` in the specs under `workflow/experiments/`; change `dest_host`/`ollama` there for another address):
 
@@ -98,6 +99,8 @@ sudo scripts/run_confirmatory.sh E5ap E5net E6net E3net E7m   # once per boot, t
 # E7c: an Anthropic API key, readable only by root
 sudo install -d -m 700 /etc/agentnet && sudo sh -c 'read -s K; printf %s "$K" > /etc/agentnet/anthropic.key; chmod 600 /etc/agentnet/anthropic.key'
 sudo scripts/run_confirmatory.sh E7c                           # once per boot, two boots (about US$ 2.3 per boot)
+# E7o: an OpenAI API key, stored the same way in /etc/agentnet/openai.key
+sudo scripts/run_confirmatory.sh E7o                           # once per boot, two boots
 ```
 
 ## Regenerating the summarized CSVs
