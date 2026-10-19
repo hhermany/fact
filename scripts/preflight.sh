@@ -18,7 +18,7 @@ check() { if eval "$2" >/dev/null 2>&1; then echo "PASS $1"; else echo "FAIL $1"
   check "tracepoint sock"     '[ -d /sys/kernel/tracing/events/sock/inet_sock_set_state ] || [ -d /sys/kernel/debug/tracing/events/sock/inet_sock_set_state ]'
   check "kprobe tcp_connect"  'grep -qw tcp_connect /proc/kallsyms'
   # Attaches the real collector for ~2 s and checks the number of probes.
-  timeout -s INT 3 bpftrace -B line "$HERE/collector/agentnet.bt" > "$OUT/attach.stdout" 2> "$OUT/attach.stderr"
+  timeout -s INT 3 bpftrace -B line "$HERE/collector/fact.bt" > "$OUT/attach.stdout" 2> "$OUT/attach.stderr"
   if grep -q '"ev":"ready"' "$OUT/attach.stdout" && grep -q 'Attached 8 probes' "$OUT/attach.stderr"; then
     echo "PASS collector attached (8 probes, ready sentinel)"
   else

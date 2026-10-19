@@ -1,6 +1,6 @@
 {
   "experiment": "E5f",
-  "description": "Fault injection into the automatic binding (agentnet_rt) in the real MCP server: an exact fraction p of each execution's calls carries another execution's identity in _meta. Measures what fusion can detect inside a shared worker and the effect on accounting.",
+  "description": "Fault injection into the automatic binding (fact_rt) in the real MCP server: an exact fraction p of each execution's calls carries another execution's identity in _meta. Measures what fusion can detect inside a shared worker and the effect on accounting.",
   "factors": {
     "tool": ["sync", "thread", "subproc", "async"],
     "execs": [2, 8],

@@ -154,7 +154,7 @@ def main():
             env["COLLECTOR"] = str(p["collector"])
         if p.get("workload"):
             env["WORKLOAD"] = str(p["workload"])
-        if p.get("agentprov"):         # related system actually run, next to agentnet
+        if p.get("agentprov"):         # related system actually run, next to FACT
             env["AGENTPROV"] = str(p["agentprov"])
         if p.get("policy"):
             env["POLICY"] = "1"

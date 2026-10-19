@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Equivalence of agentnetd (live, with the reordering buffer, events in file order)
+"""Equivalence of factd (live, with the reordering buffer, events in file order)
 and the offline score (score.json, fused resolver, sorted events).
 
 For each run: per-execution credits (C + I credited to it), ambiguous (A), and
 unattributed (M) must match. Applies the same reference filter as the offline
 score (planned port), only to compare the same set of connections.
-Usage: python3 tests/test_agentnetd_equiv.py campaigns/<c1> [campaigns/<c2> ...]
+Usage: python3 tests/test_factd_equiv.py campaigns/<c1> [campaigns/<c2> ...]
 """
 import glob
 import json
@@ -14,8 +14,8 @@ import sys
 from collections import Counter
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(HERE, "agentnetd"))
-from agentnetd import Daemon, iter_lines  # noqa: E402
+sys.path.insert(0, os.path.join(HERE, "factd"))
+from factd import Daemon, iter_lines  # noqa: E402
 
 
 def check_run(rdir, reorder_ms):
@@ -54,7 +54,7 @@ def main():
             tot += 1
             if not ok:
                 bad.append((rdir, live, offl, unc, am))
-    print(f"agentnetd vs offline: {tot - len(bad)}/{tot} equivalent runs (reordering {reorder} ms)")
+    print(f"factd vs offline: {tot - len(bad)}/{tot} equivalent runs (reordering {reorder} ms)")
     for b in bad[:5]:
         print("DIVERGE", b)
     out = os.environ.get("EQUIV_OUT")

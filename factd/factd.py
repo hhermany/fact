@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""agentnetd: LIVE per-execution attribution and accounting.
+"""factd: LIVE per-execution attribution and accounting.
 
 Reads the collector's JSON stream (stdin or --replay file), keeps the process
 tree and the execution registry, attributes each connect with the fused
@@ -20,8 +20,8 @@ Events from different CPUs may arrive out of order; a reordering buffer
 (largest ts seen - window).
 
 Usage:
-  bpftrace -B line collector/agentnet-fast.bt | agentnetd.py --registry reg.json
-  agentnetd.py --replay events.jsonl --registry reg.json --out flows.jsonl
+  bpftrace -B line collector/fact-fast.bt | factd.py --registry reg.json
+  factd.py --replay events.jsonl --registry reg.json --out flows.jsonl
 """
 import argparse
 import heapq

@@ -1,4 +1,4 @@
-# Scientific methodology: agentnet / NOMS 2027
+# Scientific methodology: FACT / NOMS 2027
 
 This document ties **each methodological decision to a verified reference** (list in Section 9). It covers the framework (automatic runtime binding, per-execution policy, live daemon, LLM agents) and every experiment reported in the paper.
 
@@ -18,7 +18,7 @@ Smoke and pilot numbers quoted in internal documents are always labeled as such.
 **Contribution (framework):**
 1. kernel signals (lineage, cgroup) and a runtime-emitted identity, fused with explicit ambiguity;
 2. automatic binding of the identity to the **task** (contextvars), handed to the kernel at `connect`/fork, without changing tool code;
-3. live per-execution accounting (agentnetd), with the correct, wrongly credited, and uncredited parts;
+3. live per-execution accounting (factd), with the correct, wrongly credited, and uncredited parts;
 4. a per-execution egress policy (cgroup/connect4) with the same identity;
 5. validation of everything against an independent reference.
 
@@ -81,14 +81,14 @@ E1, E5, and E6 are full factorials, which allows estimating effects and interact
 | **Property (zero errors expected)** | E1, E5 (automatic), E6 (automatic), E7 | Exact Clopper-Pearson upper bound on the error rate [Clopper & Pearson 1934]. With 0 errors in n cases, the one-sided 95% bound is 1−0.05^(1/n) ≈ 3/n (the "rule of three" [Hanley & Lippman-Hand 1983]). **Target: ≤ 1% ⇒ n ≥ 299 cases per cell.** Cases are connections or decisions. Since events within a run are not independent, the bound is interpreted per connection and accompanied by the run-by-run check that no run had an error. |
 | **Performance (continuous variable)** | E3, E3b | Variance measured in the pilot per level (boot, run), and N per level chosen by the method of Kalibera & Jones 2013. The target is a 95% CI half-width of the median ≤ 5% [Hoefler & Belli 2015, rule 5]. **At least 2 boots.** |
 | **Capacity** | E2 | Sweep of K and rate up to the first loss. N per cell from the variability of the loss in the pilot [Hoefler & Belli 2015]. |
-| **Equivalence** | E1fast; agentnetd vs. offline | Exact equality cell by cell or run by run. A single divergence refutes it. |
+| **Equivalence** | E1fast; factd vs. offline | Exact equality cell by cell or run by run. A single divergence refutes it. |
 
 Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run, hence 299/50 ⇒ **6 runs per cell (3 per boot, 2 boots)**. Cells with larger K have more cases and the same N. In E7, N follows the same criterion, applied to the number of decisions per run observed in the pilot.
 
 **Additional experiments**, each with the criterion of its original experiment:
 
 - **E5net, E6net:** same levels and N as E5 and E6 (6 runs per cell; K=2 gives 300 cases ≥ 299). The levels are the same so that the loopback vs. network-interface comparison is cell by cell.
-- **E5ap:** the same cells as E5 in automatic mode, 6 runs. For agentnet the property criterion applies (≥ 299 connections per cell). For AgentProvenance, whose error rate is not zero, the goal is to estimate the proportion: with ≥ 300 connections per cell, the 95% CI half-width of a proportion is ≤ 1.96·√(0.25/300) ≈ 5.7 percentage points in the worst case (p = 0.5) [Jain 1991, ch. 13]; the paper's conclusions (92–96% error with K ≥ 4) are far from that limit.
+- **E5ap:** the same cells as E5 in automatic mode, 6 runs. For FACT the property criterion applies (≥ 299 connections per cell). For AgentProvenance, whose error rate is not zero, the goal is to estimate the proportion: with ≥ 300 connections per cell, the 95% CI half-width of a proportion is ≤ 1.96·√(0.25/300) ≈ 5.7 percentage points in the worst case (p = 0.5) [Jain 1991, ch. 13]; the paper's conclusions (92–96% error with K ≥ 4) are far from that limit.
 - **E3net:** same levels and N as E3 (5 runs per boot, 2 boots), sized from the E3 pilot for a 95% CI half-width of the median ≤ 5%. A posteriori check: the obtained half-widths were 1.9–3.6% of the mean in the four cells, below the target.
 - **E7c:** same design and N as E7m (26 runs per cell over two boots; 312 decisions with K=4). The two models are a high-end one (Opus 5.5) and the entry-level one (Haiku 5.5) of Anthropic's current tool-calling line; Fable 5.1, above Opus, was left out for cost; the cost measured in the pilot (≈ US$ 4.80 for the whole campaign) was the criterion for not including a third model.
 - **E7o:** same design and N as E7c, with a high-end model (gpt-6.1-sol) and the entry-level one (gpt-6-luna) of OpenAI's current tool-calling line. gpt-6-astra was left out for cost (≈ US$ 11 estimated for the campaign). Reasoning effort `low`: the lowest level accepted by both models (gpt-6.1-sol rejects `none` and `minimal`; tested on 2026-10-18).
@@ -119,14 +119,15 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
 ## 5. Reproducibility
 
 - **Second machine (E3net, E5net, E6net, E7m):** a VM on the same physical host and L2 segment. Destination services: `workload/remote_farm.py --addr 0.0.0.0` (ports 61000–61999 and 65000–65499). Models: Ollama v0.40.6 on a GPU (RTX 3060, 12 GB), `OLLAMA_HOST=0.0.0.0:11434`, `OLLAMA_NUM_PARALLEL=8`; qwen2.5:7b (digest 845dbda0ea48ed74) and llama3.1:8b (46e0c10c039e0191), both Q4_K_M. The destination IP is in the specs (`dest_host`, `ollama`).
-- **Independence of agentnet:** the collector, attribution, task-scoped binding, and policy depend only on the measured host and on this repository. AgentProvenance is used **only in the comparative experiment E5ap**; the second machine and the commercial APIs, only in the variants (E3net, E5net, E6net, E7m, E7c, E7o).
+- **Independence of FACT:** the collector, attribution, task-scoped binding, and policy depend only on the measured host and on this repository. AgentProvenance is used **only in the comparative experiment E5ap**; the second machine and the commercial APIs, only in the variants (E3net, E5net, E6net, E7m, E7c, E7o).
 - **Dependency check:** before the first run of any campaign, `scripts/campaign.py` calls `scripts/check_deps.py`, which tests every external dependency of the experiment (a real, minimal call to each model with the same code and tools as the agents; the second machine's ports; the AgentProvenance version; the recorded campaigns for E7r). If anything fails, the campaign is not created; the result is stored in `deps_check.txt` in the campaign. Reason: the first E7c pilot failed entirely because the API rejected the `temperature` parameter for these models (incident 10).
-- **Anthropic API (E7c):** key in `/etc/agentnet/anthropic.key` (root, mode 600, outside the repository). No `temperature` parameter (rejected by the API for these models), no extended thinking, `max_tokens` 512. The input and output tokens reported by the API are recorded per agent; cost per cell in `analysis/output/E7c_tokens.csv` (prices of 2026-10-18).
-- **OpenAI API (E7o):** key in `/etc/agentnet/openai.key` (root, mode 600). Responses API (tool calling for these models is served only there), `store=false`, encrypted reasoning sent back in the next step, `max_output_tokens` 4096 (includes reasoning), no `temperature`. Cost per cell in `analysis/output/E7o_tokens.csv`.
+- **Anthropic API (E7c):** key in `/etc/fact/anthropic.key` (root, mode 600, outside the repository). No `temperature` parameter (rejected by the API for these models), no extended thinking, `max_tokens` 512. The input and output tokens reported by the API are recorded per agent; cost per cell in `analysis/output/E7c_tokens.csv` (prices of 2026-10-18).
+- **OpenAI API (E7o):** key in `/etc/fact/openai.key` (root, mode 600). Responses API (tool calling for these models is served only there), `store=false`, encrypted reasoning sent back in the next step, `max_output_tokens` 4096 (includes reasoning), no `temperature`. Cost per cell in `analysis/output/E7o_tokens.csv`.
 - **Model-free replay (E7r) and transcripts:** the agents' behavior in each run is recorded in `ops.jsonl` (tool, arguments, label, and timestamps of each call) and, for model runs made from the E7r commit on, the full conversation with the model in `transcript.jsonl`. The `--replay-from` mode of `agent_e7.py` repeats a recorded run without a model: the same seed generates the same port plan, and the recorded plan is checked before the run.
 - **AgentProvenance (E5ap, comparison only):** release v0.9.0 (commit fb83e641), `agentprov_v0.9.0_linux_amd64.tar.gz` with SHA-256 8963e25bfbad050de9aff2bf8eba8d77bb660c45697efc00436bf55020a124ae, extracted into `/opt/agentprov` (path in the specs).
 - **Versioned CSVs:** several older campaigns exist only as `.tar.gz`. To regenerate `analysis/runs.csv` and `analysis/overhead.csv` from scratch, extract the archives first (`scripts/extract_campaigns.sh`) and run `collect_runs.py`/`collect_overhead.py` on the resulting directory.
-- **Two layers.** The Nix flake pins Python, R, Snakemake, Jupyter, and Ollama. Kernel, bpftrace, clang, and libbpf come from the host and are recorded.
+- **Rename.** The system was called agentnet during development and renamed FACT before submission. Campaigns recorded before the rename name the collectors `agentnet.bt`/`agentnet-fast.bt`; the analysis maps them to `fact.bt`/`fact-fast.bt`. After the rename, the experiments were re-run with the paper's seed and compared run by run with the recorded campaigns (`scripts/compare_runs.py`).
+- **Two layers. The Nix flake pins Python, R, Snakemake, Jupyter, and Ollama. Kernel, bpftrace, clang, and libbpf come from the host and are recorded.
 - **Snakemake:** preflight → pilot → size → campaign → validate → report.
 - **Each campaign is immutable:** manifest.json, run_order, environment/, SHA-256 checksums, and .tar.gz.
 - **Public artifact** (code, data, and scripts), following the recommendations for experimental networking research [Bajpai et al. 2019].

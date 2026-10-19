@@ -68,7 +68,7 @@ def main():
                 base.update({f"pol_{k}": None for k in ("N", "TA", "TD", "FA", "FD", "ND", "expected_allow")})
                 base.update(pol_label_owner=None, pol_label_other=None, pol_label_none=None)
             cfile = os.path.join(rdir, "collector.txt")
-            base["collector"] = open(cfile).read().strip() if os.path.exists(cfile) else "agentnet.bt"
+            base["collector"] = open(cfile).read().strip() if os.path.exists(cfile) else "agentnet.bt"   # runs without collector.txt predate the rename to FACT and used the full collector
             for name, v in sc["resolvers"].items():
                 acc = v["accounting"].values()
                 row = dict(base, resolver=name, N=v["N"], C=v["C"], A=v["A"], A_in=v["A_in"], M=v["M"], I=v["I"],

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Control of the pinned maps of the agentnet policy (/sys/fs/bpf/agentnet).
+"""Control of the pinned maps of the FACT policy (/sys/fs/bpf/fact).
 
   policyctl.py allow <exec_id> <port> [<port> ...]     adds permissions
   policyctl.py load  <file.json>                       {"exec": [ports, ...], ...}
@@ -11,7 +11,7 @@ import json
 import subprocess
 import sys
 
-PIN = "/sys/fs/bpf/agentnet/allow_map"
+PIN = "/sys/fs/bpf/fact/allow_map"
 ID_LEN = 48
 
 

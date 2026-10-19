@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""AgentProvenance executed for real vs agentnet, on the same E5 rounds.
+"""AgentProvenance executed for real vs FACT, on the same E5 rounds.
 
 Reads every confirmatory (or given label) E5ap campaign under campaigns/ and,
 per cell (tool, K), pools the connections: AgentProvenance's real attribution
-(agentprov/score.json) and agentnet's fused resolver on the same rounds
+(agentprov/score.json) and FACT's fused resolver on the same rounds
 (score.json). Writes analysis/output/E5ap_agentprov.csv.
 
 Usage: agentprov_table.py [--label confirmatory] [--out analysis/output]
@@ -50,7 +50,7 @@ def main():
         w = csv.writer(f)
         w.writerow(cols)
         for (tool, k), c in sorted(cells.items(), key=lambda x: (["sync", "thread", "subproc", "async"].index(x[0][0]), x[0][1])):
-            for sysname, pre in (("AgentProvenance", "ap_"), ("agentnet", "an_")):
+            for sysname, pre in (("AgentProvenance", "ap_"), ("FACT", "an_")):
                 n = c[pre + "N"]
                 w.writerow([tool, k, nruns[(tool, k)], sysname, n, c[pre + "C"], c[pre + "I"], c[pre + "A"], c[pre + "M"],
                             round(c[pre + "C"] / n, 4) if n else "", round(c[pre + "I"] / n, 4) if n else "",

@@ -1,8 +1,8 @@
 #!/usr/bin/env bpftrace
 /*
- * agentnet-fast.bt: optimized collector variant (same attribution, lower cost).
+ * fact-fast.bt: optimized collector variant (same attribution, lower cost).
  *
- * Differences from agentnet.bt (none of them affects the resolvers):
+ * Differences from fact.bt (none of them affects the resolvers):
  *  - fentry:tcp_connect instead of a kprobe (BPF trampoline, cheaper);
  *  - markers only update the context map: they emit no events
  *    (the resolvers read the context at connect time);
@@ -10,7 +10,7 @@
  *  - fork copies the context only when the parent has one;
  *  - the marker filter copies at most 21 bytes of the path;
  *  - connect without the comm field.
- * Equivalence with agentnet.bt is verified experimentally (E1 with both).
+ * Equivalence with fact.bt is verified experimentally (E1 with both).
  */
 
 BEGIN

@@ -102,7 +102,7 @@ rule baselines:
 
 
 rule agentprov:
-    # AgentProvenance v0.9.0 executed next to agentnet in the E5 rounds (E5ap)
+    # AgentProvenance v0.9.0 executed next to FACT in the E5 rounds (E5ap)
     output:
         "analysis/output/E5ap_agentprov.csv"
     shell:

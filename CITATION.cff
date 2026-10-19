@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this software or data, please cite the paper below."
-title: "agentnet: per-execution network attribution, accounting, and control for AI agents"
+title: "FACT: per-execution network attribution, accounting, and control for AI agents"
 type: software
 license: MIT
 authors:
   - family-names: Hermany
     given-names: Henrique
   # co-authors to be confirmed before publication
-repository-code: "https://github.com/hhermany/agentnet"
+repository-code: "https://github.com/hhermany/fact"
 preferred-citation:
   type: conference-paper
   title: "Who Opened This Connection? Per-Execution Network Attribution, Accounting, and Control for AI Agents"

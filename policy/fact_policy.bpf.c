@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * agentnet_policy.bpf.c: per-execution egress policy for agents.
+ * fact_policy.bpf.c: per-execution egress policy for agents.
  *
  * Same identity as the collector: the runtime hands the execution identity to
  * the kernel via openat on /run/agentctx/begin/<id> (or /run/agentctx/end); the

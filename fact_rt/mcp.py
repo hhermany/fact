@@ -1,14 +1,14 @@
 """Integration with the official MCP SDK (FastMCP): each tool call runs bound to
 the identity of the execution that requested it, without changing tool code.
 
-The identity comes from params._meta["agentnet/exec"] of the tools/call request
+The identity comes from params._meta["fact/exec"] of the tools/call request
 (a field the MCP reserves for metadata); if absent, from a per-MCP-session
 identity (one session = one agent execution). The client sends the _meta with
 call_tool_with_exec().
 """
 from . import agentctx
 
-META_KEY = "agentnet/exec"
+META_KEY = "fact/exec"
 
 
 def _exec_of_request(server, key, per_session):

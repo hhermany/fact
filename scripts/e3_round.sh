@@ -2,8 +2,8 @@
 # One E3 run (overhead). Usage:
 #   scripts/e3_round.sh <OUT_DIR> --instr none|collector|count|fast --markers 0|1 [--n 20000] [--warmup 1000] [--seed S]
 # - instr=none: the microbenchmark only.
-# - instr=collector (= agentnet.bt, full), count (agentnet-count.bt, probes without
-#   exporting events), or fast (agentnet-fast.bt, optimized): collector active (waits for the
+# - instr=collector (= fact.bt, full), count (fact-count.bt, probes without
+#   exporting events), or fast (fact-fast.bt, optimized): collector active (waits for the
 #   ready sentinel) with bpf_stats enabled, to measure the CPU time of the BPF programs (run_time_ns).
 # Outputs: overhead.json (summary), latencies.csv, bpf_prog_stats.json, collector.err.
 set -euo pipefail
@@ -32,9 +32,9 @@ cat /proc/sys/net/ipv4/ip_local_port_range > "$OUT/ip_local_port_range.txt"
 BPID=""
 case "$INSTR" in
   none) BT="";;
-  collector) BT="$HERE/collector/agentnet.bt";;
-  count) BT="$HERE/collector/agentnet-count.bt";;
-  fast) BT="$HERE/collector/agentnet-fast.bt";;
+  collector) BT="$HERE/collector/fact.bt";;
+  count) BT="$HERE/collector/fact-count.bt";;
+  fast) BT="$HERE/collector/fact-fast.bt";;
   *) echo "unknown instr: $INSTR"; exit 2;;
 esac
 if [ -n "$BT" ]; then

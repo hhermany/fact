@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test of agentnet_rt without eBPF: simulates the kernel's context map (tid -> id)
+"""Test of fact_rt without eBPF: simulates the kernel's context map (tid -> id)
 and checks, for each connect and each subprocess fork, whether the identity the
 kernel would see is that of the execution that requested the call. Independent
 reference: each execution connects to an exclusive port.
@@ -16,7 +16,7 @@ import sys
 import threading
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from agentnet_rt import agentctx  # noqa: E402
+from fact_rt import agentctx  # noqa: E402
 
 SIM = {}            # tid -> context (simulation of the collector's @ctx map)
 LOG = []            # (dport, ctx at connect time)
@@ -118,7 +118,7 @@ def build_server():
 
 async def run(mode, tool, K=4, ops=25):
     from mcp.shared.memory import create_connected_server_and_client_session
-    from agentnet_rt.mcp import instrument, call_tool_with_exec
+    from fact_rt.mcp import instrument, call_tool_with_exec
     MANUAL["on"] = mode == "manual"
     agentctx.enabled = mode == "auto"
     srv = build_server()

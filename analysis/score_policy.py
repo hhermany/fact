@@ -3,7 +3,7 @@
 
 For each operation in the plan (exclusive port -> owning execution), the
 expected decision is "allow" if the port is in the allow-list of the OWNING
-execution and "deny" otherwise. The observed decision is agentnet_policy's for
+execution and "deny" otherwise. The observed decision is fact_policy's for
 that port (policy_events.jsonl). Outcomes:
   TA  allowed, as expected        TD  denied, as expected
   FA  wrongly allowed             FD  wrongly denied

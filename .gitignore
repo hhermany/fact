@@ -5,8 +5,8 @@ __pycache__/
 campaigns/*.tar.gz
 .snakemake/
 bench/connect_bench
-policy/agentnet_policy
-policy/agentnet_policy.bpf.o
+policy/fact_policy
+policy/fact_policy.bpf.o
 
 # raw campaign data stays out of git (archived with checksums)
 campaigns/*/runs/

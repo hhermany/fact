@@ -24,7 +24,7 @@ by that thread (or through inheritance at creation, when the new thread's cache
 is still empty).
 
 Usage:
-    from agentnet_rt import agentctx
+    from fact_rt import agentctx
     agentctx.install()
     with agentctx.bind("exec-42"):
         ...   # connections and subprocesses of this task carry exec-42
@@ -40,7 +40,7 @@ CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
 _UNSET = object()
 
-current = contextvars.ContextVar("agentnet_exec", default=None)
+current = contextvars.ContextVar("fact_exec", default=None)
 _tls = threading.local()
 _lock = threading.Lock()
 stats = {"marks": 0, "cached": 0}

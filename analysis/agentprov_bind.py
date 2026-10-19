@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Runs AgentProvenance (v0.9.0) for real on one E5 round, next to agentnet.
+"""Runs AgentProvenance (v0.9.0) for real on one E5 round, next to FACT.
 
 The AgentProvenance sensor runs during the round (started by run_round.sh with
 AGENTPROV=<binary>). After the workload ends, this script registers one
@@ -35,7 +35,7 @@ def main():
     reg = json.load(open(os.path.join(rdir, "registry.json")))
     srv_pid = int(next(iter(reg["roots"])))
     cg_id = next(iter(reg["cgroups"]))
-    run_id = "agentnet-" + os.path.basename(os.path.normpath(rdir))
+    run_id = "fact-" + os.path.basename(os.path.normpath(rdir))
     ops = [json.loads(l) for l in open(os.path.join(rdir, "ops.jsonl"))]
     with open(os.path.join(dd, "binds.log"), "w") as log:
         for op in ops:

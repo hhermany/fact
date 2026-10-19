@@ -120,7 +120,7 @@ experiments:
     pilot_n: 1
     n: 13   # per boot (2 boots): repeats each of the 208 recorded runs once per boot; criterion: outcome identical to the recording
 
-  # related system actually run next to agentnet (same criterion as E5)
+  # related system actually run next to FACT (same criterion as E5)
   E5ap:
     spec: workflow/experiments/E5ap.json
     pilot_n: 1

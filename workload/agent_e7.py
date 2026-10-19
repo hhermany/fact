@@ -4,13 +4,13 @@ models via the Anthropic and OpenAI APIs).
 
 - Starts local HTTP/TCP services on exclusive ports per execution (independent
   reference: the destination port identifies the owning execution).
-- Starts mcp_agent_server.py (instrumented by agentnet_rt) in its own cgroup.
+- Starts mcp_agent_server.py (instrumented by fact_rt) in its own cgroup.
 - Runs K concurrent agents. Each agent is a loop model -> MCP tool calls ->
   results -> model, with the task of checking the health of its "tenant's"
   services. The model decides which tools to call and with which arguments;
   the execution identity travels in the _meta of each tools/call.
 - Optional policy (--policy 1): alternating classes P (all of its own services)
-  and R (one of its services forbidden); requires agentnet_policy running.
+  and R (one of its services forbidden); requires fact_policy running.
 - Optional model-free replay (--replay-from): repeats the recorded tool calls of
   an E7c/E7o run, with no model.
 Outputs in score.py's format (plan.json, registry.json, ops.jsonl), plus
@@ -37,7 +37,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(HERE))
 from workload import cg_create, cg_move  # noqa: E402
-from agentnet_rt.mcp import call_tool_with_exec  # noqa: E402
+from fact_rt.mcp import call_tool_with_exec  # noqa: E402
 from mcp_e4 import wait_port  # noqa: E402
 
 SYSTEM = ("You are an operations agent. Use the provided tools to check services; never guess a result. "
@@ -95,7 +95,7 @@ def ollama_chat(host, model, messages, tools, seed, num_predict=None):
             time.sleep(2 ** (attempt + 1))
 
 
-ANTHROPIC_KEY_FILE = "/etc/agentnet/anthropic.key"   # outside the repository, readable by root only (chmod 600)
+ANTHROPIC_KEY_FILE = "/etc/fact/anthropic.key"   # outside the repository, readable by root only (chmod 600)
 
 
 def anthropic_chat(model, messages, tools, max_tokens):
@@ -144,7 +144,7 @@ def anthropic_chat(model, messages, tools, max_tokens):
             "usage": d.get("usage", {}), "model": d.get("model"), "api_retries": attempt}
 
 
-OPENAI_KEY_FILE = "/etc/agentnet/openai.key"         # outside the repository, readable by root only (chmod 600)
+OPENAI_KEY_FILE = "/etc/fact/openai.key"         # outside the repository, readable by root only (chmod 600)
 OPENAI_EFFORT = "low"            # lowest reasoning effort accepted by both models (gpt-6.1-sol rejects none/minimal)
 OPENAI_MAX_OUTPUT = 4096         # includes the reasoning tokens, which the API counts as output
 

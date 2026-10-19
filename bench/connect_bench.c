@@ -3,7 +3,7 @@
 // A child process accepts and closes connections; the parent measures, for each
 // iteration, the wall-clock time of socket()+connect()+close() with CLOCK_MONOTONIC.
 // Optionally emits the context markers (openat begin/end) around each connect,
-// exactly as the agentnet workload does, to measure the runtime-side cost of the
+// exactly as the FACT workload does, to measure the runtime-side cost of the
 // context binding.
 //
 // Usage: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1 --out lat.csv [--host IP]

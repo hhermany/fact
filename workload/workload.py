@@ -40,7 +40,7 @@ import sys
 import threading
 import time
 
-CG_ROOT = "/sys/fs/cgroup/agentnet"
+CG_ROOT = "/sys/fs/cgroup/fact"
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
 LISTEN_ADDR = "127.0.0.1"
@@ -170,7 +170,7 @@ def main():
     ap.add_argument("--wrong-label", type=float, default=0.0,
                     help="fraction of operations per execution labeled with another execution (exact count, random positions)")
     ap.add_argument("--policy", type=int, default=0,
-                    help="1: loads the per-execution policy (requires agentnet_policy running)")
+                    help="1: loads the per-execution policy (requires fact_policy running)")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 

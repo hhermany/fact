@@ -1,4 +1,4 @@
-# agentnet
+# FACT
 
 Per-execution network attribution, accounting, and control for AI agents, with eBPF.
 Artifact of the paper *Who Opened This Connection? eBPF-based Per-Execution Network Attribution,
@@ -8,10 +8,10 @@ Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 
 | Path | Content |
 |---|---|
-| `collector/` | bpftrace collectors (`agentnet.bt` full, `agentnet-fast.bt` optimized, `agentnet-count.bt` ablation) |
-| `agentnet_rt/` | Runtime binding: execution identity follows the task (Python `contextvars`) and is handed to the kernel right before each `connect`/process creation; FastMCP integration via `_meta` |
+| `collector/` | bpftrace collectors (`fact.bt` full, `fact-fast.bt` optimized, `fact-count.bt` ablation) |
+| `fact_rt/` | Runtime binding: execution identity follows the task (Python `contextvars`) and is handed to the kernel right before each `connect`/process creation; FastMCP integration via `_meta` |
 | `policy/` | Per-execution egress policy: `cgroup/connect4` eBPF program (libbpf) + loader + `policyctl.py` |
-| `agentnetd/` | Live attribution and per-execution accounting daemon |
+| `factd/` | Live attribution and per-execution accounting daemon |
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper, and `figures.R`, a literate R script (knitr::spin) that draws every figure with ggplot from the summarized CSVs; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
 | `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents (E7, E7m); `remote_farm.py` serves the destinations on a second machine (E3net, E5net, E6net) |
 | `scripts/`, `workflow/`, `Snakefile`, `flake.nix` | Reproducible pipeline: Nix shell, Snakemake (preflight → pilot → size → campaign → validate → report) |
@@ -46,7 +46,7 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | Real network interface (E5net, E6net, E3net) | `hermes-E5net-confirmatory-*`, `hermes-E6net-confirmatory-*`, `hermes-E3net-confirmatory-*` | `analysis/analysis.R` |
 | AgentProvenance executed (E5ap); larger models (E7m) | `hermes-E5ap-confirmatory-*`, `hermes-E7m-confirmatory-*` | `analysis/agentprov_table.py`, `analysis/analysis.R`, `analysis/figures.R` |
 | Commercial models (E7c, E7o) and model-free replay (E7r) | `hermes-E7c-confirmatory-*`, `hermes-E7o-confirmatory-*`, `hermes-E7r-confirmatory-*` | `analysis/e7c_tokens.py`, `analysis/replay_compare.py`, `analysis/analysis.R` |
-| Live accounting (`agentnetd`) | all confirmatory campaigns (`analysis/output/agentnetd_equiv.json`) | `tests/test_agentnetd_equiv.py` |
+| Live accounting (`factd`) | all confirmatory campaigns (`analysis/output/factd_equiv.json`) | `tests/test_factd_equiv.py` |
 
 ## Re-running the confirmatory campaigns
 
@@ -60,6 +60,16 @@ nix --extra-experimental-features 'nix-command flakes' develop -c \
   snakemake --cores 1 validate report baselines faults figures   # regenerate every table and figure
 ```
 
+To check a re-execution against the recorded results, run any experiment with the paper's seed and compare
+run by run (cells with manual markers and asynchronous tools are nondeterministic and are checked against the
+recorded range):
+
+```sh
+python3 scripts/campaign.py --spec workflow/experiments/E5.json --n 1 --seed 51193 --label pilot --campaigns-dir /tmp/rerun
+python3 -I analysis/collect_runs.py /tmp/rerun --out /tmp/rerun.csv
+python3 -I scripts/compare_runs.py /tmp/rerun.csv analysis/runs.csv
+```
+
 `scripts/run_confirmatory.sh E6L E5f` runs only the listed experiments. The script builds the policy with the host
 toolchain, runs the preflight, starts Ollama for E7/E7f, and writes a log per boot under `campaigns/logs/`.
 N per experiment and the campaign seed are fixed in `workflow/config.yaml`; the comments there record how each N
@@ -67,18 +77,18 @@ was chosen.
 
 ## External dependencies of some experiments
 
-agentnet itself is self-contained: the collector, the attribution, the task-scoped binding and the egress
+FACT itself is self-contained: the collector, the attribution, the task-scoped binding and the egress
 policy need only the measured host (Linux with eBPF/bpftrace) and this repository. Nothing below is required
-to use agentnet or to run E1-E7. The items below exist only for the comparison and variant experiments:
+to use FACT or to run E1-E7. The items below exist only for the comparison and variant experiments:
 
 | Experiment | Needs | Role |
 |---|---|---|
-| E5ap | AgentProvenance v0.9.0 on the measured host | **comparison only**: a related system run next to agentnet on the same rounds, to measure its attribution against the same reference |
+| E5ap | AgentProvenance v0.9.0 on the measured host | **comparison only**: a related system run next to FACT on the same rounds, to measure its attribution against the same reference |
 | E3net, E5net, E6net | second machine running `workload/remote_farm.py` | destinations outside loopback |
 | E7m | second machine with Ollama and GPU | larger local models |
-| E7c | Anthropic API key in `/etc/agentnet/anthropic.key` (root, mode 600) | commercial models (Claude Opus 5.5, Haiku 5.5); cost and tokens are recorded per run |
+| E7c | Anthropic API key in `/etc/fact/anthropic.key` (root, mode 600) | commercial models (Claude Opus 5.5, Haiku 5.5); cost and tokens are recorded per run |
 | E7r | only the recorded E7c and E7o campaigns, extracted under `campaigns/` (no API key, no model) | model-free replay of every recorded E7c/E7o run: same tool calls, arguments, labels and relative timing |
-| E7o | OpenAI API key in `/etc/agentnet/openai.key` (root, mode 600) | commercial models (gpt-6.1-sol, gpt-6-luna; Responses API, reasoning effort low); cost and tokens, including reasoning, are recorded per run |
+| E7o | OpenAI API key in `/etc/fact/openai.key` (root, mode 600) | commercial models (gpt-6.1-sol, gpt-6-luna; Responses API, reasoning effort low); cost and tokens, including reasoning, are recorded per run |
 
 Before the first run of any campaign (pilot or confirmatory), `scripts/campaign.py` calls
 `scripts/check_deps.py`, which checks every external dependency the experiment uses (a real minimal call per
@@ -99,9 +109,9 @@ ollama pull qwen2.5:7b && ollama pull llama3.1:8b          # digests 845dbda0ea4
 sha256sum agentprov_v0.9.0_linux_amd64.tar.gz   # 8963e25bfbad050de9aff2bf8eba8d77bb660c45697efc00436bf55020a124ae
 sudo scripts/run_confirmatory.sh E5ap E5net E6net E3net E7m   # once per boot, two boots
 # E7c: an Anthropic API key, readable only by root
-sudo install -d -m 700 /etc/agentnet && sudo sh -c 'read -s K; printf %s "$K" > /etc/agentnet/anthropic.key; chmod 600 /etc/agentnet/anthropic.key'
+sudo install -d -m 700 /etc/fact && sudo sh -c 'read -s K; printf %s "$K" > /etc/fact/anthropic.key; chmod 600 /etc/fact/anthropic.key'
 sudo scripts/run_confirmatory.sh E7c                           # once per boot, two boots (about US$ 2.3 per boot)
-# E7o: an OpenAI API key, stored the same way in /etc/agentnet/openai.key
+# E7o: an OpenAI API key, stored the same way in /etc/fact/openai.key
 sudo scripts/run_confirmatory.sh E7o                           # once per boot, two boots
 # E7r: replay of E7c/E7o without any API (extract the recorded campaigns first)
 scripts/extract_campaigns.sh campaigns ~/raw-data   # if they are only archived
@@ -141,6 +151,11 @@ Code: MIT (see `LICENSE`). Summarized results: CC BY 4.0. Citation metadata: `CI
 
 Developed first in a branch of the authors' earlier repository (`noms/agentnet`, last commit `de5c489`);
 this repository starts from that state without the raw data.
+
+The system was called *agentnet* during development and renamed FACT before submission. Campaigns recorded
+before the rename name the collectors `agentnet.bt` and `agentnet-fast.bt` (in each run's `collector.txt` and in
+the E2b capacity records); the analysis maps those names to the current `fact.bt` and `fact-fast.bt`, so the
+recorded campaigns and new ones are analyzed together.
 
 The figures can also be read as a notebook, with the code next to each plot:
 

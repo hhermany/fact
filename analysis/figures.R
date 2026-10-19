@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 #' ---
-#' title: "agentnet: figures of the paper"
+#' title: "FACT: figures of the paper"
 #' output: html_document
 #' ---
 #'
@@ -28,7 +28,7 @@ dir.create(figdir, showWarnings = FALSE, recursive = TRUE)
 #' One theme for every figure: IEEE column width (3.5 in), 8 pt text in the
 #' font of the IEEEtran template (Times; TeX Gyre Termes is the free clone that
 #' the Nix shell provides through fontconfig), framed panels, shades of gray
-#' only (the paper is read in print). agentnet is always the darkest series
+#' only (the paper is read in print). FACT is always the darkest series
 #' (black), and every series also has its own shape or line type.
 col_w   <- 3.5
 fam     <- "TeX Gyre Termes"
@@ -62,7 +62,7 @@ pct <- function(x) paste0(round(100 * x), "%")
 #'
 #' Share of connections that each resolver credits to the wrong execution
 #' (I/N) or reports as ambiguous (A/N), per execution structure and fault
-#' fraction p. The fused resolver is agentnet's. Operation modes produced
+#' fraction p. The fused resolver is FACT's. Operation modes produced
 #' identical counts and are pooled.
 e1 <- read_csv(file.path(indir, "cell_summary.csv"), show_col_types = FALSE) |>
   filter(experiment == "E1", label == "confirmatory") |>
@@ -75,7 +75,7 @@ e1 <- read_csv(file.path(indir, "cell_summary.csv"), show_col_types = FALSE) |>
                            c("cgroup only", "lineage only", "context only", "FACT (fused)")))
 #' Drawn as an annotated heat map (the usual NOMS form for a parameter sweep):
 #' rows are resolvers, columns the execution structures, and each cell gives
-#' the share in percent; agentnet's row is set in bold.
+#' the share in percent; FACT's row is set in bold.
 e1 <- e1 |> mutate(resolver = factor(resolver, rev(levels(resolver))),
                    lab = paste0(round(100 * share)),
                    face = ifelse(resolver == "FACT (fused)", "bold", "plain"))
@@ -145,7 +145,7 @@ g3 <- ggplot(fw, aes(K, value, colour = binding, shape = binding, linetype = bin
   labs(x = "concurrent sessions K", y = "correct") + theme_paper()
 save_fig(g3, "fig_e5e6", 2.05)
 
-#' ## Related systems vs agentnet in shared workers
+#' ## Related systems vs FACT in shared workers
 #'
 #' Emulations of the correlation mechanisms of related systems on the same
 #' logs (`analysis/baselines.py`) and AgentProvenance executed for real (E5ap):
@@ -161,7 +161,7 @@ if (file.exists(bl_csv)) {
            (cell != "E1 N3" & binding_mode == "manual" & resolver %in% c("tw-nearest-500ms", "scope-latest")) |
            (cell != "E1 N3" & binding_mode != "manual" & resolver == "fused")) |>
     group_by(cell, resolver) |> summarise(I = sum(I) / sum(N), .groups = "drop")
-  #' AgentProvenance executed for real next to agentnet in the E5 rounds (E5ap,
+  #' AgentProvenance executed for real next to FACT in the E5 rounds (E5ap,
   #' `analysis/agentprov_table.py`), with eight sessions, when available.
   ap_csv <- file.path(indir, "E5ap_agentprov.csv")
   if (file.exists(ap_csv)) {

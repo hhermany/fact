@@ -2,8 +2,8 @@
 """MCP server with network tools, used by the LLM agents (E7).
 
 A single process serves every session (shared worker), instrumented by
-agentnet_rt (automatic binding: the identity comes from the _meta of each
-tools/call; the tools know nothing about agentnet). Three tools with different
+fact_rt (automatic binding: the identity comes from the _meta of each
+tools/call; the tools know nothing about FACT). Three tools with different
 execution patterns:
 
   http_get(url)     async: HTTP/1.0 request with asyncio (interleaves on the event loop)
@@ -74,8 +74,8 @@ def main():
 
     if a.binding == "auto":
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        from agentnet_rt import mcp as agentnet_mcp
-        agentnet_mcp.instrument(mcp)
+        from fact_rt import mcp as fact_mcp
+        fact_mcp.instrument(mcp)
     mcp.run(transport="sse")
 
 

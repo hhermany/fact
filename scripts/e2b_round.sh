@@ -3,10 +3,10 @@
 # microbenchmark, with the collector active. Measures the aggregate rate and the
 # fraction of captured connects (events with each instance's port / connects made),
 # plus the lost events that bpftrace reports. Usage:
-#   scripts/e2b_round.sh <OUT> --par P [--n 50000] [--collector agentnet.bt|agentnet-fast.bt] [--seed S]
+#   scripts/e2b_round.sh <OUT> --par P [--n 50000] [--collector fact.bt|fact-fast.bt] [--seed S]
 set -euo pipefail
 OUT="$1"; shift
-PAR=1; N=50000; COL=agentnet.bt; SEED=0
+PAR=1; N=50000; COL=fact.bt; SEED=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --par) PAR="$2"; shift 2;;

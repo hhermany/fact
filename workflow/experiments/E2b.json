@@ -4,7 +4,7 @@
   "description": "Collector capacity: P concurrent instances of the closed-loop connect microbenchmark (the host's maximum rate), full and optimized collector. Measures capture and lost events up to saturation.",
   "factors": {
     "par": [1, 2, 4, 6, 8],
-    "collector": ["agentnet.bt", "agentnet-fast.bt"]
+    "collector": ["fact.bt", "fact-fast.bt"]
   },
   "fixed": {"n": 50000}
 }

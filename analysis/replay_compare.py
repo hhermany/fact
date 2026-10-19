@@ -8,7 +8,7 @@ compares it with the original recording (E7c/E7o):
 - the policy decisions (N, TA, TD, FA, FD, ND).
 Writes analysis/output/E7r_replay.csv per cell (model, K) and prints the total.
 
-Usage: replay_compare.py [--label confirmatory] [--campaigns campaigns] [--out analysis/output]
+Usage: replay_compare.py [--label confirmatory] [--campaigns campaigns] [--originals campaigns] [--out analysis/output]
 """
 import argparse
 import collections
@@ -36,6 +36,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--label", default="confirmatory")
     ap.add_argument("--campaigns", default="campaigns")
+    ap.add_argument("--originals", default=None, help="directory of the recorded E7c/E7o campaigns (default: --campaigns)")
     ap.add_argument("--out", default="analysis/output")
     a = ap.parse_args()
     cells = collections.defaultdict(collections.Counter)
@@ -48,7 +49,7 @@ def main():
             rdir = os.path.join(cdir, "runs", r["run_id"])
             plan = json.load(open(os.path.join(rdir, "plan.json")))
             parts = plan["replay_of"].rstrip("/").split("/")
-            orig = os.path.join(a.campaigns, parts[-3], parts[-2], parts[-1])   # <campaign>/runs/<run>
+            orig = os.path.join(a.originals or a.campaigns, parts[-3], parts[-2], parts[-1])   # <campaign>/runs/<run>
             new, old = outcome(rdir), outcome(orig)
             c = cells[(plan["model"], plan["execs"])]
             c["runs"] += 1

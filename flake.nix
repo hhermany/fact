@@ -1,5 +1,5 @@
 {
-  description = "agentnet (NOMS 2027): eBPF-based attribution of TCP connections to agent executions";
+  description = "FACT (NOMS 2027): eBPF-based attribution of TCP connections to agent executions";
 
   # The exact revision is in flake.lock (copied into every campaign).
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
@@ -24,8 +24,8 @@
         FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.gyre-fonts ]; };
         shellHook = ''
           # exact interpreter of the workloads (the snakemake wrapper reorders PATH)
-          export AGENTNET_PYTHON=${pyEnv}/bin/python3
-          echo "agentnet reproducible shell"
+          export FACT_PYTHON=${pyEnv}/bin/python3
+          echo "FACT reproducible shell"
           echo "Nix: $(nix --version 2>/dev/null)"
           echo "Python: $(python3 --version)  R: $(R --version | head -1)"
           echo "Snakemake: $(snakemake --version)"

@@ -2,7 +2,7 @@
 """MCP server (official SDK, FastMCP, SSE transport) used in E4.
 
 A single process serves every client session (shared worker). Each tool opens
-ONE TCP connection to the requested port and emits agentnet's context markers
+ONE TCP connection to the requested port and emits FACT's context markers
 (cooperative runtime binding), in four real execution patterns:
 
   sync_get     synchronous function: FastMCP runs it on the event-loop thread
@@ -17,7 +17,7 @@ ONE TCP connection to the requested port and emits agentnet's context markers
 Binding modes (--binding):
   manual  the tools emit the markers (the original E4 behavior);
   auto    the tools do NOT emit markers: the server is instrumented by
-          agentnet_rt (per-task identity via contextvars, handed to the kernel
+          fact_rt (per-task identity via contextvars, handed to the kernel
           at connect/fork); the identity comes from the request's _meta.
 
 Usage: python3 mcp_e4_server.py --port 64999 [--binding manual|auto]
@@ -35,7 +35,7 @@ from mcp.server.fastmcp import FastMCP
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
 LISTEN = "127.0.0.1"                                  # MCP server listening address
-TARGET = os.environ.get("AGENTNET_DEST", "127.0.0.1")   # destination of the tools (loopback or another machine)
+TARGET = os.environ.get("FACT_DEST", "127.0.0.1")   # destination of the tools (loopback or another machine)
 SUB = ("import socket,sys;s=socket.socket();s.settimeout(2);"
        "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)")
 
@@ -67,7 +67,7 @@ def main():
     a = ap.parse_args()
     global MANUAL
     MANUAL = a.binding == "manual"
-    mcp = FastMCP("agentnet-e4", host=LISTEN, port=a.port, log_level="WARNING")
+    mcp = FastMCP("fact-e4", host=LISTEN, port=a.port, log_level="WARNING")
 
     @mcp.tool()
     def sync_get(exec_id: str, port: int) -> str:
@@ -112,8 +112,8 @@ def main():
 
     if not MANUAL:
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        from agentnet_rt import mcp as agentnet_mcp
-        agentnet_mcp.instrument(mcp)
+        from fact_rt import mcp as fact_mcp
+        fact_mcp.instrument(mcp)
     mcp.run(transport="sse")
 
 

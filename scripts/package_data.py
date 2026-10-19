@@ -57,7 +57,7 @@ boots = {}
 for r in rows:
     boots.setdefault(r[5], len(boots) + 1)
 with open(os.path.join(a.out_dir, "DATA_README.md"), "w") as f:
-    f.write("# agentnet campaign data\n\n")
+    f.write("# FACT campaign data\n\n")
     f.write("One archive per campaign. Each holds, per run: `events.jsonl` (collector output), `plan.json` "
             "(run plan, including the destination-port reference), `registry.json`, `ops.jsonl`, `score.json`, "
             "and environment snapshots; plus the campaign `manifest.json`, `run_order.json`, and "

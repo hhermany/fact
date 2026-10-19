@@ -28,7 +28,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from workload import Listener, cg_create, cg_move  # noqa: E402
-from agentnet_rt.mcp import call_tool_with_exec  # noqa: E402
+from fact_rt.mcp import call_tool_with_exec  # noqa: E402
 
 TOOLS = {"sync": "sync_get", "thread": "thread_get", "subproc": "subproc_get", "async": "async_get"}
 
@@ -86,7 +86,7 @@ def main():
     ap.add_argument("--dest-host", default="127.0.0.1",
                     help="destination of the tools; outside loopback, the services run on another machine (workload/remote_farm.py)")
     ap.add_argument("--policy", type=int, default=0,
-                    help="1: loads the per-execution policy (requires agentnet_policy running)")
+                    help="1: loads the per-execution policy (requires fact_policy running)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--mode", default="mcp")          # accepted for compatibility with run_round
     ap.add_argument("--wrong-label", type=float, default=0.0)
@@ -157,7 +157,7 @@ def main():
     here = os.path.dirname(os.path.abspath(__file__))
     srv = subprocess.Popen([sys.executable, "-I", os.path.join(here, "mcp_e4_server.py"),
                             "--port", str(a.server_port), "--binding", a.binding_mode],
-                           env=dict(os.environ, AGENTNET_DEST=a.dest_host),
+                           env=dict(os.environ, FACT_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)
     cg_move(cg_path, srv.pid)
     json.dump({"roots": {str(srv.pid): execs}, "cgroups": {str(cg_id): execs}},

@@ -1,7 +1,7 @@
 #!/usr/bin/env bpftrace
 /*
- * agentnet-count.bt: ablation variant (E3): the SAME probes and the same
- * context-map maintenance as agentnet.bt, but emitting no event to user space
+ * fact-count.bt: ablation variant (E3): the SAME probes and the same
+ * context-map maintenance as fact.bt, but emitting no event to user space
  * (only in-kernel counters). Measures the cost of the probes themselves,
  * separate from the cost of exporting events. Not usable for attribution.
  */

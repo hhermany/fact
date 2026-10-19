@@ -1,6 +1,6 @@
-// agentnet_policy: loads the BPF program, pins the maps at /sys/fs/bpf/agentnet,
+// fact_policy: loads the BPF program, pins the maps at /sys/fs/bpf/fact,
 // attaches it to the given cgroup, and prints each decision as one JSON line.
-// Usage: agentnet_policy <cgroup_path> <port_lo> <port_hi> <no_ctx_allow 0|1> [obj] [lineage 0|1|2]
+// Usage: fact_policy <cgroup_path> <port_lo> <port_hi> <no_ctx_allow 0|1> [obj] [lineage 0|1|2]
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "usage: %s <cgroup> <lo> <hi> <no_ctx_allow> [obj] [lineage]\n", argv[0]);
 		return 2;
 	}
-	const char *obj_path = argc > 5 ? argv[5] : "agentnet_policy.bpf.o";
+	const char *obj_path = argc > 5 ? argv[5] : "fact_policy.bpf.o";
 	setvbuf(stdout, NULL, _IOLBF, 0);
 	signal(SIGINT, on_sig); signal(SIGTERM, on_sig);
 
@@ -52,11 +52,11 @@ int main(int argc, char **argv)
 	if (!obj) { perror("open"); return 1; }
 	if (bpf_object__load(obj)) { fprintf(stderr, "load failed\n"); return 1; }
 
-	mkdir("/sys/fs/bpf/agentnet", 0700);
+	mkdir("/sys/fs/bpf/fact", 0700);
 	const char *pins[] = {"ctx_map", "allow_map", "cfg_map", "dom_map", "owner_map"};
 	for (int i = 0; i < 5; i++) {
 		char p[128];
-		snprintf(p, sizeof(p), "/sys/fs/bpf/agentnet/%s", pins[i]);
+		snprintf(p, sizeof(p), "/sys/fs/bpf/fact/%s", pins[i]);
 		unlink(p);
 		if (bpf_map__pin(bpf_object__find_map_by_name(obj, pins[i]), p)) {
 			fprintf(stderr, "pin %s failed\n", p); return 1;
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < nl; i++) bpf_link__destroy(links[i]);
 	for (int i = 0; i < 5; i++) {
 		char p[128];
-		snprintf(p, sizeof(p), "/sys/fs/bpf/agentnet/%s", pins[i]);
+		snprintf(p, sizeof(p), "/sys/fs/bpf/fact/%s", pins[i]);
 		unlink(p);
 	}
 	bpf_object__close(obj);
