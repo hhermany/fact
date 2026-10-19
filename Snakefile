@@ -109,6 +109,14 @@ rule agentprov:
         "python3 -I analysis/agentprov_table.py --label confirmatory --out analysis/output > /dev/null"
 
 
+rule agentprov_native:
+    # AgentProvenance v0.9.0 in the setting it targets: executions with their own process trees and cgroups (E1ap)
+    output:
+        "analysis/output/E1ap_agentprov.csv"
+    shell:
+        "python3 -I analysis/agentprov_table.py --experiment E1ap --label confirmatory --out analysis/output > /dev/null"
+
+
 rule e7c_tokens:
     # tokens reported by the Anthropic API in each E7c call, and the cost
     output:

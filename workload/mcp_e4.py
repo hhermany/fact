@@ -28,9 +28,14 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from workload import Listener, cg_create, cg_move  # noqa: E402
+from http_farm import HttpListener  # noqa: E402
 from fact_rt.mcp import call_tool_with_exec  # noqa: E402
 
 TOOLS = {"sync": "sync_get", "thread": "thread_get", "subproc": "subproc_get", "async": "async_get"}
+# E5lib: tools whose request is made by third-party client code (workload/mcp_lib_server.py)
+LIB_TOOLS = {"httpx": "httpx_get", "aiohttp": "aiohttp_get", "requests": "requests_get", "urllib": "urllib_get",
+             "fetch": "fetch", "curl": "curl"}
+TOOLS.update(LIB_TOOLS)
 
 
 def wait_port(port, timeout=20.0):
@@ -107,6 +112,9 @@ def main():
     n_wrong = round(a.wrong_label * a.ops)
     if abs(n_wrong - a.wrong_label * a.ops) > 1e-9:
         sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} is not an integer")
+    lib = a.tool in LIB_TOOLS
+    if lib and a.binding_mode != "auto":
+        sys.exit("the third-party library tools (E5lib) run only with the automatic binding")
     if n_wrong and a.binding_mode != "auto":
         sys.exit("--wrong-label applies to the automatic binding (identity in _meta)")
     if n_wrong:
@@ -151,11 +159,11 @@ def main():
                 s.close()
         listener = None
     else:
-        listener = Listener(ports)
+        listener = HttpListener(ports) if lib else Listener(ports)
         listener.start()
     cg_path, cg_id = cg_create("E4-server")
     here = os.path.dirname(os.path.abspath(__file__))
-    srv = subprocess.Popen([sys.executable, "-I", os.path.join(here, "mcp_e4_server.py"),
+    srv = subprocess.Popen([sys.executable, "-I", os.path.join(here, "mcp_lib_server.py" if lib else "mcp_e4_server.py"),
                             "--port", str(a.server_port), "--binding", a.binding_mode],
                            env=dict(os.environ, FACT_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)

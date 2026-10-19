@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""AgentProvenance executed for real vs FACT, on the same E5 rounds.
+"""AgentProvenance executed for real vs FACT, on the same rounds.
 
-Reads every confirmatory (or given label) E5ap campaign under campaigns/ and,
-per cell (tool, K), pools the connections: AgentProvenance's real attribution
-(agentprov/score.json) and FACT's fused resolver on the same rounds
-(score.json). Writes analysis/output/E5ap_agentprov.csv.
+Reads every confirmatory (or given label) campaign of the experiment under
+campaigns/ and, per cell, pools the connections: AgentProvenance's real
+attribution (agentprov/score.json) and FACT's fused resolver on the same rounds
+(score.json). Cells: (tool, K) for E5ap, the shared MCP server; (structure,
+operation mode, K) for E1ap, the synthetic executions with their own process
+trees and cgroups (N0), a shared cgroup (N1), or a shared worker (N3).
+Writes analysis/output/<experiment>_agentprov.csv.
 
-Usage: agentprov_table.py [--label confirmatory] [--out analysis/output]
+Usage: agentprov_table.py [--experiment E5ap|E1ap] [--label confirmatory] [--out analysis/output]
 """
 import argparse
 import collections
@@ -18,13 +21,14 @@ import os
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--experiment", default="E5ap", choices=["E5ap", "E1ap"])
     ap.add_argument("--label", default="confirmatory")
     ap.add_argument("--campaigns", default="campaigns")
     ap.add_argument("--out", default="analysis/output")
     a = ap.parse_args()
     cells = collections.defaultdict(lambda: collections.Counter())
     nruns = collections.Counter()
-    for man in sorted(glob.glob(os.path.join(a.campaigns, f"*-E5ap-{a.label}-*", "manifest.json"))):
+    for man in sorted(glob.glob(os.path.join(a.campaigns, f"*-{a.experiment}-{a.label}-*", "manifest.json"))):
         m = json.load(open(man))
         cdir = os.path.dirname(man)
         for r in m["runs"]:
@@ -32,7 +36,7 @@ def main():
                 continue
             rdir = os.path.join(cdir, "runs", r["run_id"])
             p = r["params"]
-            key = (p["tool"], int(p["execs"]))
+            key = ((p["tool"],) if a.experiment == "E5ap" else (p["cond"], p["mode"])) + (int(p["execs"]),)
             aps = json.load(open(os.path.join(rdir, "agentprov", "score.json")))["summary"]
             fused = json.load(open(os.path.join(rdir, "score.json")))["resolvers"]["fused"]
             c = cells[key]
@@ -44,15 +48,17 @@ def main():
             c["ap_same_op"] += aps["same_op"]
             nruns[key] += 1
     os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, "E5ap_agentprov.csv")
-    cols = ["tool", "execs", "runs", "system", "N", "C", "I", "A", "M", "C_N", "I_N", "same_op"]
+    path = os.path.join(a.out, f"{a.experiment}_agentprov.csv")
+    keycols = ["tool", "execs"] if a.experiment == "E5ap" else ["cond", "mode", "execs"]
+    order = {"sync": 0, "thread": 1, "subproc": 2, "async": 3, "N0": 0, "N1": 1, "N2": 2, "N3": 3, "inproc": 0}
+    cols = keycols + ["runs", "system", "N", "C", "I", "A", "M", "C_N", "I_N", "same_op"]
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(cols)
-        for (tool, k), c in sorted(cells.items(), key=lambda x: (["sync", "thread", "subproc", "async"].index(x[0][0]), x[0][1])):
+        for key, c in sorted(cells.items(), key=lambda x: tuple(order.get(v, v) for v in x[0])):
             for sysname, pre in (("AgentProvenance", "ap_"), ("FACT", "an_")):
                 n = c[pre + "N"]
-                w.writerow([tool, k, nruns[(tool, k)], sysname, n, c[pre + "C"], c[pre + "I"], c[pre + "A"], c[pre + "M"],
+                w.writerow(list(key) + [nruns[key], sysname, n, c[pre + "C"], c[pre + "I"], c[pre + "A"], c[pre + "M"],
                             round(c[pre + "C"] / n, 4) if n else "", round(c[pre + "I"] / n, 4) if n else "",
                             c["ap_same_op"] if pre == "ap_" else ""])
     print(open(path).read())

@@ -5,8 +5,10 @@ The AgentProvenance sensor runs during the round (started by run_round.sh with
 AGENTPROV=<binary>). After the workload ends, this script registers one
 ToolCallScope binding per MCP tool call, as a harness integration would: tool
 call id, execution scope (the session), the identity of the process that served
-the call (the shared MCP server: pid, root pid, cgroup) and the exact call
-window [t_start, t_end] measured by the client. The sensor holds uncorrelated
+the call (pid, root pid, cgroup: the shared MCP server in E5ap, or the execution's
+own process tree and cgroup when each execution has one, as in AgentProvenance's
+per-execution sandboxes, E1ap) and the exact call window [t_start, t_end]
+measured by the client. The sensor holds uncorrelated
 events for late bindings (--pending-ttl), so the bindings registered here are
 matched by AgentProvenance's own correlation engine. Then it stops the sensor
 and exports AgentProvenance's events and correlations as JSON.
@@ -33,21 +35,24 @@ def main():
     dd = os.path.join(rdir, "agentprov")
     data = os.path.join(dd, "store")
     reg = json.load(open(os.path.join(rdir, "registry.json")))
-    srv_pid = int(next(iter(reg["roots"])))
-    cg_id = next(iter(reg["cgroups"]))
+    # process tree and cgroup that serve each execution: a single shared server
+    # (E5ap) or one per execution (E1ap, N0/N1)
+    root_of = {e: int(pid) for pid, es in reg["roots"].items() for e in es}
+    cg_of = {e: cg for cg, es in reg["cgroups"].items() for e in es}
     run_id = "fact-" + os.path.basename(os.path.normpath(rdir))
     ops = [json.loads(l) for l in open(os.path.join(rdir, "ops.jsonl"))]
     with open(os.path.join(dd, "binds.log"), "w") as log:
         for op in ops:
             cmd = [ap, "--data-dir", data, "telemetry", "bind", "--run", run_id,
                    "--tool-call", op["op_id"], "--execution-scope", op["exec_id"],
-                   "--pid", str(srv_pid), "--root-pid", str(srv_pid), "--cgroup-id", str(cg_id),
+                   "--pid", str(root_of[op["exec_id"]]), "--root-pid", str(root_of[op["exec_id"]]),
+                   "--cgroup-id", str(cg_of[op["exec_id"]]),
                    "--started-at", rfc3339(op["t_start"]), "--ended-at", rfc3339(op["t_end"])]
             r = subprocess.run(cmd, capture_output=True, text=True)
             log.write(json.dumps({"op_id": op["op_id"], "rc": r.returncode,
                                   "out": r.stdout[-300:], "err": r.stderr[-300:]}) + "\n")
             if r.returncode != 0:
-                sys.exit(f"bind falhou ({op['op_id']}): {r.stderr.strip()[-300:]}")
+                sys.exit(f"bind failed ({op['op_id']}): {r.stderr.strip()[-300:]}")
     # the sensor retries pending events every flush interval; give it a few rounds
     time.sleep(float(os.environ.get("AGENTPROV_SETTLE_S", "5")))
     os.kill(spid, signal.SIGINT)
@@ -60,7 +65,7 @@ def main():
     def dump(args, name):
         r = subprocess.run([ap, "--data-dir", data] + args, capture_output=True, text=True)
         if r.returncode != 0:
-            sys.exit(f"{' '.join(args)} falhou: {r.stderr.strip()[-300:]}")
+            sys.exit(f"{' '.join(args)} failed: {r.stderr.strip()[-300:]}")
         with open(os.path.join(dd, name), "w") as f:
             f.write(r.stdout)
     dump(["telemetry", "list", "--json", "--limit", "100000"], "events.json")

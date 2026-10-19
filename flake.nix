@@ -11,14 +11,25 @@
       rEnv = pkgs.rWrapper.override {
         packages = with pkgs.rPackages; [ readr dplyr tidyr ggplot2 knitr rmarkdown IRkernel ];
       };
-      pyEnv = pkgs.python3.withPackages (ps: with ps; [ jupyterlab ipykernel mcp anyio ]);  # mcp: E4
+      # tool implementation of the official MCP fetch server (E5lib), from PyPI with a fixed hash
+      mcpServerFetch = ps: ps.buildPythonPackage rec {
+        pname = "mcp_server_fetch";
+        version = "2026.7.10";
+        pyproject = true;
+        src = ps.fetchPypi { inherit pname version; hash = "sha256-l001nfwCrMPqmQTceSkC7MUiZBXq6+UMFq+mIxtNMrQ="; };
+        build-system = [ ps.hatchling ];
+        dependencies = with ps; [ httpx markdownify mcp protego pydantic readabilipy requests ];
+        doCheck = false;
+      };
+      # mcp: E4; httpx, aiohttp, requests and the fetch server: third-party client libraries (E5lib)
+      pyEnv = pkgs.python3.withPackages (ps: with ps; [ jupyterlab ipykernel mcp anyio httpx aiohttp requests (mcpServerFetch ps) ]);
     in {
       devShells.${system}.default = pkgs.mkShell {
         # Layer 1 (pinned by Nix): user tools, orchestration, and analysis.
         # Layer 2 (from the host, recorded per campaign): kernel, bpftrace, bpftool.
         packages = with pkgs; [
           pyEnv bashInteractive coreutils findutils gawk gnugrep gnused gnutar gzip jq which git
-          snakemake pandoc rEnv gcc fontconfig ollama   # ollama: local model of E7 (no paid tokens)
+          snakemake pandoc rEnv gcc fontconfig ollama curl   # ollama: local model of E7 (no paid tokens); curl: E5lib
         ];
         # font of the figures (Times, as in the IEEEtran template): fontconfig pinned by Nix
         FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.gyre-fonts ]; };

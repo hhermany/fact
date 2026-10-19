@@ -1,0 +1,10 @@
+{
+  "experiment": "E1ap",
+  "description": "AgentProvenance v0.9.0 run in the setting it targets: each execution in its own process tree and cgroup (N0), against a shared cgroup (N1) and a shared worker (N3). Synthetic E1 workload with correct labels; one ToolCallScope binding per operation, registered with the process tree and cgroup that served it and the exact operation window. FACT runs on the same rounds. Same reference (destination port -> execution).",
+  "factors": {
+    "cond": ["N0", "N1", "N3"],
+    "mode": ["inproc", "subproc"]
+  },
+  "fixed": {"execs": 4, "ops": 50, "jitter": 0.01, "threads": 8, "wrong_label": 0.0,
+            "agentprov": "/opt/agentprov/agentprov"}
+}

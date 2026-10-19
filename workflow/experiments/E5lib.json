@@ -1,0 +1,9 @@
+{
+  "experiment": "E5lib",
+  "description": "Third-party client code, unmodified: the shared MCP server's tools make each request with httpx, aiohttp, requests, urllib, the fetch_url() of the official MCP fetch server (mcp-server-fetch 2026.7.10), or the curl binary. Automatic binding (fact_rt); the tools emit no markers and only build the URL. One new connection per call (no reuse). Same reference (destination port -> execution).",
+  "factors": {
+    "tool": ["httpx", "aiohttp", "requests", "urllib", "fetch", "curl"],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E5lib", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py"}
+}

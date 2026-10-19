@@ -156,6 +156,8 @@ def main():
             env["WORKLOAD"] = str(p["workload"])
         if p.get("agentprov"):         # related system actually run, next to FACT
             env["AGENTPROV"] = str(p["agentprov"])
+        if p.get("cost"):              # CPU cost under the experiment's own workload
+            env["COST"] = "1"
         if p.get("policy"):
             env["POLICY"] = "1"
             env["POLICY_NOCTX_ALLOW"] = str(p.get("policy_noctx_allow", 0))

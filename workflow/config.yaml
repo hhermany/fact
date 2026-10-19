@@ -126,5 +126,23 @@ experiments:
     pilot_n: 1
     n: 3   # per boot (2 boots): K=2 has 50 connections per run -> 300 >= 299; 95% CI of AgentProvenance's error rate <= 5.7 points
 
+  # AgentProvenance in the setting it targets (own process tree and cgroup per execution)
+  E1ap:
+    spec: workflow/experiments/E1ap.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): 4 executions x 50 operations = 200 connections per run -> 1200 per cell
+
+  # third-party client libraries and the official MCP fetch server's code, unmodified (same criterion as E5)
+  E5lib:
+    spec: workflow/experiments/E5lib.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=4 has 100 connections per run -> 600 >= 299 per cell
+
+  # CPU cost under the E7r agent workload (one replay of each recording per boot)
+  E7rc:
+    spec: workflow/experiments/E7rc.json
+    pilot_n: 1
+    n: 1   # per boot (2 boots): 16 runs per boot, each recording replayed once
+
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05

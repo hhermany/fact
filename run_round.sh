@@ -68,8 +68,17 @@ if [ -n "${AGENTPROV:-}" ]; then
   grep -q 'ready probes-attached' "$OUT/agentprov/sensor.log" || { echo "AgentProvenance sensor not ready"; exit 1; }
 fi
 
+# CPU cost under the experiment's own workload (optional): COST=1 (scripts/cost_probe.py)
+if [ "${COST:-0}" = 1 ]; then
+  sysctl -q -w kernel.bpf_stats_enabled=1
+  "${FACT_PYTHON:-python3}" -I "$HERE/scripts/cost_probe.py" before "$OUT" "$BPID" "$PPOL"
+fi
 WORKLOAD="${WORKLOAD:-workload/workload.py}"   # E4: workload/mcp_e4.py
 "${FACT_PYTHON:-python3}" -I "$HERE/$WORKLOAD" --cond "$COND" --out "$OUT" "$@" "${EXTRA[@]}"
+if [ "${COST:-0}" = 1 ]; then
+  "${FACT_PYTHON:-python3}" -I "$HERE/scripts/cost_probe.py" after "$OUT" "$BPID" "$PPOL"
+  sysctl -q -w kernel.bpf_stats_enabled=0
+fi
 sleep 1                               # drains the last events from the buffer
 kill -INT "$BPID"; wait "$BPID" || true
 if [ -n "$APID" ]; then
@@ -83,3 +92,6 @@ if [ -n "$PPOL" ]; then
 fi
 
 "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score.py" "$OUT" | tee "$OUT/summary.txt"
+if [ "${COST:-0}" = 1 ]; then
+  "${FACT_PYTHON:-python3}" -I "$HERE/scripts/cost_probe.py" factd "$OUT"
+fi
