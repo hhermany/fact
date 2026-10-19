@@ -72,13 +72,13 @@ e1 <- read_csv(file.path(indir, "resumo_celulas.csv"), show_col_types = FALSE) |
   mutate(metric = factor(metric, c("I", "A"), c("wrong", "ambiguous")),
          p = factor(paste0("p = ", wrong_label), paste0("p = ", c(0, 0.05, 0.2))),
          resolver = factor(resolver, c("cgroup", "lineage", "context", "fused"),
-                           c("cgroup only", "lineage only", "context only", "agentnet (fused)")))
+                           c("cgroup only", "lineage only", "context only", "FACT (fused)")))
 #' Drawn as an annotated heat map (the usual NOMS form for a parameter sweep):
 #' rows are resolvers, columns the execution structures, and each cell gives
 #' the share in percent; agentnet's row is set in bold.
 e1 <- e1 |> mutate(resolver = factor(resolver, rev(levels(resolver))),
                    lab = paste0(round(100 * share)),
-                   face = ifelse(resolver == "agentnet (fused)", "bold", "plain"))
+                   face = ifelse(resolver == "FACT (fused)", "bold", "plain"))
 g1 <- ggplot(e1, aes(cond, resolver, fill = share)) +
   geom_tile(colour = "black", linewidth = 0.25) +
   geom_text(aes(label = lab, colour = share > 0.5, fontface = face), size = 2.3, family = fam) +
@@ -87,7 +87,7 @@ g1 <- ggplot(e1, aes(cond, resolver, fill = share)) +
                       breaks = c(0, 0.5, 1), name = "share of connections") +
   scale_colour_manual(values = c("black", "white"), guide = "none") +
   scale_x_discrete(expand = c(0, 0)) +
-  scale_y_discrete(expand = c(0, 0), labels = c("agentnet (fused)" = expression(bold("agentnet (fused)")),
+  scale_y_discrete(expand = c(0, 0), labels = c("FACT (fused)" = expression(bold("FACT (fused)")),
                                                  "context only" = "context only", "lineage only" = "lineage only",
                                                  "cgroup only" = "cgroup only")) +
   guides(fill = guide_colourbar(barheight = unit(5, "pt"), barwidth = unit(60, "pt"),
@@ -105,7 +105,7 @@ save_fig(g1, "fig_e1", 2.35)
 acct <- read_csv(file.path(indir, "E1_contabilidade.csv"), show_col_types = FALSE) |>
   pivot_longer(matches("^(wrong|unc|net)_(context|fused)$"), names_to = c("kind", "resolver"), names_sep = "_",
                values_to = "conns") |>
-  mutate(resolver = factor(resolver, c("context", "fused"), c("context only", "agentnet")),
+  mutate(resolver = factor(resolver, c("context", "fused"), c("context only", "FACT")),
          p = factor(paste0("p = ", wrong_label), paste0("p = ", c(0.05, 0.2))))
 bars <- acct |> filter(kind != "net") |>
   mutate(kind = factor(kind, c("wrong", "unc"), c("credited wrongly", "uncredited")))
@@ -114,7 +114,7 @@ g2 <- ggplot(bars, aes(cond, conns)) +
   geom_col(aes(fill = kind), position = position_dodge(width = 0.75), width = 0.7,
            colour = "black", linewidth = 0.25) +
   geom_point(data = net, aes(shape = kind), size = 1.6, colour = "black") +
-  facet_grid(resolver ~ p, labeller = labeller(resolver = c("context only" = "context", "agentnet" = "agentnet"))) +
+  facet_grid(resolver ~ p, labeller = labeller(resolver = c("context only" = "context", "FACT" = "FACT"))) +
   scale_fill_manual(values = c("grey30", "grey80")) + scale_shape_manual(values = 18) +
   labs(x = "execution structure", y = "connections per run") + theme_paper()
 save_fig(g2, "fig_acct", 1.9)
@@ -129,7 +129,7 @@ e6 <- read_csv(file.path(indir, "E6_policy.csv"), show_col_types = FALSE) |>
   transmute(binding_mode, tool, K = execs, value = (TA + TD) / N, metric = "policy")
 fw <- bind_rows(e5, e6) |>
   mutate(binding = factor(binding_mode, c("manual", "auto"),
-                          c("thread-keyed markers", "agentnet (task-scoped)")),
+                          c("thread-keyed markers", "FACT (task-scoped)")),
          tool = factor(tool, c("sync", "thread", "subproc", "async")),
          metric = factor(metric, c("attribution", "policy")))
 g3 <- ggplot(fw, aes(K, value, colour = binding, shape = binding, linetype = binding)) +
@@ -172,7 +172,7 @@ if (file.exists(bl_csv)) {
   bl <- bl |>
     mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "agentprov", "fused"),
                          c("time window (emulated)", "latest scope (emulated)",
-                           "AgentProvenance (executed)", "agentnet")),
+                           "AgentProvenance (executed)", "FACT")),
            cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"))) |>
     select(cell, mech, I) |> complete(cell, mech)   # empty slot where a system was not run
   g4 <- ggplot(bl, aes(cell, I, fill = mech)) +

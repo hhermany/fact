@@ -58,7 +58,7 @@ for params, plan, att, pol, m in runs("E7f"):
 
 lines = ["% gerado por analysis/fault_tables.py — não editar à mão",
          r"\begin{tabular}{@{}lrrrrrrr@{}}", r"\toprule",
-         r" & & \multicolumn{3}{c}{attribution (E5f)} & \multicolumn{3}{c}{policy (E6f, E7f)} \\",
+         r" & & \multicolumn{3}{c}{Attribution (E5f)} & \multicolumn{3}{c}{Policy (E6f, E7f)} \\",
          r"\cmidrule(lr){3-5}\cmidrule(l){6-8}",
          r"$K$ & $p$ & mislab. & wrong & other err. & FA & FD & other err. \\", r"\midrule"]
 spill = 0
