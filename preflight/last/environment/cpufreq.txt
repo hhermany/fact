@@ -1,2 +1,2 @@
 cat: /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor: No such file or directory
-INDISPONIVEL: cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+UNAVAILABLE: cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor

@@ -1,12 +1,10 @@
-/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/collector/agentnet.bt:38:3-20: WARNING: Return value discarded.
+/home/ikki/projetos/agentnet/collector/agentnet.bt:38:3-20: WARNING: Return value discarded.
         delete(@ctx[tid]);
         ~~~~~~~~~~~~~~~~~
-/home/ikki/projetos/ai-agent-ebpf-management-noms/noms-agentnet/collector/agentnet.bt:59:2-19: WARNING: Return value discarded.
+/home/ikki/projetos/agentnet/collector/agentnet.bt:59:2-19: WARNING: Return value discarded.
     delete(@ctx[tid]);
     ~~~~~~~~~~~~~~~~~
-{"ev":"ready","ts":3213896213177}
-{"ev":"exit","ts":3213923158529,"pid":24332,"tid":24336}
-{"ev":"fork","ts":3215963047163,"ptid":2,"ctid":24358,"ppid":2,"cgroup":1,"ctx":""}
-{"ev":"fork","ts":3215973056583,"ptid":2,"ctid":24359,"ppid":2,"cgroup":1,"ctx":""}
+{"ev":"ready","ts":3113146310705}
+{"ev":"fork","ts":3115100057450,"ptid":2,"ctid":7024,"ppid":2,"cgroup":1,"ctx":""}
 
 
