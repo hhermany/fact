@@ -1,10 +1,15 @@
-/home/ikki/projetos/agentnet/collector/agentnet.bt:38:3-20: WARNING: Return value discarded.
+/home/ikki/projetos/agentnet/collector/fact.bt:38:3-20: WARNING: Return value discarded.
         delete(@ctx[tid]);
         ~~~~~~~~~~~~~~~~~
-/home/ikki/projetos/agentnet/collector/agentnet.bt:59:2-19: WARNING: Return value discarded.
+/home/ikki/projetos/agentnet/collector/fact.bt:59:2-19: WARNING: Return value discarded.
     delete(@ctx[tid]);
     ~~~~~~~~~~~~~~~~~
-{"ev":"ready","ts":3113146310705}
-{"ev":"fork","ts":3115100057450,"ptid":2,"ctid":7024,"ppid":2,"cgroup":1,"ctx":""}
+{"ev":"ready","ts":4360124385954}
+{"ev":"fork","ts":4360128066978,"ptid":2,"ctid":7227,"ppid":2,"cgroup":1,"ctx":""}
+{"ev":"fork","ts":4360129046247,"ptid":2,"ctid":7228,"ppid":2,"cgroup":1,"ctx":""}
+{"ev":"exit","ts":4361626949409,"pid":7219,"tid":7219}
+{"ev":"fork","ts":4361627536975,"ptid":2169,"ctid":7229,"ppid":2169,"cgroup":6234,"ctx":""}
+{"ev":"exec","ts":4361627994229,"pid":7229,"tid":7229,"cgroup":6234,"comm":"tail","ctx":""}
+{"ev":"exit","ts":4361630248417,"pid":7229,"tid":7229}
 
 

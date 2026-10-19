@@ -1,52 +1,54 @@
     PID COMMAND         %CPU %MEM
-   6205 systemd-timedat  0.1  0.0
-    126 kworker/7:2-cgr  0.0  0.0
+   7264 systemd-timedat 60.0  0.0
     669 kworker/1:2-eve  0.0  0.0
-      1 systemd          0.0  0.1
-   1264 vmtoolsd         0.0  0.0
-     81 kworker/3:1-eve  0.0  0.0
-   1592 tailscaled       0.0  0.2
-      9 kworker/0:0-eve  0.0  0.0
-    307 kworker/2:3-eve  0.0  0.0
    2890 kworker/4:0-eve  0.0  0.0
-   3119 kworker/u32:0-e  0.0  0.0
+   1264 vmtoolsd         0.0  0.0
+   7188 kworker/u32:3-e  0.0  0.0
+     81 kworker/3:1-eve  0.0  0.0
+      1 systemd          0.0  0.1
     105 kworker/5:1-eve  0.0  0.0
-   2950 kworker/6:0-eve  0.0  0.0
+   6992 kworker/7:0-eve  0.0  0.0
+    307 kworker/2:3-eve  0.0  0.0
+   1592 tailscaled       0.0  0.2
+      9 kworker/0:0-rcu  0.0  0.0
    2139 sshd-session     0.0  0.0
-    763 systemd-udevd    0.0  0.0
-     50 kworker/5:0-mm_  0.0  0.0
-    706 systemd-journal  0.0  0.1
+   6993 kworker/u32:1-e  0.0  0.0
+   7137 kworker/u32:0-e  0.0  0.0
    2162 sudo             0.0  0.0
+    763 systemd-udevd    0.0  0.0
     456 kworker/u32:30-  0.0  0.0
+     50 kworker/5:0-eve  0.0  0.0
+    706 systemd-journal  0.0  0.1
+   2169 bash             0.0  0.0
+    739 multipathd       0.0  0.0
    1579 networkd-dispat  0.0  0.1
    2023 systemd          0.0  0.0
-   3116 kworker/u32:2-f  0.0  0.0
-   2169 bash             0.0  0.0
    1675 unattended-upgr  0.0  0.2
    1570 dbus-daemon      0.0  0.0
-    739 multipathd       0.0  0.0
-   1595 udisksd          0.0  0.0
-   2923 upowerd          0.0  0.0
-   1582 polkitd          0.0  0.0
-   1733 ModemManager     0.0  0.0
-   1253 systemd-network  0.0  0.0
-    759 systemd-resolve  0.0  0.0
     601 jbd2/dm-0-8      0.0  0.0
-   3117 kworker/u32:3-e  0.0  0.0
+   1595 udisksd          0.0  0.0
+   1582 polkitd          0.0  0.0
+   1253 systemd-network  0.0  0.0
+   7136 kworker/6:1-eve  0.0  0.0
+   2923 upowerd          0.0  0.0
+   1733 ModemManager     0.0  0.0
+    759 systemd-resolve  0.0  0.0
    1588 systemd-logind   0.0  0.0
+     74 kcompactd0       0.0  0.0
+     15 rcu_preempt      0.0  0.0
    1697 rsyslogd         0.0  0.0
    1701 chronyd          0.0  0.0
-     15 rcu_preempt      0.0  0.0
    2140 bash             0.0  0.0
-     74 kcompactd0       0.0  0.0
    2244 nix-daemon       0.0  0.2
     100 scsi_eh_1        0.0  0.0
      82 kworker/1:1-cgw  0.0  0.0
    1568 chronyd-starter  0.0  0.0
+    666 irq/35-vmw_vmci  0.0  0.0
     597 kworker/6:1H-kb  0.0  0.0
     586 kworker/4:1H-kb  0.0  0.0
     569 kworker/0:2-eve  0.0  0.0
      98 scsi_eh_0        0.0  0.0
+     76 khugepaged       0.0  0.0
       2 kthreadd         0.0  0.0
       3 pool_workqueue_  0.0  0.0
       4 kworker/R-rcu_g  0.0  0.0
@@ -107,7 +109,6 @@
      70 oom_reaper       0.0  0.0
      73 kworker/R-write  0.0  0.0
      75 ksmd             0.0  0.0
-     76 khugepaged       0.0  0.0
      77 kworker/R-kbloc  0.0  0.0
      78 kworker/R-blkcg  0.0  0.0
      79 kworker/R-kinte  0.0  0.0
@@ -201,7 +202,6 @@
     551 kworker/R-kdmfl  0.0  0.0
     587 kworker/1:1H-kb  0.0  0.0
     602 kworker/R-ext4-  0.0  0.0
-    666 irq/35-vmw_vmci  0.0  0.0
     667 irq/36-vmw_vmci  0.0  0.0
     668 irq/37-vmw_vmci  0.0  0.0
     696 kworker/3:1H-kb  0.0  0.0
@@ -229,11 +229,14 @@
    2167 su               0.0  0.0
    2887 sftp-server      0.0  0.0
    2902 kworker/4:2-rcu  0.0  0.0
-   2940 kworker/6:1-cgr  0.0  0.0
    3115 kworker/7:3-cgr  0.0  0.0
-   6992 kworker/7:0-mm_  0.0  0.0
-   6993 kworker/u32:1-e  0.0  0.0
-   7004 bash             0.0  0.0
-   7024 kworker/4:1      0.0  0.0
-   7029 bash             0.0  0.0
-   7059 ps               0.0  0.0
+   7129 kworker/6:2-cgr  0.0  0.0
+   7157 kworker/7:1-cgr  0.0  0.0
+   7187 kworker/u32:2-e  0.0  0.0
+   7189 kworker/u32:4-e  0.0  0.0
+   7194 bash             0.0  0.0
+   7206 bash             0.0  0.0
+   7227 kworker/5:2-eve  0.0  0.0
+   7228 kworker/5:3-eve  0.0  0.0
+   7234 bash             0.0  0.0
+   7265 ps               0.0  0.0
