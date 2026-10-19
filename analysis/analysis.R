@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
-# Análise oficial: lê analysis/runs.csv (uma linha por rodada x resolver) e gera
-# tabelas e figuras. Unidade de repetição = rodada; IC95% t de Student sobre rodadas.
-# Uso: Rscript analysis/analysis.R analysis/runs.csv analysis/output [analysis/overhead.csv] [dir_tabelas_tex]
-# As tabelas .tex vão para o artigo via \input; cada uma declara a campanha de origem.
+# Official analysis: reads analysis/runs.csv (one row per run x resolver) and
+# generates tables and figures. Unit of repetition = run; 95% CI (Student's t) over runs.
+# Usage: Rscript analysis/analysis.R analysis/runs.csv analysis/output [analysis/overhead.csv] [tex_tables_dir]
+# The .tex tables go into the paper via \input; each declares its source campaign.
 suppressPackageStartupMessages({
   library(readr); library(dplyr); library(tidyr); library(ggplot2)
 })
@@ -16,7 +16,7 @@ dir.create(texdir, showWarnings = FALSE, recursive = TRUE)
 prio <- c("confirmatory", "pilot", "validation", "smoke")
 pick_label <- function(labels) prio[prio %in% labels][1]
 f3 <- function(x) ifelse(is.na(x), "--", formatC(x, format = "f", digits = 3))
-tex_meta <- character()   # macros de proveniência para o artigo
+tex_meta <- character()   # provenance macros for the paper
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 ci95 <- function(x) {
@@ -30,63 +30,63 @@ runs <- read_csv(runs_csv, show_col_types = FALSE) |>
          wrong_N = credited_wrong / N, capture = captured / attempted,
          resolver = factor(resolver, levels = c("cgroup", "lineage", "context", "fused")))
 
-# --- validação: nenhuma rodada some sem registro (todas as campanhas, inclusive as com falha)
+# --- validation: no run disappears without a record (all campaigns, including failed ones)
 val <- runs |> distinct(campaign_id, run_id, attempted, captured, lost, excluded_no_ref, git_dirty, label,
                         campaign_runs_failed) |>
   group_by(campaign_id, label, campaign_runs_failed) |>
-  summarise(rodadas = n(), tentadas = sum(attempted), capturadas = sum(captured),
-            perdidas = sum(lost), excluidas_sem_ref = sum(excluded_no_ref),
+  summarise(runs = n(), attempted = sum(attempted), captured = sum(captured),
+            lost = sum(lost), excluded_no_ref = sum(excluded_no_ref),
             git_dirty = any(git_dirty), .groups = "drop")
-write_csv(val, file.path(outdir, "validacao_campanhas.csv"))
-# regra: campanhas com qualquer rodada falha ficam fora das tabelas e figuras
-excluidas <- unique(runs$campaign_id[runs$campaign_runs_failed > 0])
-if (length(excluidas)) message("campanhas excluídas por rodadas falhas: ", paste(excluidas, collapse = ", "))
+write_csv(val, file.path(outdir, "campaign_validation.csv"))
+# rule: campaigns with any failed run stay out of the tables and figures
+excluded <- unique(runs$campaign_id[runs$campaign_runs_failed > 0])
+if (length(excluded)) message("campaigns excluded for failed runs: ", paste(excluded, collapse = ", "))
 runs <- runs |> filter(campaign_runs_failed == 0)
 
-# --- resumo por célula
+# --- per-cell summary
 keys <- c("experiment", "label", "cond", "wrong_label", "mode", "execs", "jitter", "resolver")
-resumo <- runs |>
+cells <- runs |>
   group_by(across(all_of(keys))) |>
-  summarise(rodadas = n(),
+  summarise(runs = n(),
             across(c(C_N, A_N, M_N, I_N, wrong_N, capture),
-                   list(media = ~mean(.x), ic95 = ~ci95(.x))),
+                   list(mean = ~mean(.x), ci95 = ~ci95(.x))),
             C_total = sum(C), A_total = sum(A), M_total = sum(M), I_total = sum(I), N_total = sum(N),
             .groups = "drop")
-write_csv(resumo, file.path(outdir, "resumo_celulas.csv"))
+write_csv(cells, file.path(outdir, "cell_summary.csv"))
 
-# --- diferença pareada context - fused em I/N (mesma rodada, mesmo log)
-pareado <- runs |>
+# --- paired difference context - fused in I/N (same run, same log)
+paired <- runs |>
   filter(resolver %in% c("context", "fused")) |>
   select(all_of(setdiff(keys, "resolver")), run_id, campaign_id, resolver, I_N) |>
   pivot_wider(names_from = resolver, values_from = I_N) |>
   mutate(dif = context - fused) |>
   group_by(across(all_of(setdiff(keys, "resolver")))) |>
-  summarise(rodadas = n(), dif_media = mean(dif), dif_ic95 = ci95(dif), .groups = "drop")
-write_csv(pareado, file.path(outdir, "pareado_context_menos_fused.csv"))
+  summarise(runs = n(), dif_mean = mean(dif), dif_ci95 = ci95(dif), .groups = "drop")
+write_csv(paired, file.path(outdir, "paired_context_minus_fused.csv"))
 
-tema <- theme_bw(base_size = 10) + theme(legend.position = "bottom")
+theme_base <- theme_bw(base_size = 10) + theme(legend.position = "bottom")
 
-# --- figuras E1
-e1 <- resumo |> filter(experiment == "E1")
+# --- E1 figures
+e1 <- cells |> filter(experiment == "E1")
 if (nrow(e1) > 0) {
   for (lab in unique(e1$label)) {
     d <- e1 |> filter(label == lab)
-    g <- ggplot(d, aes(wrong_label, I_N_media, colour = resolver, shape = resolver)) +
+    g <- ggplot(d, aes(wrong_label, I_N_mean, colour = resolver, shape = resolver)) +
       geom_point(position = position_dodge(width = 0.02)) +
-      geom_errorbar(aes(ymin = I_N_media - I_N_ic95, ymax = I_N_media + I_N_ic95),
+      geom_errorbar(aes(ymin = I_N_mean - I_N_ci95, ymax = I_N_mean + I_N_ci95),
                     width = 0.01, position = position_dodge(width = 0.02), na.rm = TRUE) +
       facet_grid(mode ~ cond) +
-      labs(x = "taxa de rótulos errados p", y = "atribuições incorretas I/N",
-           title = paste0("E1 (", lab, "): atribuição incorreta por estrutura")) + tema
+      labs(x = "mislabel fraction p", y = "incorrect attributions I/N",
+           title = paste0("E1 (", lab, "): incorrect attribution per structure")) + theme_base
     ggsave(file.path(outdir, paste0("E1_", lab, "_I_vs_p.pdf")), g, width = 7, height = 4)
-    g2 <- g + aes(y = A_N_media) +
-      geom_errorbar(aes(ymin = A_N_media - A_N_ic95, ymax = A_N_media + A_N_ic95), width = 0.01, na.rm = TRUE) +
-      labs(y = "ambiguidades A/N", title = paste0("E1 (", lab, "): ambiguidade por estrutura"))
+    g2 <- g + aes(y = A_N_mean) +
+      geom_errorbar(aes(ymin = A_N_mean - A_N_ci95, ymax = A_N_mean + A_N_ci95), width = 0.01, na.rm = TRUE) +
+      labs(y = "ambiguities A/N", title = paste0("E1 (", lab, "): ambiguity per structure"))
     ggsave(file.path(outdir, paste0("E1_", lab, "_A_vs_p.pdf")), g2, width = 7, height = 4)
   }
 }
 
-# --- E1: decomposição contábil por execução (RQ3) e limite de Clopper-Pearson (H2a)
+# --- E1: per-execution accounting decomposition and Clopper-Pearson bound (H2a)
 if (nrow(e1) > 0) {
   labA <- pick_label(unique(e1$label))
   dA <- runs |> filter(experiment == "E1", label == labA, wrong_label > 0, resolver %in% c("context", "fused"))
@@ -94,63 +94,63 @@ if (nrow(e1) > 0) {
     summarise(runs = n_distinct(paste(campaign_id, run_id)), ok = mean(credited_ok), wrong = mean(credited_wrong),
               unc = mean(uncredited), net = mean(abs_net_error), .groups = "drop") |>
     pivot_wider(names_from = resolver, values_from = c(ok, wrong, unc, net)) |> arrange(wrong_label, cond)
-  write_csv(tA, file.path(outdir, "E1_contabilidade.csv"))
-  linhas <- sprintf("%s & %.2f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f \\\\", tA$cond, tA$wrong_label,
+  write_csv(tA, file.path(outdir, "E1_accounting.csv"))
+  rows <- sprintf("%s & %.2f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f & %.0f \\\\", tA$cond, tA$wrong_label,
                     tA$ok_context, tA$wrong_context, tA$unc_context, tA$net_context,
                     tA$ok_fused, tA$wrong_fused, tA$unc_fused, tA$net_fused)
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                "\\begin{tabular}{@{}lrrrrrrrrr@{}}", "\\toprule",
                " & & \\multicolumn{4}{c}{context-only} & \\multicolumn{4}{c}{fused} \\\\",
                "\\cmidrule(lr){3-6}\\cmidrule(l){7-10}",
                "Cond. & $p$ & ok & wrong & unc. & $|$net$|$ & ok & wrong & unc. & $|$net$|$ \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_acct.tex"))
-  # H2a: em N0/N1 com rótulos errados, conexões rotuladas errado e I do fused
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_acct.tex"))
+  # H2a: in N0/N1 with mislabels, mislabeled connections and the fused resolver's I
   h <- dA |> filter(cond %in% c("N0", "N1"))
-  nmis <- sum(h$I[h$resolver == "context"])          # conexões com rótulo errado (context as credita errado)
+  nmis <- sum(h$I[h$resolver == "context"])          # mislabeled connections (context credits them wrongly)
   ifz <- sum(h$I[h$resolver == "fused"])
   up <- qbeta(0.95, ifz + 1, max(nmis - ifz, 1e-9))
   tex_meta <- c(tex_meta, sprintf("\\def\\EOneMislabeled{%d}", nmis), sprintf("\\def\\EOneFusedWrong{%d}", ifz),
                 sprintf("\\def\\EOneFusedUp{%.2f}", 100 * up))
 }
 
-# --- figuras E2
-e2 <- resumo |> filter(experiment == "E2", resolver == "fused")
+# --- E2 figures
+e2 <- cells |> filter(experiment == "E2", resolver == "fused")
 if (nrow(e2) > 0) {
   for (lab in unique(e2$label)) {
-    d <- e2 |> filter(label == lab) |> mutate(taxa = ifelse(jitter == 0, "máxima", "com pausa"))
-    g <- ggplot(d, aes(execs, capture_media, colour = taxa)) +
+    d <- e2 |> filter(label == lab) |> mutate(rate = ifelse(jitter == 0, "maximum", "paced"))
+    g <- ggplot(d, aes(execs, capture_mean, colour = rate)) +
       geom_line() + geom_point() +
-      geom_errorbar(aes(ymin = capture_media - capture_ic95, ymax = capture_media + capture_ic95),
+      geom_errorbar(aes(ymin = capture_mean - capture_ci95, ymax = capture_mean + capture_ci95),
                     width = 0.05, na.rm = TRUE) +
       scale_x_log10(breaks = c(2, 4, 8, 16, 32, 64)) + facet_wrap(~cond) +
-      labs(x = "execuções concorrentes K", y = "fração capturada",
-           title = paste0("E2 (", lab, "): captura vs. concorrência")) + tema
-    ggsave(file.path(outdir, paste0("E2_", lab, "_captura_vs_K.pdf")), g, width = 6, height = 3.5)
+      labs(x = "concurrent executions K", y = "captured fraction",
+           title = paste0("E2 (", lab, "): capture vs. concurrency")) + theme_base
+    ggsave(file.path(outdir, paste0("E2_", lab, "_capture_vs_K.pdf")), g, width = 6, height = 3.5)
   }
 }
 
-# --- tabela LaTeX E1 (modos inproc/subproc agregados; a igualdade entre modos é checada abaixo)
+# --- LaTeX table E1 (inproc/subproc modes pooled; the equality between modes is checked below)
 if (nrow(e1) > 0) {
   lab <- pick_label(unique(e1$label))
   d <- runs |> filter(experiment == "E1", label == lab)
-  modos <- d |> group_by(cond, wrong_label, resolver, mode) |> summarise(I = sum(I), A = sum(A), .groups = "drop") |>
-    group_by(cond, wrong_label, resolver) |> summarise(iguais = n_distinct(I) == 1 & n_distinct(A) == 1, .groups = "drop")
-  write_csv(modos, file.path(outdir, "E1_modos_iguais.csv"))
+  modes <- d |> group_by(cond, wrong_label, resolver, mode) |> summarise(I = sum(I), A = sum(A), .groups = "drop") |>
+    group_by(cond, wrong_label, resolver) |> summarise(equal = n_distinct(I) == 1 & n_distinct(A) == 1, .groups = "drop")
+  write_csv(modes, file.path(outdir, "E1_modes_equal.csv"))
   t <- d |> group_by(cond, wrong_label, resolver) |>
     summarise(A_N = mean(A_N), I_N = mean(I_N), runs = n_distinct(run_id), .groups = "drop") |>
     pivot_wider(names_from = resolver, values_from = c(A_N, I_N))
-  linhas <- sprintf("%s & %.2f & %s & %s & %s & %s & %s \\\\", t$cond, t$wrong_label,
+  rows <- sprintf("%s & %.2f & %s & %s & %s & %s & %s \\\\", t$cond, t$wrong_label,
                     f3(t$A_N_cgroup), f3(t$A_N_lineage), f3(t$I_N_context), f3(t$I_N_fused), f3(t$A_N_fused))
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                "\\begin{tabular}{@{}lcccccc@{}}", "\\toprule",
                "Cond. & $p$ & cgroup A/N & lineage A/N & context I/N & fused I/N & fused A/N \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e1.tex"))
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e1.tex"))
   tex_meta <- c(tex_meta, sprintf("\\def\\EOneLabel{%s}", lab),
                 sprintf("\\def\\EOneRuns{%d}", n_distinct(paste(d$campaign_id, d$run_id))),
                 sprintf("\\def\\EOneCampaigns{%s}", paste(unique(d$campaign_id), collapse = ", ")))
 }
 
-# --- tabela LaTeX E2 (escala): captura e desfechos do fused por estrutura, K e taxa
+# --- LaTeX table E2 (scale): capture and fused outcomes per structure, K, and rate
 e2r <- runs |> filter(experiment == "E2")
 if (nrow(e2r) > 0) {
   lab <- pick_label(unique(e2r$label))
@@ -159,18 +159,18 @@ if (nrow(e2r) > 0) {
     summarise(runs = n(), cap = mean(capture), cap_ic = ci95(capture), lost = sum(lost),
               C_N = mean(C_N), A_N = mean(A_N), I_N = mean(I_N), .groups = "drop") |>
     arrange(cond, jitter, execs)
-  write_csv(d, file.path(outdir, "E2_escala.csv"))
-  # tabela compacta: uma linha por estrutura e taxa; pior caso sobre K (detalhe completo no CSV)
+  write_csv(d, file.path(outdir, "E2_scale.csv"))
+  # compact table: one row per structure and rate; worst case over K (full detail in the CSV)
   dc <- d |> group_by(cond, jitter) |>
     summarise(kmin = min(execs), kmax = max(execs), runs = sum(runs), cap_min = min(cap), lost = sum(lost),
               C_min = min(C_N), I_max = max(I_N), .groups = "drop")
-  linhas <- sprintf("%s & %s & %d--%d & %d & %s & %d & %s & %s \\\\",
+  rows <- sprintf("%s & %s & %d--%d & %d & %s & %d & %s & %s \\\\",
                     dc$cond, ifelse(dc$jitter == 0, "max", "paced"), as.integer(dc$kmin), as.integer(dc$kmax),
                     as.integer(dc$runs), f3(dc$cap_min), as.integer(dc$lost), f3(dc$C_min), f3(dc$I_max))
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão (pior caso sobre K; detalhe em E2_escala.csv)",
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand (worst case over K; detail in E2_scale.csv)",
                "\\begin{tabular}{@{}llcrrrrr@{}}", "\\toprule",
                "Cond. & Rate & $K$ & Runs & Capt. (min) & Lost & C/N (min) & I/N (max) \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e2.tex"))
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e2.tex"))
   tex_meta <- c(tex_meta, sprintf("\\def\\ETwoLabel{%s}", lab),
                 sprintf("\\def\\ETwoRuns{%d}", n_distinct(paste(e2r$campaign_id, e2r$run_id)[e2r$label == lab])))
 }
@@ -183,7 +183,7 @@ if (file.exists(ovh_csv)) {
   ov <- ov |> filter(label == lab)
   base <- ov |> filter(instr == "none", markers == 0) |> summarise(p50 = mean(p50_ns), thr = mean(throughput_cps))
   e3 <- ov |> group_by(instr, markers) |>
-    summarise(rodadas = n(), boots = n_distinct(boot_id),
+    summarise(runs = n(), boots = n_distinct(boot_id),
               p50_us = mean(p50_ns) / 1000, p50_ic = ci95(p50_ns) / 1000,
               p99_us = mean(p99_ns) / 1000, p99_ic = ci95(p99_ns) / 1000,
               thr_k = mean(throughput_cps) / 1000, thr_ic = ci95(throughput_cps) / 1000,
@@ -191,19 +191,19 @@ if (file.exists(ovh_csv)) {
     mutate(p50_rel = 100 * (p50_us * 1000 / base$p50 - 1), thr_rel = 100 * (thr_k * 1000 / base$thr - 1))
   write_csv(e3, file.path(outdir, "E3_overhead.csv"))
   pm <- function(m, h) ifelse(is.na(h), sprintf("%.1f", m), sprintf("%.1f$\\pm$%.1f", m, h))
-  linhas <- sprintf("%s & %s & %s & %s & %s & %+.1f\\%% & %s \\\\",
+  rows <- sprintf("%s & %s & %s & %s & %s & %+.1f\\%% & %s \\\\",
                     e3$instr, ifelse(e3$markers == 1, "yes", "no"),
                     pm(e3$p50_us, e3$p50_ic), pm(e3$p99_us, e3$p99_ic), pm(e3$thr_k, e3$thr_ic), e3$p50_rel,
                     ifelse(is.na(e3$bpf_ns) | is.nan(e3$bpf_ns), "--", sprintf("%.0f", e3$bpf_ns)))
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                "\\begin{tabular}{@{}llrrrrr@{}}", "\\toprule",
                "Instr. & Markers & p50 ($\\mu$s) & p99 ($\\mu$s) & kconn/s & $\\Delta$p50 & BPF ns/run \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e3.tex"))
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e3.tex"))
   tex_meta <- c(tex_meta, sprintf("\\def\\EThreeLabel{%s}", lab),
                 sprintf("\\def\\EThreeRuns{%d}", nrow(ov)))
 }
 
-# --- equivalência E1fast x E1: mesmas contagens por célula e resolver (frações por rodada)
+# --- E1fast vs E1 equivalence: same counts per cell and resolver (per-run fractions)
 ef <- runs |> filter(experiment == "E1fast")
 if (nrow(ef) > 0) ef <- ef |> filter(label == pick_label(unique(ef$label)))
 if (nrow(ef) > 0) {
@@ -214,15 +214,15 @@ if (nrow(ef) > 0) {
     summarise(C_f = mean(C_N), A_f = mean(A_N), M_f = mean(M_N), I_f = mean(I_N),
               capture_f = mean(capture), runs_f = n(), .groups = "drop")
   eq <- inner_join(ref, fst, by = c("cond", "wrong_label", "mode", "resolver")) |>
-    mutate(igual = abs(C - C_f) < 1e-12 & abs(A - A_f) < 1e-12 & abs(M - M_f) < 1e-12 & abs(I - I_f) < 1e-12)
-  write_csv(eq, file.path(outdir, "E1fast_equivalencia.csv"))
+    mutate(equal = abs(C - C_f) < 1e-12 & abs(A - A_f) < 1e-12 & abs(M - M_f) < 1e-12 & abs(I - I_f) < 1e-12)
+  write_csv(eq, file.path(outdir, "E1fast_equivalence.csv"))
   tex_meta <- c(tex_meta, sprintf("\\def\\EOneFastCells{%d}", nrow(eq)),
-                sprintf("\\def\\EOneFastEqual{%d}", sum(eq$igual)),
+                sprintf("\\def\\EOneFastEqual{%d}", sum(eq$equal)),
                 sprintf("\\def\\EOneFastRuns{%d}", n_distinct(paste(ef$campaign_id, ef$run_id))))
-  message("equivalência E1fast: ", sum(eq$igual), "/", nrow(eq), " células iguais")
+  message("E1fast equivalence: ", sum(eq$equal), "/", nrow(eq), " equal cells")
 }
 
-# --- E4: runtime real (servidor MCP compartilhado)
+# --- E4: real runtime (shared MCP server)
 e4r <- runs |> filter(experiment == "E4")
 if (nrow(e4r) > 0) {
   lab <- pick_label(unique(e4r$label))
@@ -233,25 +233,25 @@ if (nrow(e4r) > 0) {
               runs = n_distinct(paste(campaign_id, run_id)), cap = mean(capture), .groups = "drop") |>
     pivot_wider(names_from = resolver, values_from = c(C_N, A_N, I_N)) |> arrange(tool, execs)
   write_csv(t4, file.path(outdir, "E4_mcp.csv"))
-  linhas <- sprintf("%s & %d & %s & %s & %s & %s & %s & %.1f \\\\",
+  rows <- sprintf("%s & %d & %s & %s & %s & %s & %s & %.1f \\\\",
                     t4$tool, as.integer(t4$execs), f3(t4$A_N_lineage), f3(t4$I_N_context),
                     f3(t4$C_N_fused), f3(t4$I_N_fused), f3(t4$A_N_fused), t4$tool_ms)
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                "\\begin{tabular}{@{}lrrrrrrr@{}}", "\\toprule",
                "Tool & $K$ & lineage A/N & context I/N & fused C/N & fused I/N & fused A/N & ms/call \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e4.tex"))
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e4.tex"))
   tex_meta <- c(tex_meta, sprintf("\\def\\EFourLabel{%s}", lab),
                 sprintf("\\def\\EFourRuns{%d}", n_distinct(paste(d$campaign_id, d$run_id))),
                 sprintf("\\def\\EFourMCP{%s}", unique(na.omit(d$mcp_version))[1]))
 }
 
-# --- E5: framework (vínculo automático por tarefa) vs. marcadores manuais, servidor MCP real
+# --- E5: framework (automatic task-scoped binding) vs. manual markers, real MCP server
 e5r <- runs |> filter(experiment == "E5")
 if (nrow(e5r) > 0) {
   lab5 <- pick_label(unique(e5r$label))
   d5 <- e5r |> filter(label == lab5, resolver == "fused") |>
     mutate(tool = factor(tool, levels = c("sync", "thread", "subproc", "async")))
-  # limite superior unilateral 95% (Clopper-Pearson) da taxa de erro por conexão
+  # one-sided 95% upper bound (Clopper-Pearson) on the per-connection error rate
   cp_up <- function(x, n) ifelse(n > 0, qbeta(0.95, x + 1, pmax(n - x, 1e-9)), NA)
   t5 <- d5 |> group_by(binding_mode, tool, execs) |>
     summarise(runs = n_distinct(paste(campaign_id, run_id)), boots = n_distinct(boot_id),
@@ -262,22 +262,22 @@ if (nrow(e5r) > 0) {
   w5 <- t5 |> select(binding_mode, tool, execs, C_N, I_N, I_up, tool_ms, N) |>
     pivot_wider(names_from = binding_mode, values_from = c(C_N, I_N, I_up, tool_ms, N)) |> arrange(tool, execs)
   pct <- function(x) ifelse(is.na(x), "--", sprintf("%.1f", 100 * x))
-  linhas <- sprintf("%s & %d & %s & %s & %s & %s & %s & %.1f & %.1f \\\\",
+  rows <- sprintf("%s & %d & %s & %s & %s & %s & %s & %.1f & %.1f \\\\",
                     w5$tool, as.integer(w5$execs), pct(w5$C_N_manual), pct(w5$I_N_manual),
                     pct(w5$C_N_auto), pct(w5$I_N_auto), pct(w5$I_up_auto), w5$tool_ms_manual, w5$tool_ms_auto)
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                "\\begin{tabular}{@{}lrrrrrrrr@{}}", "\\toprule",
                " & & \\multicolumn{2}{c}{manual (\\%)} & \\multicolumn{3}{c}{automatic (\\%)} & \\multicolumn{2}{c}{ms/call} \\\\",
                "\\cmidrule(lr){3-4}\\cmidrule(lr){5-7}\\cmidrule(l){8-9}",
                "Tool & $K$ & C/N & I/N & C/N & I/N & I/N$\\le$ & man. & auto \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e5.tex"))
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e5.tex"))
   tex_meta <- c(tex_meta, sprintf("\\def\\EFiveLabel{%s}", lab5),
                 sprintf("\\def\\EFiveRuns{%d}", n_distinct(paste(d5$campaign_id, d5$run_id))),
                 sprintf("\\def\\EFiveConnAuto{%d}", sum(t5$N[t5$binding_mode == "auto"])),
                 sprintf("\\def\\EFiveWrongAuto{%d}", sum(t5$I[t5$binding_mode == "auto"])))
 }
 
-# --- E6: política por execução (decisões vs. referência)
+# --- E6: per-execution policy (decisions vs. reference)
 e6r <- runs |> filter(experiment == "E6", resolver == "fused")
 if (nrow(e6r) > 0) {
   lab6 <- pick_label(unique(e6r$label))
@@ -292,20 +292,20 @@ if (nrow(e6r) > 0) {
   w6 <- t6 |> select(binding_mode, tool, execs, ok, FA_N, FD_N, err_up) |>
     pivot_wider(names_from = binding_mode, values_from = c(ok, FA_N, FD_N, err_up)) |> arrange(tool, execs)
   pc <- function(x) ifelse(is.na(x), "--", sprintf("%.1f", 100 * x))
-  linhas <- sprintf("%s & %d & %s & %s & %s & %s & %s & %s & %s \\\\", w6$tool, as.integer(w6$execs),
+  rows <- sprintf("%s & %d & %s & %s & %s & %s & %s & %s & %s \\\\", w6$tool, as.integer(w6$execs),
                     pc(w6$ok_manual), pc(w6$FA_N_manual), pc(w6$FD_N_manual),
                     pc(w6$ok_auto), pc(w6$FA_N_auto), pc(w6$FD_N_auto), pc(w6$err_up_auto))
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                "\\begin{tabular}{@{}lrrrrrrrr@{}}", "\\toprule",
                " & & \\multicolumn{3}{c}{manual (\\%)} & \\multicolumn{4}{c}{automatic (\\%)} \\\\",
                "\\cmidrule(lr){3-5}\\cmidrule(l){6-9}",
                "Tool & $K$ & correct & FA & FD & correct & FA & FD & err$\\le$ \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e6.tex"))
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e6.tex"))
   tex_meta <- c(tex_meta, sprintf("\\def\\ESixLabel{%s}", lab6), sprintf("\\def\\ESixRuns{%d}", sum(t6$runs)),
                 sprintf("\\def\\ESixDecAuto{%d}", sum(t6$N[t6$binding_mode == "auto"])))
 }
 
-# --- E7: agentes LLM reais (atribuição por resolvedor + política)
+# --- E7: real LLM agents (attribution per resolver + policy)
 e7r <- runs |> filter(experiment == "E7")
 if (nrow(e7r) > 0) {
   lab7 <- pick_label(unique(e7r$label))
@@ -319,11 +319,11 @@ if (nrow(e7r) > 0) {
     summarise(runs = n(), N = sum(pol_N), TA = sum(pol_TA), TD = sum(pol_TD), FA = sum(pol_FA),
               FD = sum(pol_FD), ND = sum(pol_ND), tool_ms = median(tool_ms_p50, na.rm = TRUE))
   write_csv(t7, file.path(outdir, "E7_attrib.csv")); write_csv(p7, file.path(outdir, "E7_policy.csv"))
-  linhas <- sprintf("%s & %d & %.3f & %.3f & %.3f & %.3f \\\\", t7$resolver, t7$N, t7$C_N, t7$A_N, t7$M_N, t7$I_N)
-  writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+  rows <- sprintf("%s & %d & %.3f & %.3f & %.3f & %.3f \\\\", t7$resolver, t7$N, t7$C_N, t7$A_N, t7$M_N, t7$I_N)
+  writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                "\\begin{tabular}{@{}lrrrrr@{}}", "\\toprule",
                "Resolver & N & C/N & A/N & M/N & I/N \\\\", "\\midrule",
-               linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e7.tex"))
+               rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e7.tex"))
   fz <- t7[t7$resolver == "fused", ]
   tex_meta <- c(tex_meta, sprintf("\\def\\ESevenLabel{%s}", lab7), sprintf("\\def\\ESevenRuns{%d}", p7$runs),
                 sprintf("\\def\\ESevenConn{%d}", fz$N), sprintf("\\def\\ESevenWrong{%d}", fz$I),
@@ -333,7 +333,7 @@ if (nrow(e7r) > 0) {
                 sprintf("\\def\\ESevenToolMs{%.0f}", p7$tool_ms))
 }
 
-# --- E3b: decomposição do custo (ablação de variantes do coletor)
+# --- E3b: cost decomposition (ablation of collector variants)
 if (file.exists(ovh_csv)) {
   ob <- read_csv(ovh_csv, show_col_types = FALSE) |> filter(campaign_runs_failed == 0, experiment == "E3b")
   if (nrow(ob) > 0) {
@@ -342,27 +342,27 @@ if (file.exists(ovh_csv)) {
     baseb <- ob |> filter(instr == "none", markers == 0) |> summarise(p50 = mean(p50_ns))
     e3b <- ob |> mutate(instr = factor(instr, levels = c("none", "count", "collector", "fast"))) |>
       group_by(instr, markers) |>
-      summarise(rodadas = n(), boots = n_distinct(boot_id),
+      summarise(runs = n(), boots = n_distinct(boot_id),
                 p50_us = mean(p50_ns) / 1000, p50_ic = ci95(p50_ns) / 1000,
                 p99_us = mean(p99_ns) / 1000, thr_k = mean(throughput_cps) / 1000,
                 bpf_ns = mean(bpf_ns_per_run, na.rm = TRUE), .groups = "drop") |>
       mutate(add_us = p50_us - baseb$p50 / 1000, rel = 100 * (p50_us * 1000 / baseb$p50 - 1)) |>
       arrange(markers, instr)
-    write_csv(e3b, file.path(outdir, "E3b_ablacao.csv"))
-    nomes <- c(none = "none", count = "probes only", collector = "full", fast = "optimized")
-    linhas <- sprintf("%s & %s & %.1f$\\pm$%.1f & %.1f & %+.1f & %+.1f\\%% & %s \\\\",
-                      nomes[as.character(e3b$instr)], ifelse(e3b$markers == 1, "yes", "no"),
+    write_csv(e3b, file.path(outdir, "E3b_ablation.csv"))
+    names_b <- c(none = "none", count = "probes only", collector = "full", fast = "optimized")
+    rows <- sprintf("%s & %s & %.1f$\\pm$%.1f & %.1f & %+.1f & %+.1f\\%% & %s \\\\",
+                      names_b[as.character(e3b$instr)], ifelse(e3b$markers == 1, "yes", "no"),
                       e3b$p50_us, ifelse(is.na(e3b$p50_ic), 0, e3b$p50_ic), e3b$p99_us, e3b$add_us, e3b$rel,
                       ifelse(is.na(e3b$bpf_ns) | is.nan(e3b$bpf_ns), "--", sprintf("%.0f", e3b$bpf_ns)))
-    writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+    writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                  "\\begin{tabular}{@{}llrrrrr@{}}", "\\toprule",
                  "Collector & Markers & p50 ($\\mu$s) & p99 ($\\mu$s) & $+\\mu$s & $\\Delta$p50 & BPF ns/run \\\\", "\\midrule",
-                 linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e3b.tex"))
+                 rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e3b.tex"))
     tex_meta <- c(tex_meta, sprintf("\\def\\EThreeBLabel{%s}", labb), sprintf("\\def\\EThreeBRuns{%d}", nrow(ob)))
   }
 }
 
-# --- E2b: capacidade do coletor
+# --- E2b: collector capacity
 cap_csv <- "analysis/capacity.csv"
 if (file.exists(cap_csv)) {
   cb <- read_csv(cap_csv, show_col_types = FALSE) |> filter(campaign_runs_failed == 0)
@@ -372,28 +372,28 @@ if (file.exists(cap_csv)) {
       summarise(runs = n(), rate_k = mean(agg_rate_cps) / 1000, rate_ic = ci95(agg_rate_cps) / 1000,
                 cap = mean(capture), cap_min = min(capture), lost = sum(lost_reported), .groups = "drop") |>
       arrange(collector, par)
-    write_csv(tcb, file.path(outdir, "E2b_capacidade.csv"))
+    write_csv(tcb, file.path(outdir, "E2b_capacity.csv"))
     nm <- c("agentnet.bt" = "full", "agentnet-fast.bt" = "optimized")
-    linhas <- sprintf("%s & %d & %.1f$\\pm$%.1f & %.4f & %.4f & %d \\\\", nm[tcb$collector], as.integer(tcb$par),
+    rows <- sprintf("%s & %d & %.1f$\\pm$%.1f & %.4f & %.4f & %d \\\\", nm[tcb$collector], as.integer(tcb$par),
                       tcb$rate_k, ifelse(is.na(tcb$rate_ic), 0, tcb$rate_ic), tcb$cap, tcb$cap_min, as.integer(tcb$lost))
-    writeLines(c("% gerado por analysis/analysis.R — não editar à mão",
+    writeLines(c("% generated by analysis/analysis.R; do not edit by hand",
                  "\\begin{tabular}{@{}lrrrrr@{}}", "\\toprule",
                  "Collector & $P$ & kconn/s & capture & min. & lost \\\\", "\\midrule",
-                 linhas, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e2b.tex"))
+                 rows, "\\bottomrule", "\\end{tabular}"), file.path(texdir, "tab_e2b.tex"))
     tex_meta <- c(tex_meta, sprintf("\\def\\ETwoBLabel{%s}", labc), sprintf("\\def\\ETwoBRuns{%d}", sum(tcb$runs)))
   }
 }
 
 eqf <- file.path(outdir, "agentnetd_equiv.json")
 if (file.exists(eqf)) {
-  eqt <- paste(readLines(eqf), collapse = " ")   # JSON simples gerado por tests/test_agentnetd_equiv.py
+  eqt <- paste(readLines(eqf), collapse = " ")   # simple JSON generated by tests/test_agentnetd_equiv.py
   num <- function(k) as.integer(sub(paste0('.*"', k, '": *([0-9]+).*'), "\\1", eqt))
   tex_meta <- c(tex_meta, sprintf("\\def\\AgentnetdRuns{%d}", num("runs")),
                 sprintf("\\def\\AgentnetdEqual{%d}", num("equivalent")))
 }
 
-# --- Experimentos adicionais: placa de rede real (E5net, E6net, E3net), modelos maiores
-# com GPU em outra máquina (E7m) e AgentProvenance executado ao lado do agentnet (E5ap)
+# --- Additional experiments: real network interface (E5net, E6net, E3net), larger
+# models on a GPU in another machine (E7m), and AgentProvenance run next to agentnet (E5ap)
 cpu <- function(x, n) ifelse(n > 0, qbeta(0.95, x + 1, pmax(n - x, 1e-9)), NA)
 e5n <- runs |> filter(experiment == "E5net", resolver == "fused")
 if (nrow(e5n) > 0) {
@@ -532,12 +532,12 @@ labs_exp <- c(E1 = if (exists("e1") && nrow(e1) > 0) pick_label(unique(e1$label)
               E5net = if (exists("lab5n")) lab5n else NA, E6net = if (exists("lab6n")) lab6n else NA,
               E7m = if (exists("lab7m")) lab7m else NA, E7c = if (exists("lab7c")) lab7c else NA, E7o = if (exists("lab7o")) lab7o else NA, E3net = if (exists("lab3n")) lab3n else NA)
 labs_exp <- labs_exp[!is.na(labs_exp)]
-nao_conf <- labs_exp[labs_exp != "confirmatory"]
-banner <- if (length(nao_conf) == 0) "\\def\\ResultsBanner{}" else
+not_conf <- labs_exp[labs_exp != "confirmatory"]
+banner <- if (length(not_conf) == 0) "\\def\\ResultsBanner{}" else
   sprintf("\\def\\ResultsBanner{\\noindent\\fbox{\\parbox{0.96\\columnwidth}{\\textcolor{red}{\\textbf{PRELIMINARY DATA:} %s --- regenerate from confirmatory campaigns before submission.}}}\\par\\medskip}",
-          paste(sprintf("%s from %s campaign", names(nao_conf), nao_conf), collapse = "; "))
+          paste(sprintf("%s from %s campaign", names(not_conf), not_conf), collapse = "; "))
 tex_meta <- c(tex_meta, banner)
-writeLines(c("% gerado por analysis/analysis.R — proveniência dos números do artigo", tex_meta),
+writeLines(c("% generated by analysis/analysis.R: provenance of the paper's numbers", tex_meta),
            file.path(texdir, "results_meta.tex"))
 writeLines(capture.output(sessionInfo()), file.path(outdir, "sessionInfo.txt"))
-cat("análise concluída:", nrow(runs) / 4, "rodadas;", nrow(resumo), "células ->", outdir, "\n")
+cat("analysis done:", nrow(runs) / 4, "runs;", nrow(cells), "cells ->", outdir, "\n")

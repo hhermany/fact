@@ -1,6 +1,6 @@
 {
   "experiment": "E4",
-  "description": "Runtime real: servidor MCP (SDK oficial 1.6.0, FastMCP, SSE) compartilhado por K sessões; quatro padrões de execução de ferramenta.",
+  "description": "Real runtime: an MCP server (official SDK 1.6.0, FastMCP, SSE) shared by K sessions; four tool execution patterns.",
   "factors": {
     "tool": ["sync", "thread", "subproc", "async"],
     "execs": [2, 4]

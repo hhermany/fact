@@ -1,4 +1,4 @@
-experiment,label,cond,wrong_label,mode,execs,jitter,rodadas,dif_media,dif_ic95
+experiment,label,cond,wrong_label,mode,execs,jitter,runs,dif_mean,dif_ci95
 E1,confirmatory,N0,0,inproc,2,0.01,6,0,0
 E1,confirmatory,N0,0,subproc,2,0.01,6,0,0
 E1,confirmatory,N0,0.05,inproc,2,0.01,6,0.05,0

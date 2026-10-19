@@ -1,6 +1,6 @@
-// agentnet_policy: carrega o programa BPF, prende os mapas em /sys/fs/bpf/agentnet,
-// anexa ao cgroup indicado e imprime cada decisão como uma linha JSON.
-// Uso: agentnet_policy <cgroup_path> <porta_lo> <porta_hi> <no_ctx_allow 0|1> [obj] [linhagem 0|1|2]
+// agentnet_policy: loads the BPF program, pins the maps at /sys/fs/bpf/agentnet,
+// attaches it to the given cgroup, and prints each decision as one JSON line.
+// Usage: agentnet_policy <cgroup_path> <port_lo> <port_hi> <no_ctx_allow 0|1> [obj] [lineage 0|1|2]
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -41,7 +41,7 @@ static int on_event(void *ctx, void *data, size_t sz)
 int main(int argc, char **argv)
 {
 	if (argc < 5) {
-		fprintf(stderr, "uso: %s <cgroup> <lo> <hi> <no_ctx_allow> [obj]\n", argv[0]);
+		fprintf(stderr, "usage: %s <cgroup> <lo> <hi> <no_ctx_allow> [obj] [lineage]\n", argv[0]);
 		return 2;
 	}
 	const char *obj_path = argc > 5 ? argv[5] : "agentnet_policy.bpf.o";
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
 	struct bpf_object *obj = bpf_object__open_file(obj_path, NULL);
 	if (!obj) { perror("open"); return 1; }
-	if (bpf_object__load(obj)) { fprintf(stderr, "load falhou\n"); return 1; }
+	if (bpf_object__load(obj)) { fprintf(stderr, "load failed\n"); return 1; }
 
 	mkdir("/sys/fs/bpf/agentnet", 0700);
 	const char *pins[] = {"ctx_map", "allow_map", "cfg_map", "dom_map", "owner_map"};
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 		snprintf(p, sizeof(p), "/sys/fs/bpf/agentnet/%s", pins[i]);
 		unlink(p);
 		if (bpf_map__pin(bpf_object__find_map_by_name(obj, pins[i]), p)) {
-			fprintf(stderr, "pin %s falhou\n", p); return 1;
+			fprintf(stderr, "pin %s failed\n", p); return 1;
 		}
 	}
 	struct cfg c = {(unsigned)atoi(argv[2]), (unsigned)atoi(argv[3]), (unsigned)atoi(argv[4]),
@@ -72,13 +72,13 @@ int main(int argc, char **argv)
 	const char *tps[] = {"on_openat", "on_fork", "on_exit"};
 	for (int i = 0; i < 3; i++) {
 		links[nl] = bpf_program__attach(bpf_object__find_program_by_name(obj, tps[i]));
-		if (!links[nl]) { fprintf(stderr, "attach %s falhou\n", tps[i]); return 1; }
+		if (!links[nl]) { fprintf(stderr, "attach %s failed\n", tps[i]); return 1; }
 		nl++;
 	}
 	int cg = open(argv[1], O_RDONLY | O_DIRECTORY);
 	if (cg < 0) { perror("cgroup"); return 1; }
 	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_connect4"), cg);
-	if (!links[nl]) { fprintf(stderr, "attach cgroup falhou\n"); return 1; }
+	if (!links[nl]) { fprintf(stderr, "attach cgroup failed\n"); return 1; }
 	nl++;
 
 	struct ring_buffer *rb = ring_buffer__new(bpf_map__fd(bpf_object__find_map_by_name(obj, "events")),

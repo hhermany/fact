@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
-"""Servidor MCP (SDK oficial, FastMCP, transporte SSE) usado no E4.
+"""MCP server (official SDK, FastMCP, SSE transport) used in E4.
 
-Um único processo atende todas as sessões de cliente (worker compartilhado).
-Cada ferramenta abre UMA conexão TCP para a porta pedida e emite os marcadores
-de contexto do agentnet (vínculo cooperativo do runtime), em quatro padrões de
-execução reais:
+A single process serves every client session (shared worker). Each tool opens
+ONE TCP connection to the requested port and emits agentnet's context markers
+(cooperative runtime binding), in four real execution patterns:
 
-  sync_get     função síncrona: o FastMCP a executa na thread do event loop
-               (serializada; ver modelcontextprotocol/python-sdk#1839)
-  thread_get   assíncrona que delega a uma thread do pool (anyio.to_thread);
-               o marcador é emitido dentro da thread
-  subproc_get  assíncrona que cria um subprocesso (python -c connect);
-               o filho herda o contexto no fork
-  async_get    assíncrona com await antes do connect: várias chamadas se
-               intercalam na MESMA thread (limite declarado do vínculo por thread)
+  sync_get     synchronous function: FastMCP runs it on the event-loop thread
+               (serialized; see modelcontextprotocol/python-sdk#1839)
+  thread_get   asynchronous, delegating to a pool thread (anyio.to_thread);
+               the marker is emitted inside the thread
+  subproc_get  asynchronous, creating a subprocess (python -c connect);
+               the child inherits the context at fork
+  async_get    asynchronous with an await before the connect: several calls
+               interleave on the SAME thread (the stated limit of thread-keyed binding)
 
-Modos de vínculo (--binding):
-  manual  as ferramentas emitem os marcadores (comportamento original do E4);
-  auto    as ferramentas NÃO emitem marcadores: o servidor é instrumentado pelo
-          agentnet_rt (identidade por tarefa via contextvars, entregue ao kernel
-          no connect/fork); a identidade vem do _meta da requisição.
+Binding modes (--binding):
+  manual  the tools emit the markers (the original E4 behavior);
+  auto    the tools do NOT emit markers: the server is instrumented by
+          agentnet_rt (per-task identity via contextvars, handed to the kernel
+          at connect/fork); the identity comes from the request's _meta.
 
-Uso: python3 mcp_e4_server.py --port 64999 [--binding manual|auto]
+Usage: python3 mcp_e4_server.py --port 64999 [--binding manual|auto]
 """
 import argparse
 import asyncio
@@ -35,8 +34,8 @@ from mcp.server.fastmcp import FastMCP
 
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
-LISTEN = "127.0.0.1"                                  # escuta do servidor MCP
-TARGET = os.environ.get("AGENTNET_DEST", "127.0.0.1")   # destino das ferramentas (loopback ou outra máquina)
+LISTEN = "127.0.0.1"                                  # MCP server listening address
+TARGET = os.environ.get("AGENTNET_DEST", "127.0.0.1")   # destination of the tools (loopback or another machine)
 SUB = ("import socket,sys;s=socket.socket();s.settimeout(2);"
        "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)")
 
@@ -103,7 +102,7 @@ def main():
     async def async_get(exec_id: str, port: int) -> str:
         mark(CTX_BEGIN + exec_id)
         try:
-            await asyncio.sleep(random.uniform(0, 0.005))   # ponto de intercalação realista (I/O pendente)
+            await asyncio.sleep(random.uniform(0, 0.005))   # realistic interleaving point (pending I/O)
             r, w = await asyncio.open_connection(TARGET, port)
             w.close()
             await w.wait_closed()

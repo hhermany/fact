@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Equivalência agentnetd (ao vivo, com buffer de reordenação, eventos na ordem do
-arquivo) x pontuação offline (score.json, resolvedor fundido, eventos ordenados).
+"""Equivalence of agentnetd (live, with the reordering buffer, events in file order)
+and the offline score (score.json, fused resolver, sorted events).
 
-Para cada rodada: créditos por execução (C + I creditados a ela), ambíguas (A) e
-sem atribuição (M) devem coincidir. Aplica o mesmo filtro de referência do
-score offline (porta do plano), só para comparar o mesmo conjunto de conexões.
-Uso: python3 tests/test_agentnetd_equiv.py campaigns/<c1> [campaigns/<c2> ...]
+For each run: per-execution credits (C + I credited to it), ambiguous (A), and
+unattributed (M) must match. Applies the same reference filter as the offline
+score (planned port), only to compare the same set of connections.
+Usage: python3 tests/test_agentnetd_equiv.py campaigns/<c1> [campaigns/<c2> ...]
 """
 import glob
 import json
@@ -45,7 +45,7 @@ def main():
     for c in sys.argv[1:]:
         man = os.path.join(c, "manifest.json")
         if os.path.exists(man) and json.load(open(man)).get("runs_failed", 0):
-            print("ignorada (campanha com rodadas falhas):", c)
+            print("skipped (campaign with failed runs):", c)
             continue
         for rdir in sorted(glob.glob(os.path.join(c, "runs", "*"))):
             if not os.path.exists(os.path.join(rdir, "score.json")):
@@ -54,7 +54,7 @@ def main():
             tot += 1
             if not ok:
                 bad.append((rdir, live, offl, unc, am))
-    print(f"agentnetd x offline: {tot - len(bad)}/{tot} rodadas equivalentes (reordenação {reorder} ms)")
+    print(f"agentnetd vs offline: {tot - len(bad)}/{tot} equivalent runs (reordering {reorder} ms)")
     for b in bad[:5]:
         print("DIVERGE", b)
     out = os.environ.get("EQUIV_OUT")

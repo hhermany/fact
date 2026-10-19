@@ -1,4 +1,3 @@
-% ===== 06-results.tex =====
 \section{Results}
 \label{sec:results}
 \input{generated/results_meta.tex}
@@ -6,103 +5,71 @@
 \IfFileExists{generated/fault_meta.tex}{\input{generated/fault_meta.tex}}{}
 \ResultsBanner
 
-\begin{table}[t]
+Each subsection opens with its conclusion; unless stated otherwise, numbers come from confirmatory campaigns over two boots.
+
+\subsection{Signal Sufficiency and Fusion}
+
+With correct context, the fused resolver attributes all connections in all four structures; with faulty context, it converts errors into reported ambiguity wherever the process structure can contradict the label (\cf Figure~\ref{fig:e1}). A shared cgroup cannot tell executions apart in N1--N3, nor can lineage in N2--N3, so the single-signal resolvers report ambiguity there. The collector captured all planned connections in all runs.
+
+\begin{figure}[!ht]
 \centering
-\caption{E1: attribution outcomes per structure and fault fraction $p$ (mean over \EOneRuns\ runs; label: \EOneLabel). Operation modes are pooled; they produced identical counts in every cell.}
-\label{tab:e1}
-\footnotesize
-\setlength{\tabcolsep}{2.4pt}
-\IfFileExists{generated/tab_e1.tex}{\input{generated/tab_e1.tex}}{\TBD}
-\end{table}
+\includegraphics[width=\columnwidth]{generated/fig_e1.pdf}
+\caption{E1: percentage of connections credited to the wrong execution (top) or reported as ambiguous (bottom), per resolver, execution structure, and fault fraction $p$ (\EOneRuns\ runs; label: \EOneLabel). Operation modes are pooled; they produced identical counts in every cell.}
+\label{fig:e1}
+\end{figure}
 
-\textbf{Signal sufficiency (RQ1).} Table~\ref{tab:e1} reports the outcomes. Two results follow from the structures by construction and are not findings: a shared cgroup cannot separate executions in N1--N3, and lineage cannot separate them in N2--N3. What the table measures is how each resolver handles that insufficiency: the single-signal resolvers report ambiguity (A) rather than misattribution (I), and the collector captured every planned connection in every run (no loss, duplicate, or unmatched connection).
+With correct markers, context-only and fused attribution are correct everywhere, so threads and forked subprocesses inherit the context; mislabeled markers separate them. In N0 and N1, lineage contradicts the label, so the fused resolver flags each mislabeled connection as ambiguous (I/N = 0), whereas context-only credits all of them to the wrong execution. In N2 and N3, both resolvers follow the label, because inside a shared worker no kernel signal can contradict it. The outcome was identical in all \EOneRuns\ confirmatory runs over two boots.
 
-\textbf{Fusion under faulty context (RQ2).} With correct markers, context-only and fused attribution are correct in all structures, including the multiplexed worker (N3), which confirms that the context is inherited by threads and by forked subprocesses. With mislabeled markers, the outcome depends on the structure. In N0 and N1, every mislabeled connection becomes ambiguous for the fused resolver (I/N = 0), because lineage contradicts the label; context-only credits all of them to the wrong execution. In N2 and N3, both resolvers misattribute every mislabeled connection: no kernel signal can contradict the label inside a shared worker. All \EOneRuns\ confirmatory runs (two boots) produced identical outcomes in every cell; the outcome is deterministic given the labels, so we report counts without significance tests.
+\subsection{Accounting}
+The net accounting error hides misattributions, and the decomposition exposes them (Fig.~\ref{fig:acct}). With symmetric mislabels, context-only accounting reports a net error of zero even when a fifth of its connections go to the wrong execution. In N0 and N1, fused accounting moves the mislabeled connections from \emph{wrong} to \emph{uncredited}. Its net error is larger, but it is conservative: across \EOneRuns\ runs, none of the \EOneMislabeled\ mislabeled connections was credited to the wrong execution.
 
-\begin{table}[t]
+\begin{figure}[!ht]
 \centering
-\caption{E1 accounting decomposition with mislabeled markers: connections per run (mean over runs) credited correctly (ok), credited to the wrong execution (wrong), and left uncredited (unc.), and the absolute net error summed over executions ($|$net$|$).}
-\label{tab:acct}
-\footnotesize
-\setlength{\tabcolsep}{2.0pt}
-\IfFileExists{generated/tab_acct.tex}{\input{generated/tab_acct.tex}}{\TBD}
-\end{table}
+\includegraphics[width=\columnwidth]{generated/fig_acct.pdf}
+\caption{E1 accounting with mislabeled markers: connections per run (of 200) credited to the wrong execution or left uncredited, and the absolute net error summed over executions; the remaining connections are credited correctly.}
+\label{fig:acct}
+\end{figure}
 
-\textbf{Accounting (RQ3).} Table~\ref{tab:acct} decomposes per-execution accounting. Because mislabels are injected symmetrically, the net error of context-only accounting is zero even when a fifth of its connections are credited to the wrong execution: misattributions in opposite directions cancel. The decomposition exposes them. In N0 and N1, fused accounting moves every mislabeled connection from \emph{wrong} to \emph{uncredited}; its net error is larger but conservative: it never credits a connection to the wrong execution. None of the \EOneMislabeled\ mislabeled connections in N0 and N1 was misattributed by the fused resolver, in every one of the \EOneRuns\ runs; this follows from the design and is verified, not estimated. In N2 and N3 both resolvers credit the mislabeled connections wrongly, as expected.
+\subsection{Scale and Overhead}
 
-\textbf{Scale (RQ4).} E2 showed no capture loss and no misattribution by the fused resolver up to 64 concurrent executions, with and without pacing, both with separate process trees (N1) and in a multiplexed worker (N3). To locate the collector's limit, E2b runs $P$ concurrent instances of the closed-loop \texttt{connect} microbenchmark (Table~\ref{tab:e2b}). Capture is complete up to $P{=}4$ instances (over $10^5$ connections per second); when all eight vCPUs are saturated, user space no longer drains the event buffer in time and events are lost. The loss is not silent: bpftrace reports it, so a deployment can mark the interval as incomplete.
+Attribution stays correct and complete up to 64 concurrent executions (E2), and the collector adds microseconds per connection. With $P$ concurrent instances of the closed-loop \texttt{connect} microbenchmark (E2b), capture is complete up to $P{=}4$ (over $10^5$ connections per second); from $P{=}6$ on, with the vCPUs saturated, bpftrace reports lost events, so loss is never silent.
 
-\begin{table}[t]
+E3 isolates the cost on a closed loop of loopback connections, the worst case for per-connection instrumentation: the collector adds about 8\,$\mu$s to the median \texttt{connect}, and the markers add two failed system calls per operation, costlier when the collector also traces \texttt{openat}. Over the virtual network interface (E3net, \EThreeNetRuns\ runs), the median \texttt{connect} takes \EThreeNetBase\,$\mu$s and the collector adds \EThreeNetAdd\,$\mu$s (\EThreeNetRel\%).
+
+E3b separates the components: attaching the probes while only counting events adds 1.5\,$\mu$s, and exporting one record per connection accounts for most of the remaining 6.7\,$\mu$s, in both the full and the optimized collector. With markers, the optimized variant lowers the added median latency from 19.1 to 14.3\,$\mu$s and the eBPF time per program run from 1304 to 854\,ns. It is a drop-in replacement: rerunning E1 with it (\EOneFastRuns\ runs) reproduced the outcome fractions of the full collector in \EOneFastEqual\ of \EOneFastCells\ cell--resolver combinations.
+
+\subsection{Shared MCP Server}
+Thread-keyed context breaks for asynchronous tools; binding the identity to the task fixes it without changing tool code. E4 runs a real MCP server, one process in one cgroup serving $K$ concurrent sessions, so lineage and cgroup are ambiguous for every connection. Synchronous, threaded, and subprocess tools inherit the marker and are attributed correctly; asynchronous tools are not: coroutines of different sessions interleave on the event-loop thread and overwrite its context, so 42\% ($K$=2) and 39\% ($K$=4) of the connections are credited to the wrong session, and connections opened after another coroutine's end marker are ambiguous.
+
+\begin{figure}[t]
 \centering
-\caption{E2b: collector capacity with $P$ concurrent closed-loop \texttt{connect} benchmarks (\ETwoBRuns\ runs; label: \ETwoBLabel). Capture: captured/performed connections (mean and minimum over runs); lost: events reported lost by bpftrace.}
-\label{tab:e2b}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\IfFileExists{generated/tab_e2b.tex}{\input{generated/tab_e2b.tex}}{\TBD}
-\end{table}
+\includegraphics[width=\columnwidth]{generated/fig_e5e6.pdf}
+\caption{E5 and E6: correct attribution (top) and correct egress-policy decisions (bottom) in a shared MCP server, per tool type and number of concurrent sessions $K$, with thread-keyed markers (manual) and with the task-scoped binding of \solution{} (fused resolver; \EFiveRuns\ E5 and \ESixRuns\ E6 runs).}
+\label{fig:e5e6}
+\end{figure}
 
-\textbf{Overhead (RQ4).} E3 isolates the cost on a closed loop of loopback connections, the worst case for any per-connection instrumentation. The collector adds about 8\,$\mu$s to the median \texttt{connect}, and the context markers add two failed system calls per operation, whose cost grows when the collector also traces \texttt{openat}. The confirmatory runs (two boots) match the pilot.
+Figure~\ref{fig:e5e6} (top) compares the two bindings on the same server, tools, and seeds. With manual markers, correct attribution of asynchronous tools falls from 30\% to 7\% as sessions grow, and about 40\% of the connections go to the wrong session at every $K$. With the task-scoped binding, the same tools, without markers, had \EFiveWrongAuto\ errors in \EFiveConnAuto\ connections (a one-sided 95\% Clopper--Pearson bound of 0.2\% at $K{=}8$). Both bindings are correct for the other tools, with median tool-call latencies within 0.2\,ms. Across a real network interface the outcome is the same (E5net and E6net, \EFiveNetRuns\ and \ESixNetRuns\ runs): manual markers fall from \EFiveNetAsyncManMax\% to \EFiveNetAsyncManMin\% correct for asynchronous tools, and the task-scoped binding made \EFiveNetWrongAuto\ errors in \EFiveNetConnAuto\ connections (144 of them identity-less reachability probes, reported as unattributed) and \ESixNetErrAuto\ policy errors in \ESixNetDecAuto\ decisions.
 
-\begin{table}[t]
+\begin{figure}[t]
 \centering
-\caption{E3b: cost decomposition of collector variants (mean $\pm$ 95\% CI of p50; \EThreeBRuns\ runs over two boots; label: \EThreeBLabel). $+\mu$s and $\Delta$p50 are relative to no instrumentation and no markers.}
-\label{tab:e3b}
-\footnotesize
-\setlength{\tabcolsep}{2.2pt}
-\IfFileExists{generated/tab_e3b.tex}{\input{generated/tab_e3b.tex}}{\TBD}
-\end{table}
+\includegraphics[width=\columnwidth]{generated/fig_baselines.pdf}
+\caption{Related systems vs.\ \solution{} in shared workers (E1 N3, $p=0$; E5, $K=8$): percentage of connections credited to the wrong execution. Emulations (\BaseRuns\ runs) use the manual-mode call boundaries; AgentProvenance was executed in the E5 rounds (E5ap).}
+\label{fig:base}
+\end{figure}
 
-\textbf{Where the cost comes from.} Table~\ref{tab:e3b} separates the components. Attaching the same probes while only counting events adds 1.5\,$\mu$s; exporting one record per connection to user space accounts for most of the remaining 6.8\,$\mu$s, and it is the same for the full and the optimized collectors. With markers, the optimized variant (an fentry probe on \texttt{tcp\_connect}, markers that only update the kernel map without emitting a record, and context copied on fork only when the parent has one) lowers the added median latency from 19.1 to 14.3\,$\mu$s and the eBPF time per program run from 1304 to 854\,ns. It is a drop-in replacement: rerunning E1 with it (\EOneFastRuns\ runs) reproduced the outcome fractions of the full collector in \EOneFastEqual\ of \EOneFastCells\ cell--resolver combinations. The remaining per-connection cost is the export itself; aggregating in the kernel would remove it, at the price of the per-event join that the fused resolver needs.
+\subsection{Comparison with Related Mechanisms}
+Time-based and latest-binding correlation cannot separate concurrent tool calls inside one process; \solution{} can. We emulate the documented mechanisms of related systems as offline resolvers over the same logs, with process lineage first and the tool-call boundaries of the manual mode (Fig.~\ref{fig:base}): the \emph{time-window} resolver picks the latest tool-call start within 500\,ms, as in AgentSight, and the \emph{latest-scope} resolver picks the open binding that started last, as in AgentProvenance. With distinct process trees (N0, N1), lineage alone suffices. Inside a shared worker, time separates only blocking calls: both misattribute 41\% of the connections in N3 and 68--99\% for threaded, subprocess, and asynchronous tools with eight sessions.
 
-\textbf{A real runtime (RQ1, RQ4).} E4 repeats the shared-worker case with an actual agent tool server: one Model Context Protocol server, written with the official Python SDK, serves $K$ concurrent client sessions, and each tool call opens one connection. The server is a single process in a single cgroup, so lineage and cgroup are ambiguous for every connection. When the tool runs synchronously, in a worker thread, or as a subprocess, the context marker is inherited and the fused resolver attributes every connection correctly. When the tool is an \texttt{async} coroutine that yields between its markers, coroutines of different sessions interleave on the event-loop thread and overwrite its context: 42\% ($K$=2) and 39\% ($K$=4) of the connections are credited to the wrong session, and those opened after another coroutine's end marker carry no context and are reported as ambiguous. The fused resolver cannot detect these misattributions, because no kernel signal contradicts the label inside one thread. Thread-keyed context is therefore correct for blocking, threaded, and subprocess tools, but not for asynchronous tools, which need the binding to follow the task rather than the thread (E5). Tool calls take 3.3 to 28.7\,ms at the median, so the added latency of Table~\ref{tab:e3b} is below 0.6\% of the shortest call (an estimate, not measured in E4).
+Running AgentProvenance itself confirms the mechanism and shows the emulation was optimistic (E5ap, \APRuns\ runs). With four and eight sessions it credited \APWrongMin--\APWrongMax\% of the connections of synchronous, threaded, and asynchronous tools to the wrong session (\APWrongTwoMin--\APWrongTwoMax\% with two), and \APSubMin--\APSubMax\% for subprocess tools, whose child processes it can sometimes match; \solution{} misattributed \APAgentnetWrong\ of \APAgentnetConn\ connections in the same rounds. Its harness sees each call's window from the client, so when a tool connects all $K$ windows are open and it picks the latest. AgentSight attributes per process, so in a shared server it cannot name a session; we keep it emulated.
 
-\begin{table}[t]
-\centering
-\caption{E5: manual (thread-keyed markers) vs.\ task-scoped binding on the same MCP server and tools; fused resolver (\EFiveRuns\ runs; label: \EFiveLabel). I/N$\le$: one-sided 95\% Clopper--Pearson upper bound on the error rate with the automatic binding.}
-\label{tab:e5}
-\footnotesize
-\setlength{\tabcolsep}{1.6pt}
-\IfFileExists{generated/tab_e5.tex}{\input{generated/tab_e5.tex}}{\TBD}
-\end{table}
+\subsection{Egress Policy and LLM Agents}
+Binding errors turn into policy errors in both directions, and the task-scoped binding removes them. With manual markers and asynchronous tools, only 48\% ($K$=2) and 43\% ($K$=8) of the decisions are correct (Fig.~\ref{fig:e5e6}, bottom): mislabeled restricted executions pass (9--11\% false allows, \ie bypasses) and others are blocked (42--48\% false denies). With the task-scoped binding, all \ESixDecAuto\ decisions match the reference. Connections without identity are denied by default, so a missing binding fails closed instead of inheriting a guess.
 
-\textbf{Task-scoped binding (RQ5).} Table~\ref{tab:e5} compares the two bindings on the same server, tools, and seeds. With manual markers, asynchronous tools are misattributed: correct attribution falls with the number of concurrent sessions (C/N from 30\% to 7\%), because more coroutines interleave between markers, while about 40\% of the connections are credited to the wrong session at every $K$ and the rest carry no context. With the task-scoped binding, the same tools, now without any marker in their code, are attributed correctly in every cell and in every run: \EFiveWrongAuto\ errors in \EFiveConnAuto\ connections. Blocking, threaded, and subprocess tools are correct with both bindings, and the median tool-call latency is indistinguishable between them, since the binding adds at most one failed system call per connection or process creation.
-
-\begin{table}[t]
-\centering
-\caption{Emulated mechanisms of related systems vs.\ agentnet in shared workers with concurrent executions (E1 N3 with $p=0$; E5 with $K=8$), in \% of connections (\BaseRuns\ confirmatory runs). Baselines read the tool-call boundaries of the manual mode; agentnet uses the task-scoped binding.}
-\label{tab:base}
-\footnotesize
-\setlength{\tabcolsep}{2.4pt}
-\IfFileExists{generated/tab_baselines.tex}{\input{generated/tab_baselines.tex}}{\TBD}
-\end{table}
-
-\textbf{Comparison with related mechanisms.} The reviewed systems publish no rule for concurrent executions inside one process, so we emulate their documented mechanisms as offline resolvers over the same logs (Table~\ref{tab:base}), all with process lineage first. Inside a shared process, the \emph{time-window} resolver picks the most recent tool-call start within 500\,ms, as in AgentSight's temporal proximity (100\,ms gives identical results); the \emph{set} variant returns every call started in that window, i.e., it reports ambiguity; and the \emph{latest-scope} resolver picks the open process-level binding that started last, as in AgentProvenance. Their input is the tool-call boundaries that a harness knows (manual mode). Where executions occupy distinct process trees (N0, N1), lineage alone is correct, even under mislabeling, whereas the fused resolver reports the mislabeled connections as ambiguous because it cannot tell which signal is wrong. Inside a shared worker, time separates only serialized (blocking) calls: with concurrent executions, the single-choice resolvers misattribute 41\% of the connections in N3 and 68--99\% for threaded, subprocess, and asynchronous tools with eight sessions, in every run, and the set variant is ambiguous for nearly every connection. agentnet attributes all of them correctly. These are emulations of the published mechanisms, not the complete systems.
+In E7 the tool calls are chosen by a language model. Four agents share one MCP server process in one cgroup; the fused resolver attributed \ESevenWrong\ of \ESevenConn\ connections incorrectly, and the policy made \ESevenDecOK\ correct decisions out of \ESevenDec. The median tool call took \ESevenToolMs\,ms, against several seconds per model step. With larger models on a GPU and up to eight agents (E7m, \ESevenMRuns\ runs), the result is the same: \ESevenMWrong\ of \ESevenMConn\ connections were misattributed, and \ESevenMDecOK\ of \ESevenMDec\ policy decisions were correct. Commercial models from Anthropic and OpenAI agree (\ESevenCRuns\ runs each): with Claude (E7c), \ESevenCWrong\ of \ESevenCConn\ connections misattributed and \ESevenCDecOK\ of \ESevenCDec\ decisions correct; with GPT (E7o), \ESevenOWrong\ of \ESevenOConn\ and \ESevenODecOK\ of \ESevenODec, for US\$\,\ESevenCUSD\ and US\$\,\ESevenOUSD\ in API tokens. Replayed without the models (E7r), \ESevenRSame\ of \ESevenRRuns\ runs reproduced the same calls and outcomes, so the results do not depend on the models staying available.
 
 \begin{table}[t]
 \centering
-\caption{E6: per-execution egress policy decisions vs.\ the reference (\ESixRuns\ runs; label: \ESixLabel). FA: allowed but should be denied (policy bypass); FD: denied but should be allowed; err$\le$: Clopper--Pearson upper bound on the decision error with the automatic binding.}
-\label{tab:e6}
-\footnotesize
-\setlength{\tabcolsep}{1.6pt}
-\IfFileExists{generated/tab_e6.tex}{\input{generated/tab_e6.tex}}{\TBD}
-\end{table}
-
-\textbf{Policy (RQ5).} Table~\ref{tab:e6} shows that binding errors become policy errors in both directions. With manual markers and asynchronous tools, connections of restricted executions labeled as permissive ones are allowed (false allows, a bypass), and connections labeled as other executions are denied (false denies). With the task-scoped binding, every decision matches the reference (\ESixDecAuto\ decisions). Connections with no identity are denied by default, so a missing binding fails closed instead of inheriting a guess.
-
-\begin{table}[t]
-\centering
-\caption{E7: concurrent LLM agents (Qwen2.5-3B, local) sharing an instrumented MCP server, policy active (\ESevenRuns\ runs; label: \ESevenLabel).}
-\label{tab:e7}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\IfFileExists{generated/tab_e7.tex}{\input{generated/tab_e7.tex}}{\TBD}
-\end{table}
-
-\textbf{Real agents (RQ5).} In E7 the tool calls are chosen by a language model rather than scripted. Four agents share one MCP server process in one cgroup, so lineage and cgroup are ambiguous for every connection (Table~\ref{tab:e7}); the fused resolver, driven by the task-scoped binding, attributed \ESevenWrong\ of \ESevenConn\ connections incorrectly. The policy made \ESevenDecOK\ correct decisions out of \ESevenDec\ (false allows: \ESevenFA; false denies: \ESevenFD; operations without a decision: \ESevenND), and the restricted agents reported the denied service as down. The median tool-call latency was \ESevenToolMs\,ms, whereas each model step took several seconds, so attribution cost is negligible at this scale. E7 shows feasibility, not a stress test; its sample size was planned on policy decisions.
-
-\begin{table}[t]
-\centering
-\caption{Binding faults injected into the framework: a fraction $p$ of each execution's tool calls carries another execution's identity (task-scoped binding; tools pooled; \FaultEfiveRuns\ E5f, \FaultEsixRuns\ E6f, and \FaultEsevenRuns\ E7f confirmatory runs over two boots). Wrong: mislabeled connections credited to the wrong execution; other err.: errors on correctly labeled calls.}
+\caption{Binding faults injected into the framework: a fraction $p$ of each execution's tool calls carries another execution's identity (task-scoped binding; tools pooled; \FaultEfiveRuns\ E5f, \FaultEsixRuns\ E6f, and \FaultEsevenRuns\ E7f runs). Wrong: mislabeled connections credited to the wrong execution; other err.: errors on correctly labeled calls.}
 \label{tab:fault}
 \footnotesize
 \setlength{\tabcolsep}{2.2pt}
@@ -118,6 +85,8 @@
 \IfFileExists{generated/tab_lineage.tex}{\input{generated/tab_lineage.tex}}{\TBD}
 \end{table}
 
-\textbf{Faulty bindings (RQ2, RQ5).} Table~\ref{tab:fault} injects binding faults into the framework itself. In the shared MCP server, every mislabeled connection is credited to the execution named by the label (\FaultMisWrong\ of \FaultMis), and no other connection or decision is affected (\FaultSpill\ errors elsewhere): because the identity is bound to the task, a faulty call does not contaminate later calls. No kernel signal contradicts a label inside one process, so \FaultPolErrPct\% of the mislabeled calls also became policy errors, in both directions. The LLM agents have disjoint allow-lists, so \FaultEsevenAllowed\ of their \FaultEsevenMis\ mislabeled calls were allowed: the fault failed closed. Where executions have their own process trees, the resolver already flags contradicted labels offline (E1); the lineage check moves that detection into the kernel (Table~\ref{tab:lineage}). With the label alone, the policy decided \LinModeZeroPct\% of the mislabeled connections wrongly. Denying on conflict removed every false allow, and deciding by the tree owner removed every decision error (\LinModeTwoErr\ in \LinModeTwoDec\ decisions); in both modes, the conflicts flagged in the kernel were exactly the mislabeled connections. In the shared server, where the tree is shared and therefore not registered, the check vetoed none of \LsDecisions\ correct decisions (E6Ls).
+\subsection{Faulty Bindings}
 
-\textbf{Live accounting.} Feeding the recorded collector streams of the confirmatory attribution campaigns to \texttt{agentnetd}'s online algorithm, in arrival order and with a 100\,ms reordering window, reproduced the per-execution credited, ambiguous, and unattributed counts of the offline evaluation in \AgentnetdEqual\ of \AgentnetdRuns\ runs.
+A faulty label affects only its own call, and wherever executions have their own process trees, the in-kernel lineage check stops the bypasses it would cause. In the shared MCP server (Table~\ref{tab:fault}), every mislabeled connection is credited to the execution named by the label (\FaultMisWrong\ of \FaultMis), and no other connection or decision is affected (\FaultSpill\ errors elsewhere): because the identity is bound to the task, a faulty call does not contaminate later calls. No kernel signal contradicts a label inside one process, so \FaultPolErrPct\% of the mislabeled calls also became policy errors, in both directions. The LLM agents have disjoint allow-lists, so \FaultEsevenAllowed\ of their \FaultEsevenMis\ mislabeled calls were allowed: the fault failed closed. Where executions have their own process trees, the lineage check moves the offline detection of contradicted labels (E1) into the kernel (Table~\ref{tab:lineage}). With the label alone, the policy decided \LinModeZeroPct\% of the mislabeled connections wrongly. Denying on conflict removed every false allow, and deciding by the tree owner removed every decision error (\LinModeTwoErr\ in \LinModeTwoDec\ decisions); in both modes, the conflicts flagged in the kernel were exactly the mislabeled connections. In the shared server, where the tree is shared and therefore not registered, the check vetoed none of \LsDecisions\ correct decisions (E6Ls).
+
+Finally, \texttt{factd}, fed the recorded collector streams in arrival order with a 100\,ms reordering window, reproduced the per-execution credited, ambiguous, and unattributed counts of the offline evaluation in \AgentnetdEqual\ of \AgentnetdRuns\ runs.

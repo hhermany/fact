@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Pontua as decisões da política por execução contra a referência independente.
+"""Scores the per-execution policy decisions against the independent reference.
 
-Para cada operação do plano (porta exclusiva -> execução dona), a decisão
-esperada é "allow" se a porta está na lista de permissões da execução DONA e
-"deny" caso contrário. A decisão observada é a do agentnet_policy para aquela
-porta (policy_events.jsonl). Desfechos:
-  TA  permitida e devia ser       TD  negada e devia ser
-  FA  permitida indevidamente     FD  negada indevidamente
-  ND  operação sem decisão registrada
-Também classifica o rótulo visto pela política: dono, outra execução, nenhum.
-Uso: python3 score_policy.py RUN_DIR
+For each operation in the plan (exclusive port -> owning execution), the
+expected decision is "allow" if the port is in the allow-list of the OWNING
+execution and "deny" otherwise. The observed decision is agentnet_policy's for
+that port (policy_events.jsonl). Outcomes:
+  TA  allowed, as expected        TD  denied, as expected
+  FA  wrongly allowed             FD  wrongly denied
+  ND  operation with no recorded decision
+It also classifies the label seen by the policy: owner, other execution, none.
+Usage: python3 score_policy.py RUN_DIR
 """
 import json
 import os
@@ -47,8 +47,8 @@ def main(run_dir):
            "label": dict(label), "by_owner_class": {c: dict(v) for c, v in by_class.items()},
            "expected_allow": sum(1 for p, o in dmap.items() if p in allow[o])}
     json.dump(res, open(os.path.join(run_dir, "policy_score.json"), "w"), indent=1)
-    print(f"política: N={n} TA={res['TA']} TD={res['TD']} FA={res['FA']} FD={res['FD']} ND={res['ND']} "
-          f"rótulo={dict(label)}")
+    print(f"policy: N={n} TA={res['TA']} TD={res['TD']} FA={res['FA']} FD={res['FD']} ND={res['ND']} "
+          f"label={dict(label)}")
 
 
 if __name__ == "__main__":

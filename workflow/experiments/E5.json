@@ -1,6 +1,6 @@
 {
   "experiment": "E5",
-  "description": "Framework: vínculo automático (agentnet_rt: identidade por tarefa via contextvars, entregue ao kernel no connect/fork) vs. marcadores manuais, no servidor MCP real compartilhado por K sessões. Mesmo servidor, mesmas ferramentas; no modo auto as ferramentas não emitem marcadores.",
+  "description": "Framework: automatic binding (agentnet_rt: per-task identity via contextvars, handed to the kernel at connect/fork) vs. manual markers, in the real MCP server shared by K sessions. Same server, same tools; in auto mode the tools emit no markers.",
   "factors": {
     "binding_mode": ["manual", "auto"],
     "tool": ["sync", "thread", "subproc", "async"],

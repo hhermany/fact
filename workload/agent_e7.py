@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
-"""E7: agentes LLM reais (modelo local via Ollama) compartilhando um servidor MCP.
+"""E7: real LLM agents sharing one MCP server (local models via Ollama, or commercial
+models via the Anthropic and OpenAI APIs).
 
-- Sobe serviços HTTP/TCP locais em portas exclusivas por execução (referência
-  independente: a porta de destino identifica a execução dona).
-- Sobe mcp_agent_server.py (instrumentado pelo agentnet_rt) num cgroup próprio.
-- Roda K agentes concorrentes. Cada agente é um laço modelo -> chamadas de
-  ferramenta MCP -> resultados -> modelo, com a tarefa de verificar a saúde dos
-  serviços do seu "tenant". O modelo decide quais ferramentas chamar e com que
-  argumentos; a identidade da execução vai no _meta de cada tools/call.
-- Política opcional (--policy 1): classes alternadas P (todos os próprios
-  serviços) e R (um dos serviços proibido); requer o agentnet_policy ativo.
-Saídas no formato do score.py (plan.json, registry.json, ops.jsonl) e
-e7_summary.json com o comportamento dos agentes.
+- Starts local HTTP/TCP services on exclusive ports per execution (independent
+  reference: the destination port identifies the owning execution).
+- Starts mcp_agent_server.py (instrumented by agentnet_rt) in its own cgroup.
+- Runs K concurrent agents. Each agent is a loop model -> MCP tool calls ->
+  results -> model, with the task of checking the health of its "tenant's"
+  services. The model decides which tools to call and with which arguments;
+  the execution identity travels in the _meta of each tools/call.
+- Optional policy (--policy 1): alternating classes P (all of its own services)
+  and R (one of its services forbidden); requires agentnet_policy running.
+- Optional model-free replay (--replay-from): repeats the recorded tool calls of
+  an E7c/E7o run, with no model.
+Outputs in score.py's format (plan.json, registry.json, ops.jsonl), plus
+e7_summary.json with the agents' behavior and transcript.jsonl with every model step.
 
-Uso (root, nix develop, coletor ativo, ollama servindo em 127.0.0.1:11434):
+Usage (root, nix develop, collector active, ollama serving on 127.0.0.1:11434):
   python3 agent_e7.py --execs 4 --seed 1 --model qwen2.5:3b --out runs/x
 """
 import argparse
@@ -48,7 +51,7 @@ TASK = ("Health check for tenant {e}:\n"
 
 
 class ServiceFarm(threading.Thread):
-    """Serviços HTTP mínimos (respondem 200) em todas as portas do plano."""
+    """Minimal HTTP services (answering 200) on every planned port."""
     def __init__(self, ports):
         super().__init__(daemon=True)
         self.ports, self.ready = ports, threading.Event()
@@ -77,12 +80,12 @@ class ServiceFarm(threading.Thread):
 
 def ollama_chat(host, model, messages, tools, seed, num_predict=None):
     opts = {"temperature": 0, "seed": seed}
-    if num_predict:   # limita respostas que não param (visto com llama3.1:8b em temperatura 0)
+    if num_predict:   # caps answers that never stop (seen with llama3.1:8b at temperature 0)
         opts["num_predict"] = num_predict
     body = json.dumps({"model": model, "messages": messages, "tools": tools, "stream": False,
                        "options": opts}).encode()
     req = urllib.request.Request(f"http://{host}/api/chat", data=body, headers={"Content-Type": "application/json"})
-    for attempt in range(3):   # falha de conexão com o servidor: repete (2 s, 4 s); erro do modelo não é repetido
+    for attempt in range(3):   # connection failure to the server: retry (2 s, 4 s); a model error is not retried
         try:
             with urllib.request.urlopen(req, timeout=600) as r:
                 return json.loads(r.read())
@@ -92,13 +95,14 @@ def ollama_chat(host, model, messages, tools, seed, num_predict=None):
             time.sleep(2 ** (attempt + 1))
 
 
-ANTHROPIC_KEY_FILE = "/etc/agentnet/anthropic.key"   # fora do repositório, só root lê (chmod 600)
+ANTHROPIC_KEY_FILE = "/etc/agentnet/anthropic.key"   # outside the repository, readable by root only (chmod 600)
 
 
 def anthropic_chat(model, messages, tools, max_tokens):
-    """Mesma interface do ollama_chat, com a API de Mensagens da Anthropic (sem o parâmetro temperature, que esses modelos não aceitam;
-    sem raciocínio estendido). Devolve {"message": {...}, "usage": {...}, "model": ...} no
-    formato interno (tool_calls como no Ollama). Repete em 429/5xx com espera crescente."""
+    """Same interface as ollama_chat, with Anthropic's Messages API (without the temperature
+    parameter, which these models do not accept; no extended thinking). Returns
+    {"message": {...}, "usage": {...}, "model": ...} in the internal format (tool_calls as in
+    Ollama). Retries on 429/5xx with increasing backoff."""
     key = open(ANTHROPIC_KEY_FILE).read().strip()
     system = "".join(m["content"] for m in messages if m["role"] == "system")
     conv, pend = [], []
@@ -140,16 +144,16 @@ def anthropic_chat(model, messages, tools, max_tokens):
             "usage": d.get("usage", {}), "model": d.get("model"), "api_retries": attempt}
 
 
-OPENAI_KEY_FILE = "/etc/agentnet/openai.key"         # fora do repositório, só root lê (chmod 600)
-OPENAI_EFFORT = "low"            # menor esforço de raciocínio aceito pelos dois modelos (gpt-6.1-sol recusa none/minimal)
-OPENAI_MAX_OUTPUT = 4096         # inclui os tokens de raciocínio, que a API conta como saída
+OPENAI_KEY_FILE = "/etc/agentnet/openai.key"         # outside the repository, readable by root only (chmod 600)
+OPENAI_EFFORT = "low"            # lowest reasoning effort accepted by both models (gpt-6.1-sol rejects none/minimal)
+OPENAI_MAX_OUTPUT = 4096         # includes the reasoning tokens, which the API counts as output
 
 
 def openai_chat(model, messages, tools):
-    """Mesma interface do ollama_chat, com a Responses API da OpenAI (a chamada de ferramentas
-    desses modelos é servida só nela). Sem temperature (não aceito com raciocínio), esforço de
-    raciocínio "low", store=false. Os itens de saída de cada passo (raciocínio cifrado e chamadas
-    de função) são devolvidos no passo seguinte, como a API recomenda. Repete em 429/5xx."""
+    """Same interface as ollama_chat, with OpenAI's Responses API (tool calling for these
+    models is served only there). No temperature (not accepted with reasoning), reasoning
+    effort "low", store=false. The output items of each step (encrypted reasoning and function
+    calls) are sent back in the next step, as the API recommends. Retries on 429/5xx."""
     key = open(OPENAI_KEY_FILE).read().strip()
     system = "".join(m["content"] for m in messages if m["role"] == "system")
     items = []
@@ -225,15 +229,14 @@ def port_of(args):
 
 
 async def agent(url, exec_id, task, a, log, plan_ports):
-    # Abrir a sessão MCP (SSE + initialize) às vezes trava com 8 sessões simultâneas,
-    # sem erro e sem timeout do cliente. A falha ocorre antes de qualquer passo do
-    # modelo ou chamada de ferramenta; então a abertura tem prazo de 60 s e é repetida
-    # (até 3 tentativas, registradas em "attempts"). Falhas depois do primeiro passo
-    # não são repetidas.
+    # Opening the MCP session (SSE + initialize) sometimes hangs with 8 simultaneous
+    # sessions, with no error and no client timeout. The failure happens before any model
+    # step or tool call; the opening therefore has a 60 s deadline and is retried (up to
+    # 3 attempts, recorded in "attempts"). Failures after the first step are not retried.
     for attempt in range(1, 4):
         rec = {"exec": exec_id, "steps": 0, "tool_calls": 0, "off_plan_ports": 0, "llm_s": 0.0,
                "tool_ms": [], "final": None, "error": None, "attempts": attempt}
-        if is_api_model(a.model):   # consumo medido pela própria API (custo exato)
+        if is_api_model(a.model):   # usage measured by the API itself (exact cost)
             rec.update({"input_tokens": 0, "output_tokens": 0, "reasoning_tokens": 0, "api_retries": 0,
                         "api_model": None})
         try:
@@ -266,7 +269,7 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
                     rec["api_retries"] += resp.get("api_retries", 0)
                     rec["api_model"] = resp.get("model")
                 m = resp.get("message", {})
-                if getattr(a, "transcript", None) is not None:   # conversa completa, para auditoria e reprodução
+                if getattr(a, "transcript", None) is not None:   # full conversation, for auditing and replay
                     a.transcript.write(json.dumps({"exec": exec_id, "step": step + 1, "model": resp.get("model"),
                                                    "usage": resp.get("usage"), "content": m.get("content"),
                                                    "tool_calls": m.get("tool_calls") or []}, default=str) + "\n")
@@ -291,7 +294,7 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
                     try:
                         res = await call_tool_with_exec(s, name, args, label)
                         text = "".join(getattr(x, "text", "") for x in res.content)
-                    except Exception as e:  # ferramenta inexistente, argumentos inválidos
+                    except Exception as e:  # unknown tool, invalid arguments
                         text = f"error: {e}"
                     t2 = time.time_ns()
                     rec["tool_calls"] += 1
@@ -312,11 +315,11 @@ async def agent_once(url, exec_id, task, a, log, plan_ports, rec):
 
 
 def find_recording(a):
-    """Rodada gravada (E7c/E7o) com o mesmo modelo, o mesmo K e a mesma semente; a semente
-    determina as portas do plano, então as chamadas gravadas valem para o plano novo.
-    replay_src escolhe entre as campanhas que têm o modelo, em ordem cronológica (0, 1)."""
+    """Recorded run (E7c/E7o) with the same model, the same K, and the same seed; the seed
+    determines the planned ports, so the recorded calls are valid for the new plan.
+    replay_src chooses among the campaigns that have the model, in chronological order (0, 1)."""
     import glob
-    root = os.path.dirname(HERE)   # caminhos relativos à raiz do repositório
+    root = os.path.dirname(HERE)   # paths relative to the repository root
     camps = sorted(c if os.path.isabs(c) else os.path.join(root, c) for c in a.replay_from.split(",") if c)
     hits = []
     for c in camps:
@@ -325,13 +328,13 @@ def find_recording(a):
             if p.get("model") == a.model and p.get("execs") == a.execs and p.get("seed") == a.seed:
                 hits.append(os.path.dirname(pj))
     if len(hits) <= a.replay_src:
-        sys.exit(f"gravação não encontrada: modelo {a.model}, K={a.execs}, semente {a.seed}, fonte {a.replay_src}")
+        sys.exit(f"recording not found: model {a.model}, K={a.execs}, seed {a.seed}, source {a.replay_src}")
     return hits[a.replay_src]
 
 
 async def replay_agent(url, exec_id, ops, t0_rec, t0, log, plan_ports, rec):
-    """Repete, sem modelo, as chamadas de ferramenta gravadas de um agente: mesma ordem, mesmos
-    argumentos, mesmo rótulo e o mesmo instante relativo ao início da rodada."""
+    """Repeats, without a model, an agent's recorded tool calls: same order, same arguments,
+    same label, and the same instant relative to the start of the run."""
     from mcp import ClientSession
     from mcp.client.sse import sse_client
     async with sse_client(url) as (read, write):
@@ -393,20 +396,20 @@ def main():
     ap.add_argument("--ollama", default="127.0.0.1:11434")
     ap.add_argument("--max-steps", type=int, default=6)
     ap.add_argument("--num-predict", type=int, default=0,
-                    help="máximo de tokens por resposta do modelo (0: sem limite, como no E7)")
+                    help="maximum tokens per model answer (0: no limit, as in E7)")
     ap.add_argument("--base-port", type=int, default=61000)
     ap.add_argument("--server-port", type=int, default=64999)
     ap.add_argument("--policy", type=int, default=0)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--mode", default="agent")       # compatibilidade com run_round/campaign
+    ap.add_argument("--mode", default="agent")       # compatibility with run_round/campaign
     ap.add_argument("--wrong-label", type=float, default=0.0)
     ap.add_argument("--jitter", type=float, default=0.0)
     ap.add_argument("--threads", type=int, default=0)
     ap.add_argument("--replay-from", default="",
-                    help="campanhas gravadas (E7c/E7o), separadas por vírgula: repete as chamadas sem chamar o modelo")
-    ap.add_argument("--replay-src", type=int, default=0, help="qual gravação usar (0 = primeira campanha, 1 = segunda)")
+                    help="recorded campaigns (E7c/E7o), comma-separated: repeats the calls without calling the model")
+    ap.add_argument("--replay-src", type=int, default=0, help="which recording to use (0 = first campaign, 1 = second)")
     ap.add_argument("--replay-lead", type=float, default=1.0,
-                    help="segundos entre a abertura das sessões e a primeira chamada repetida")
+                    help="seconds between opening the sessions and the first replayed call")
     a = ap.parse_args()
     rng = random.Random(a.seed)
     os.makedirs(a.out, exist_ok=True)
@@ -414,8 +417,8 @@ def main():
     ports = rng.sample(range(a.base_port, a.base_port + 2000), 3 * len(execs))
     own = {e: ports[3 * i:3 * i + 3] for i, e in enumerate(execs)}
     tasks = {e: TASK.format(e=e, p0=own[e][0], p1=own[e][1], p2=own[e][2]) for e in execs}
-    # falhas de vínculo: round(p * 3) das três primeiras chamadas de cada agente levam
-    # no _meta a identidade de outro agente (o agente decide quantas chamadas faz)
+    # binding faults: round(p * 3) of each agent's first three calls carry another
+    # agent's identity in _meta (the agent decides how many calls it makes)
     n_wrong = round(a.wrong_label * 3)
     frng = random.Random(a.seed + 104729)
     a.wrong_calls = {e: {"idx": sorted(frng.sample(range(1, 4), n_wrong)),
@@ -429,14 +432,14 @@ def main():
             "tasks": tasks}
     if a.policy:
         classes = {e: ("P" if i % 2 == 0 else "R") for i, e in enumerate(execs)}
-        allow = {e: (own[e] if classes[e] == "P" else own[e][:2]) for e in execs}   # R: banco proibido
+        allow = {e: (own[e] if classes[e] == "P" else own[e][:2]) for e in execs}   # R: database forbidden
         plan["policy"] = {"classes": classes, "allow": allow}
-    if a.replay_from:   # reprodução sem modelo: mesma semente -> mesmas portas -> chamadas gravadas válidas
+    if a.replay_from:   # model-free replay: same seed -> same ports -> recorded calls are valid
         import hashlib
         a.replay_run = find_recording(a)
         sp = json.load(open(os.path.join(a.replay_run, "plan.json")))
         if sp["dport_map"] != plan["dport_map"]:
-            sys.exit(f"plano da gravação {a.replay_run} difere do plano desta rodada")
+            sys.exit(f"the plan of recording {a.replay_run} differs from this run's plan")
         plan.update(replay=True, replay_of=os.path.abspath(a.replay_run),
                     replay_ops_sha256=hashlib.sha256(open(os.path.join(a.replay_run, "ops.jsonl"), "rb").read()).hexdigest())
         a.transcript = None
@@ -461,7 +464,7 @@ def main():
     t0 = time.time()
     try:
         if not wait_port(a.server_port):
-            sys.exit("servidor MCP não subiu (ver server.log)")
+            sys.exit("MCP server did not start (see server.log)")
         with open(os.path.join(a.out, "ops.jsonl"), "w") as log:
             runner = run_replay if a.replay_from else run_agents
             recs = asyncio.run(runner(f"http://127.0.0.1:{a.server_port}/sse", tasks, a, log, set(ports)))
@@ -486,7 +489,7 @@ def main():
         summ["output_tokens"] = sum(r.get("output_tokens", 0) for r in out)
     json.dump(summ, open(os.path.join(a.out, "e7_summary.json"), "w"), indent=1)
     if any(isinstance(r, BaseException) for r in recs):
-        sys.exit("algum agente falhou (ver e7_summary.json)")
+        sys.exit("an agent failed (see e7_summary.json)")
 
 
 if __name__ == "__main__":

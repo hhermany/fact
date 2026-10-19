@@ -1,6 +1,6 @@
 {
   "experiment": "E6net",
-  "description": "E6 pela placa de rede real: política de saída por execução com destinos em outra máquina (Sisyphus).",
+  "description": "E6 over the real network interface: per-execution egress policy with destinations on another machine (Sisyphus).",
   "factors": {
     "binding_mode": [
       "manual",

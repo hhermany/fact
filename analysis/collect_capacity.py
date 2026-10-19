@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reúne as rodadas do E2b (capacity.json) num CSV. Uso:
+"""Collects the E2b runs (capacity.json) into a CSV. Usage:
   python3 collect_capacity.py campaigns/ --out analysis/capacity.csv
 """
 import argparse
@@ -26,12 +26,12 @@ def main():
                          "campaign_runs_failed": man.get("runs_failed", 0),
                          "run_id": os.path.basename(os.path.dirname(path)), **c})
     if not rows:
-        raise SystemExit("nenhuma rodada de capacidade encontrada")
+        raise SystemExit("no capacity run found")
     with open(a.out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
-    print(f"{len(rows)} rodadas -> {a.out}")
+    print(f"{len(rows)} runs -> {a.out}")
 
 
 if __name__ == "__main__":

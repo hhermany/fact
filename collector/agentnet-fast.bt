@@ -1,16 +1,16 @@
 #!/usr/bin/env bpftrace
 /*
- * agentnet-fast.bt — variante otimizada do coletor (mesma atribuição, menos custo).
+ * agentnet-fast.bt: optimized collector variant (same attribution, lower cost).
  *
- * Diferenças em relação a agentnet.bt (todas sem efeito sobre os resolvers):
- *  - fentry:tcp_connect no lugar de kprobe (trampolim BPF, mais barato);
- *  - marcadores apenas atualizam o mapa de contexto: não emitem eventos
- *    (os resolvers leem o contexto no momento do connect);
- *  - exec e exit não emitem eventos (não usados pelos resolvers); exit só limpa o mapa;
- *  - fork só copia contexto quando o pai tem contexto;
- *  - filtro do marcador copia no máximo 21 bytes do caminho;
- *  - connect sem o campo comm.
- * A equivalência com agentnet.bt é verificada experimentalmente (E1 com ambos).
+ * Differences from agentnet.bt (none of them affects the resolvers):
+ *  - fentry:tcp_connect instead of a kprobe (BPF trampoline, cheaper);
+ *  - markers only update the context map: they emit no events
+ *    (the resolvers read the context at connect time);
+ *  - exec and exit emit no events (not used by the resolvers); exit only cleans the map;
+ *  - fork copies the context only when the parent has one;
+ *  - the marker filter copies at most 21 bytes of the path;
+ *  - connect without the comm field.
+ * Equivalence with agentnet.bt is verified experimentally (E1 with both).
  */
 
 BEGIN

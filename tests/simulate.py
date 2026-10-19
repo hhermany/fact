@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Gera uma rodada sintética no formato do coletor (events.jsonl) para testar
-o pipeline de análise SEM eBPF. Não é dado experimental."""
+"""Generates a synthetic run in the collector's format (events.jsonl) to test the
+analysis pipeline WITHOUT eBPF. This is not experimental data."""
 import json
 import os
 import random
@@ -66,7 +66,7 @@ def gen(cond, out, ops=20, mode="mixed", binding=True, seed=0, conflict=False):
             if binding:
                 ctx[r] = CTX + e
         seq = [("A", o) for o in plan_ops["A"]] + [("B", o) for o in plan_ops["B"]]
-        random.shuffle(seq)   # intercalação = concorrência
+        random.shuffle(seq)   # interleaving = concurrency
         for e, o in seq:
             op(o, roots[e], roots[e], cgs[e])
     else:
@@ -82,7 +82,7 @@ def gen(cond, out, ops=20, mode="mixed", binding=True, seed=0, conflict=False):
                 ctx[tid] = CTX + o["exec_id"]
             op(o, w, tid, 21)
             ctx[tid] = ""
-    if conflict:   # contexto errado injetado numa execução N1: testa detecção de conflito
+    if conflict:   # wrong context injected into an N1 execution: tests conflict detection
         for x in ev:
             if x["ev"] == "connect" and x["ctx"].endswith("A"):
                 x["ctx"] = CTX + "B"
@@ -96,7 +96,7 @@ def gen(cond, out, ops=20, mode="mixed", binding=True, seed=0, conflict=False):
         for x in ev:
             f.write(json.dumps(x) + "\n")
         f.write('{"ev":"connect","ts":%d,"pid":1,"tid":1,"cgroup":1,"comm":"sshd","sk":1,"ctx":"",'
-                '"daddr":"10.0.0.1","dport":443}\n' % (ts[0] + 1))   # tráfego de fundo
+                '"daddr":"10.0.0.1","dport":443}\n' % (ts[0] + 1))   # background traffic
     with open(f"{out}/ops.jsonl", "w") as f:
         for x in opslog:
             f.write(json.dumps(x) + "\n")

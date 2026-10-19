@@ -1,6 +1,6 @@
 {
   "experiment": "E7m",
-  "description": "E7 com outros modelos e mais agentes: modelos de 7-8B com chamada de ferramentas servidos por Ollama com GPU em outra máquina (Sisyphus, RTX 3060); agentes, servidor MCP, coletor e política no host medido. Respostas do modelo limitadas a 512 tokens (num_predict): na primeira campanha, o llama3.1:8b às vezes não parava de gerar e a chamada estourava o tempo de 600 s.",
+  "description": "E7 with other models and more agents: 7-8B tool-calling models served by Ollama on a GPU in another machine (Sisyphus, RTX 3060); agents, MCP server, collector, and policy on the measured host. Model answers capped at 512 tokens (num_predict): in the first campaign, llama3.1:8b sometimes did not stop generating and the call hit the 600 s timeout.",
   "factors": {
     "model": [
       "qwen2.5:7b",

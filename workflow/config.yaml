@@ -1,130 +1,130 @@
-# Parâmetros congelados das campanhas. Alterar só com registro no diário.
+# Frozen campaign parameters. Change only with a record in the methodology log.
 campaign_seed: 51193
 
 experiments:
   E1:
     spec: workflow/experiments/E1.json
     pilot_n: 3
-    # N da campanha confirmatória: DECISÃO HUMANA após o piloto
-    # (ver scripts/dimensionar_n.py e docs/METODOLOGIA.md §3.5). null = não rodar.
-    n: 3   # por boot (provisório; 2 boots = 6 por célula)
+    # N of the confirmatory campaign: a HUMAN DECISION after the pilot
+    # (see scripts/size_n.py and docs/METHODOLOGY.md §3.5). null = do not run.
+    n: 3   # per boot (2 boots = 6 per cell)
   E2:
     spec: workflow/experiments/E2.json
     pilot_n: 5
-    n: 5   # um boot (provisório)
+    n: 5   # one boot
 
   E3:
     spec: workflow/experiments/E3.json
     pilot_n: 5
-    n: 5   # por boot (provisório; 2 boots = 10 por célula)
+    n: 5   # per boot (2 boots = 10 per cell)
 
   E3b:
     spec: workflow/experiments/E3b.json
     pilot_n: 5
-    n: 5   # um boot (provisório)
+    n: 5   # one boot
   E1fast:
     spec: workflow/experiments/E1fast.json
     pilot_n: 1
-    n: 1   # equivalência (provisório)
+    n: 1   # equivalence check
 
   E4:
     spec: workflow/experiments/E4.json
     pilot_n: 3
-    n: 5   # um boot (provisório)
+    n: 5   # one boot
 
   E5:
     spec: workflow/experiments/E5.json
     pilot_n: 2
-    # N por Clopper-Pearson: com 0 erros, limite superior unilateral 95% da taxa de
-    # erro por conexão <= 1% exige >= 299 conexões por célula; a menor célula (K=2)
-    # tem 50 conexões por rodada -> 6 rodadas (3 por boot, 2 boots). Ver METODOLOGIA §3.5.
-    n: 3   # por boot
+    # N by Clopper-Pearson: with 0 errors, a one-sided 95% upper bound on the
+    # per-connection error rate <= 1% requires >= 299 connections per cell; the smallest
+    # cell (K=2) has 50 connections per run -> 6 runs (3 per boot, 2 boots). See METHODOLOGY §3.5.
+    n: 3   # per boot
 
   E6:
     spec: workflow/experiments/E6.json
     pilot_n: 2
-    # mesmo critério do E5 (Clopper-Pearson, >= 299 decisões por célula; K=2 tem 50/rodada)
-    n: 3   # por boot
+    # same criterion as E5 (Clopper-Pearson, >= 299 decisions per cell; K=2 has 50 per run)
+    n: 3   # per boot
 
   E7:
     spec: workflow/experiments/E7.json
     pilot_n: 2
-    n: 13   # por boot (2 boots): 12 decisões por rodada -> 26 rodadas = 312 >= 299 (Clopper-Pearson, ver METODOLOGIA §3.3)
+    n: 13   # per boot (2 boots): 12 decisions per run -> 26 runs = 312 >= 299 (Clopper-Pearson, see METHODOLOGY §3.3)
 
   E2b:
     spec: workflow/experiments/E2b.json
     pilot_n: 2
-    n: 5   # por boot (2 boots); piloto: captura = 1 ate P=4 e variavel (0,33-0,58) em P=8; P=6 adicionado para localizar o limite
+    n: 5   # per boot (2 boots); pilot: capture = 1 up to P=4 and variable (0.33-0.58) at P=8; P=6 added to locate the limit
 
-  # injeção de falhas no framework (E5f/E6f/E6n/E7f): só piloto até a decisão do Eder
+  # fault injection into the framework (E5f/E6f/E6n/E7f)
   E5f:
     spec: workflow/experiments/E5f.json
     pilot_n: 1
-    n: 4   # por boot (2 boots): K=2 tem 40-48 conexões sem rótulo errado por rodada -> 8 rodadas >= 299 (Clopper-Pearson)
+    n: 4   # per boot (2 boots): K=2 has 40-48 correctly labeled connections per run -> 8 runs >= 299 (Clopper-Pearson)
   E6f:
     spec: workflow/experiments/E6f.json
     pilot_n: 1
-    n: 4   # por boot (2 boots): mesmo critério do E5f, sobre decisões
+    n: 4   # per boot (2 boots): same criterion as E5f, on decisions
   E6n:
     spec: workflow/experiments/E6n.json
     pilot_n: 1
-    n: null   # substituído pelo E6L (modo 0)
+    n: null   # replaced by E6L (mode 0)
   E7f:
     spec: workflow/experiments/E7f.json
     pilot_n: 2
-    n: 13   # por boot (2 boots): 12 decisões por rodada -> 26 rodadas = 312 >= 299, como no E7
+    n: 13   # per boot (2 boots): 12 decisions per run -> 26 runs = 312 >= 299, as in E7
 
   E6L:
     spec: workflow/experiments/E6L.json
     pilot_n: 1
-    n: 2   # por boot (2 boots): 200 decisões por rodada -> 4 rodadas = 800 por célula
+    n: 2   # per boot (2 boots): 200 decisions per run -> 4 runs = 800 per cell
   E6Ls:
     spec: workflow/experiments/E6Ls.json
     pilot_n: 1
-    n: 3   # por boot (2 boots): K=2 tem 50 decisões por rodada -> 6 rodadas = 300
+    n: 3   # per boot (2 boots): K=2 has 50 decisions per run -> 6 runs = 300
 
-  # experimentos adicionais (18/10/2026): placa de rede real e mais modelos no E7.
-  # N confirmatório decidido após o piloto (mesmos critérios dos experimentos de origem).
+  # additional experiments: real network interface and more models in E7.
+  # Confirmatory N decided after the pilot (same criteria as the original experiments).
   E5net:
     spec: workflow/experiments/E5net.json
     pilot_n: 1
-    n: 3   # por boot (2 boots), como o E5: K=2 tem 50 conexões por rodada -> 6 rodadas >= 299
+    n: 3   # per boot (2 boots), as E5: K=2 has 50 connections per run -> 6 runs >= 299
   E6net:
     spec: workflow/experiments/E6net.json
     pilot_n: 1
-    n: 3   # por boot (2 boots), como o E6
+    n: 3   # per boot (2 boots), as E6
   E3net:
     spec: workflow/experiments/E3net.json
     pilot_n: 3
-    n: 5   # por boot (2 boots), como o E3 (dimensionado pelo piloto do E3); IC95% obtido 1,9-3,6% < 5%
+    n: 5   # per boot (2 boots), as E3 (sized from the E3 pilot); obtained 95% CI 1.9-3.6% < 5%
   E7m:
     spec: workflow/experiments/E7m.json
     pilot_n: 1
-    n: 13   # por boot (2 boots): K=4 tem 12 decisões por rodada -> 26 rodadas = 312 >= 299, como no E7
+    n: 13   # per boot (2 boots): K=4 has 12 decisions per run -> 26 runs = 312 >= 299, as in E7
 
-  # mesmos agentes com modelos comerciais via API (Anthropic); mesmo criterio de N do E7m
+  # the same agents with commercial models via API (Anthropic); same N criterion as E7m
   E7c:
     spec: workflow/experiments/E7c.json
     pilot_n: 1
-    n: 13   # por boot (2 boots): K=4 tem 12 decisoes por rodada -> 26 rodadas = 312 >= 299, como no E7m
+    n: 13   # per boot (2 boots): K=4 has 12 decisions per run -> 26 runs = 312 >= 299, as in E7m
 
-  # idem com modelos da OpenAI (Responses API); mesmo criterio de N do E7c
+  # the same with OpenAI models (Responses API); same N criterion as E7c
   E7o:
     spec: workflow/experiments/E7o.json
     pilot_n: 1
-    n: 13   # por boot (2 boots): K=4 tem 12 decisoes por rodada -> 26 rodadas = 312 >= 299, como no E7c
+    n: 13   # per boot (2 boots): K=4 has 12 decisions per run -> 26 runs = 312 >= 299, as in E7c
 
-  # reproducao sem modelo das rodadas gravadas do E7c e do E7o (sem API, sem custo)
+  # model-free replay of the recorded E7c and E7o runs (no API, no cost)
   E7r:
     spec: workflow/experiments/E7r.json
     pilot_n: 1
-    n: 13   # por boot (2 boots): repete cada uma das 208 rodadas gravadas uma vez por boot; criterio: resultado identico ao gravado
+    n: 13   # per boot (2 boots): repeats each of the 208 recorded runs once per boot; criterion: outcome identical to the recording
 
-  # sistema relacionado executado de verdade ao lado do agentnet (mesmo critério do E5)
+  # related system actually run next to agentnet (same criterion as E5)
   E5ap:
     spec: workflow/experiments/E5ap.json
     pilot_n: 1
-    n: 3   # por boot (2 boots): K=2 tem 50 conexoes por rodada -> 300 >= 299; IC95% da taxa de erro do AgentProvenance <= 5,7 p.p.
+    n: 3   # per boot (2 boots): K=2 has 50 connections per run -> 300 >= 299; 95% CI of AgentProvenance's error rate <= 5.7 points
 
-# precisão relativa alvo (meia-largura do IC95% / média) para dimensionar N
+# target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05

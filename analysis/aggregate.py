@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Agrega várias rodadas (score.json) por condição × taxa de rótulo errado × resolver.
+"""Aggregates several runs (score.json) by condition x mislabel rate x resolver.
 
-A unidade de repetição é a rodada: médias e IC 95% (t de Student) são calculados
-sobre as proporções de cada rodada, nunca sobre eventos agrupados.
+The unit of repetition is the run: means and 95% CIs (Student's t) are computed
+over the per-run proportions, never over pooled events.
 
-Resumo rápido no console (a análise oficial é em R a partir de collect_runs.py).
-Uso: python3 aggregate.py <dir com rodadas>/ [--csv saida.csv]
+Quick console summary (the official analysis is in R, from collect_runs.py).
+Usage: python3 aggregate.py <runs dir>/ [--csv out.csv]
 """
 import argparse
 import csv
@@ -42,8 +42,8 @@ def main():
     ap.add_argument("--csv")
     a = ap.parse_args()
 
-    groups = defaultdict(lambda: defaultdict(list))   # (cond, p, resolver) -> metric -> [valores por rodada]
-    capture = defaultdict(lambda: [0, 0, 0])          # (cond, p) -> [tentadas, capturadas, rodadas]
+    groups = defaultdict(lambda: defaultdict(list))   # (cond, p, resolver) -> metric -> [per-run values]
+    capture = defaultdict(lambda: [0, 0, 0])          # (cond, p) -> [attempted, captured, runs]
     for path in sorted(glob.glob(os.path.join(a.runs_dir, "*", "score.json"))):
         r = json.load(open(path))
         plan = json.load(open(os.path.join(os.path.dirname(path), "plan.json")))
@@ -74,10 +74,10 @@ def main():
                              f"{mean:.3f}±{half:.3f}" if half is not None else f"{mean:.3f}")
         rows.append(row)
         print(f"{cond:4} {p:>5} {mode:7} {kexec:>3} {name:8} {row['runs']:>4}  " + " ".join(f"{c:>15}" for c in cells))
-    print("\ncaptura (capturadas/tentadas) por condição:")
+    print("\ncapture (captured/attempted) per condition:")
     for key in sorted(capture):
         t, c, n = capture[key]
-        print(f"  {key[0]} p={key[1]} mode={key[2]} K={key[3]}: {c}/{t} em {n} rodadas")
+        print(f"  {key[0]} p={key[1]} mode={key[2]} K={key[3]}: {c}/{t} in {n} runs")
     if a.csv:
         with open(a.csv, "w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))

@@ -1,22 +1,44 @@
-% NOMS 2027 draft -- IEEEtran conference. Compile: pdflatex main; bibtex main; pdflatex main; pdflatex main
-% Limite a confirmar na chamada do NOMS 2027 (NOMS 2023: 8 pp. + referências).
 \documentclass[conference]{IEEEtran}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{cite,amsmath,amssymb,booktabs,array,xcolor,graphicx,tikz,url}
 \usetikzlibrary{arrows.meta,positioning,fit}
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks\do a\do b\do c\do d\do e\do f\do g\do h\do i\do j\do k\do l\do m\do n\do o\do p\do q\do r\do s\do t\do u\do v\do w\do x\do y\do z}
 \newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand{\TBD}{\textcolor{red}{TBD}}
-\newcommand{\VER}{\textcolor{orange}{?}}   % célula da tabela ainda não verificada
+\newcommand{\VER}{\textcolor{orange}{?}}   % table cell not yet verified
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+\newcommand{\solution}{FACT}
+
 \newif\ifanon \anonfalse
-% valores padrão; generated/results_meta.tex (gerado pelo R) os redefine
 \providecommand{\EOneRuns}{\TBD}\providecommand{\EOneLabel}{\TBD}
 \providecommand{\ETwoRuns}{\TBD}\providecommand{\ETwoLabel}{\TBD}\providecommand{\EThreeRuns}{\TBD}\providecommand{\EThreeLabel}{\TBD}
 \providecommand{\EOneMislabeled}{\TBD}\providecommand{\EOneFusedWrong}{\TBD}\providecommand{\EOneFusedUp}{\TBD}\providecommand{\EFiveLabel}{\TBD}\providecommand{\EFiveRuns}{\TBD}\providecommand{\EFiveConnAuto}{\TBD}\providecommand{\EFiveWrongAuto}{\TBD}\providecommand{\ESixLabel}{\TBD}\providecommand{\ESixRuns}{\TBD}\providecommand{\ESixDecAuto}{\TBD}\providecommand{\ESevenLabel}{\TBD}\providecommand{\ESevenRuns}{\TBD}\providecommand{\ESevenConn}{\TBD}\providecommand{\ESevenWrong}{\TBD}\providecommand{\ESevenDec}{\TBD}\providecommand{\ESevenDecOK}{\TBD}\providecommand{\ESevenFA}{\TBD}\providecommand{\ESevenFD}{\TBD}\providecommand{\ESevenND}{\TBD}\providecommand{\ESevenToolMs}{\TBD}\providecommand{\AgentnetdRuns}{\TBD}\providecommand{\AgentnetdEqual}{\TBD}\providecommand{\ETwoBLabel}{\TBD}\providecommand{\ETwoBRuns}{\TBD}\providecommand{\EThreeBLabel}{\TBD}\providecommand{\EThreeBRuns}{\TBD}\providecommand{\EOneFastCells}{\TBD}\providecommand{\EOneFastEqual}{\TBD}\providecommand{\EOneFastRuns}{\TBD}\providecommand{\EFourLabel}{\TBD}\providecommand{\EFourRuns}{\TBD}\providecommand{\EFourMCP}{\TBD}
-\providecommand{\ResultsBanner}{}                   % \anontrue se a revisão for double-blind
+\providecommand{\ResultsBanner}{}                   % \anontrue for a double-blind review
+
+\newcommand{\ie}{i.e.,\ }
+\newcommand{\eg}{\textit{e}.\textit{g}.,\ }
+\newcommand{\cf}{\textit{c}\textit{f}.\ }
+\newcommand\1{\textit{(i)}}
+\newcommand\2{\textit{(ii)}}
+\newcommand\3{\textit{(iii)}}
+\newcommand\4{\textit{(iv)}}
+\newcommand\5{\textit{(v)}}
+\newcommand\6{\textit{(vi)}}
+\newcommand\7{\textit{(vii)}}
+\newcommand\8{\textit{(viii)}}
+\newcommand\9{\textit{(ix)}}
+
+\newcommand\itemA{\textit{(a)}}
+\newcommand\itemB{\textit{(b)}}
+\newcommand\itemC{\textit{(c)}}
+\newcommand\itemD{\textit{(d)}}
+\newcommand\itemE{\textit{(e)}}
 
 \begin{document}
-\title{Who Opened This Connection? Per-Execution Network Attribution, Accounting, and Control for AI Agents}
+\title{Who Opened This Connection? \\eBPF-based Per-Execution Network Attribution, Accounting, and Control for AI Agents}
 \ifanon
 \author{\IEEEauthorblockN{Anonymous Authors}}
 \else
@@ -36,6 +58,10 @@ Cec\'ilia Duarte Garcia, J\'eferson Campos Nobre, Eder John Scheid}
 \input{sections/06-results}
 \input{sections/07-discussion}
 \input{sections/08-conclusion}
+
+\section*{Use of Artificial Intelligence Tools}
+
+Generative Artificial Intelligence (AI) tools were used during the preparation of this study to support brainstorming activities, language refinement, and the organization of ideas. The authors assume full responsibility for the content, conclusions, and scientific contributions presented in this work.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}

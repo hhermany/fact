@@ -1,9 +1,9 @@
 #!/usr/bin/env bpftrace
 /*
- * agentnet-count.bt — variante de ablação (E3): as MESMAS probes e a mesma
- * manutenção do mapa de contexto de agentnet.bt, mas sem emitir nenhum evento
- * para o espaço de usuário (apenas contadores no kernel). Mede o custo das
- * probes em si, separado do custo de exportar eventos. Não serve para atribuição.
+ * agentnet-count.bt: ablation variant (E3): the SAME probes and the same
+ * context-map maintenance as agentnet.bt, but emitting no event to user space
+ * (only in-kernel counters). Measures the cost of the probes themselves,
+ * separate from the cost of exporting events. Not usable for attribution.
  */
 
 BEGIN

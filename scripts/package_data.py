@@ -63,7 +63,7 @@ with open(os.path.join(a.out_dir, "DATA_README.md"), "w") as f:
             "and environment snapshots; plus the campaign `manifest.json`, `run_order.json`, and "
             "`checksums.sha256`. Only `confirmatory` campaigns produce numbers in the paper; pilots sized them.\n\n")
     f.write("Verify with `sha256sum -c SHA256SUMS`. Regenerate every table with the repository's "
-            "`snakemake --cores 1 validar relatorio baselines` after extracting the archives into `campaigns/`.\n\n")
+            "`snakemake --cores 1 validate report baselines` after extracting the archives into `campaigns/`.\n\n")
     f.write("| Campaign | Exp. | Label | Runs (ok) | Boot | Started (UTC) | Size (MB) |\n|---|---|---|---|---|---|---|\n")
     for r in rows:
         f.write(f"| `{r[0]}` | {r[1]} | {r[2]} | {r[3]} ({r[4]}) | {boots[r[5]]} | {r[6]} | {r[7]/1e6:.1f} |\n")

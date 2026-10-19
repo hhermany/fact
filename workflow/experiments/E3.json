@@ -1,7 +1,7 @@
 {
   "experiment": "E3",
   "runner": "overhead",
-  "description": "Custo (RQ4): latência de connect e vazão sem/com coletor, sem/com marcadores de contexto. O resolver roda offline e é medido à parte (vazão de pontuação).",
+  "description": "Cost: connect latency and throughput without/with the collector, without/with context markers. The resolver runs offline and is measured separately (scoring throughput).",
   "factors": {
     "instr": ["none", "collector"],
     "markers": [0, 1]

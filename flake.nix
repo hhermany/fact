@@ -1,7 +1,7 @@
 {
-  description = "agentnet (NOMS 2027): atribuicao de conexoes TCP a execucoes de agentes com eBPF";
+  description = "agentnet (NOMS 2027): eBPF-based attribution of TCP connections to agent executions";
 
-  # Mesma base do CMP223. A revisao exata fica em flake.lock (copiado para cada campanha).
+  # The exact revision is in flake.lock (copied into every campaign).
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
 
   outputs = { self, nixpkgs }:
@@ -14,22 +14,22 @@
       pyEnv = pkgs.python3.withPackages (ps: with ps; [ jupyterlab ipykernel mcp anyio ]);  # mcp: E4
     in {
       devShells.${system}.default = pkgs.mkShell {
-        # Camada 1 (fixada por Nix): ferramentas de usuario, orquestracao e analise.
-        # Camada 2 (do host, registrada por campanha): kernel, bpftrace, bpftool.
+        # Layer 1 (pinned by Nix): user tools, orchestration, and analysis.
+        # Layer 2 (from the host, recorded per campaign): kernel, bpftrace, bpftool.
         packages = with pkgs; [
           pyEnv bashInteractive coreutils findutils gawk gnugrep gnused gnutar gzip jq which git
-          snakemake pandoc rEnv gcc fontconfig ollama   # ollama: modelo local do E7 (sem tokens pagos)
+          snakemake pandoc rEnv gcc fontconfig ollama   # ollama: local model of E7 (no paid tokens)
         ];
-        # fonte das figuras (Times do template IEEEtran): fontconfig fixado pelo Nix
+        # font of the figures (Times, as in the IEEEtran template): fontconfig pinned by Nix
         FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.gyre-fonts ]; };
         shellHook = ''
-          # interpretador exato dos workloads (o wrapper do snakemake reordena o PATH)
+          # exact interpreter of the workloads (the snakemake wrapper reorders PATH)
           export AGENTNET_PYTHON=${pyEnv}/bin/python3
           echo "agentnet reproducible shell"
           echo "Nix: $(nix --version 2>/dev/null)"
           echo "Python: $(python3 --version)  R: $(R --version | head -1)"
           echo "Snakemake: $(snakemake --version)"
-          echo "bpftrace (host): $(command -v bpftrace >/dev/null && bpftrace --version || echo indisponivel)"
+          echo "bpftrace (host): $(command -v bpftrace >/dev/null && bpftrace --version || echo unavailable)"
           echo "kernel (host): $(uname -r)"
         '';
       };

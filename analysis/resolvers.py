@@ -1,14 +1,13 @@
-"""Resolvers de atribuição para eventos de conexão TCP.
+"""Attribution resolvers for TCP connection events.
 
-REGRA DE INDEPENDÊNCIA: nenhum resolver pode ler daddr, dport ou qualquer
-campo da referência. Eles recebem apenas `ResolverInput` (abaixo), montado
-por `strip_reference_fields`. `check_independence()` verifica isso por AST,
-no mesmo espírito da verificação usada no C1.
+INDEPENDENCE RULE: no resolver may read daddr, dport, or any reference field.
+They receive only `ResolverInput` (below), built by `strip_reference_fields`.
+`check_independence()` verifies this on the AST.
 
-Saída de todo resolver: frozenset de exec_ids.
-  len == 1  -> origem atribuída
-  len  > 1  -> ambiguidade (conjunto de candidatos)
-  len == 0  -> ausência de atribuição
+Output of every resolver: a frozenset of exec_ids.
+  len == 1  -> attributed origin
+  len  > 1  -> ambiguity (candidate set)
+  len == 0  -> no attribution
 """
 import ast
 import inspect
@@ -33,9 +32,9 @@ def strip_reference_fields(ev):
 
 @dataclass
 class World:
-    """Estado reconstruído a partir de fork/exit e do registro do launcher."""
-    parent: dict = field(default_factory=dict)        # tid -> tid pai
-    roots: dict = field(default_factory=dict)         # pid raiz -> set(exec_ids)
+    """State rebuilt from fork/exit events and from the launcher registry."""
+    parent: dict = field(default_factory=dict)        # tid -> parent tid
+    roots: dict = field(default_factory=dict)         # root pid -> set(exec_ids)
     cgroups: dict = field(default_factory=dict)       # cgroup id -> set(exec_ids)
 
     def ancestors(self, tid, limit=4096):
@@ -46,7 +45,7 @@ class World:
             seen += 1
 
 
-# ---------------------------------------------------------------- resolvers isolados
+# ---------------------------------------------------------------- single-signal resolvers
 def resolve_cgroup(x: ResolverInput, w: World):
     return frozenset(w.cgroups.get(x.cgroup, ()))
 
@@ -55,7 +54,7 @@ def resolve_lineage(x: ResolverInput, w: World):
     for t in w.ancestors(x.tid):
         if t in w.roots:
             return frozenset(w.roots[t])
-    # tid pode ser uma thread cujo fork não foi visto: tenta pelo pid (tgid)
+    # tid may be a thread whose fork was not seen: try the pid (tgid)
     for t in w.ancestors(x.pid):
         if t in w.roots:
             return frozenset(w.roots[t])
@@ -68,18 +67,18 @@ def resolve_context(x: ResolverInput, w: World):
     return frozenset()
 
 
-# ---------------------------------------------------------------- fusão
+# ---------------------------------------------------------------- fusion
 def resolve_fused(x: ResolverInput, w: World):
-    """Fusão com ambiguidade explícita.
+    """Fusion with explicit ambiguity.
 
-    1. Sinais estruturais: K = interseção dos conjuntos NÃO vazios de lineage e
-       cgroup. Se ambos não vazios e disjuntos -> conflito -> união (ambíguo).
-    2. Contexto c (se houver):
-         - K vazio (sem informação estrutural)      -> {c}
-         - c ∈ K                                    -> {c}   (contexto refina K)
-         - c ∉ K                                    -> K ∪ {c} (conflito: ambíguo)
-    3. Sem contexto: K (pode ser unitário, ambíguo ou vazio).
-    Nunca escolhe entre candidatos sem informação que os separe.
+    1. Structural signals: K = intersection of the NON-empty lineage and cgroup
+       sets. If both are non-empty and disjoint -> conflict -> union (ambiguous).
+    2. Context c (if any):
+         - K empty (no structural information)      -> {c}
+         - c in K                                   -> {c}   (context refines K)
+         - c not in K                               -> K | {c} (conflict: ambiguous)
+    3. No context: K (may be a single origin, ambiguous, or empty).
+    It never chooses among candidates that no information separates.
     """
     sets = [s for s in (resolve_lineage(x, w), resolve_cgroup(x, w)) if s]
     if not sets:
@@ -106,7 +105,7 @@ RESOLVERS = {
 
 
 def check_independence():
-    """Falha se algum resolver referenciar campos da referência."""
+    """Fails if any resolver references reference fields."""
     forbidden = {"daddr", "dport", "dport_map", "op_id", "plan", "reference"}
     for name, fn in RESOLVERS.items():
         tree = ast.parse(inspect.getsource(fn))
@@ -119,5 +118,5 @@ def check_independence():
             elif isinstance(node, ast.Constant) and isinstance(node.value, str):
                 ident = node.value
             if ident in forbidden:
-                raise AssertionError(f"resolver {name} referencia campo proibido: {ident}")
+                raise AssertionError(f"resolver {name} references forbidden field: {ident}")
     return True

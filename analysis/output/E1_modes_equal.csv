@@ -1,4 +1,4 @@
-cond,wrong_label,resolver,iguais
+cond,wrong_label,resolver,equal
 N0,0,cgroup,TRUE
 N0,0,lineage,TRUE
 N0,0,context,TRUE

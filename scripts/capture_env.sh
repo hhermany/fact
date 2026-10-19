@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Registra o ambiente observado em <dir>/ (um arquivo por item). Nunca falha:
-# o que não estiver disponível é registrado como "INDISPONIVEL".
-# Uso: capture_env.sh <dir> [sufixo]
+# Records the observed environment in <dir>/ (one file per item). Never fails:
+# anything unavailable is recorded as "UNAVAILABLE".
+# Usage: capture_env.sh <dir> [suffix]
 set -u
 D="$1"; SUF="${2:-}"
 mkdir -p "$D"
-cap() { local f="$1"; shift; { "$@" 2>&1 || echo "INDISPONIVEL: $*"; } > "$D/$f$SUF.txt"; }
+cap() { local f="$1"; shift; { "$@" 2>&1 || echo "UNAVAILABLE: $*"; } > "$D/$f$SUF.txt"; }
 cap uname        uname -a
 cap os_release   cat /etc/os-release
 cap hostname     hostname

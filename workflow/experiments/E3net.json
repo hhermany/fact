@@ -1,7 +1,7 @@
 {
   "experiment": "E3net",
   "runner": "overhead",
-  "description": "Custo (E3) pela placa de rede real: connect a um aceitador em outra máquina (Sisyphus), sem/com coletor e marcadores; inclui a latência de rede real.",
+  "description": "Cost (E3) over the real network interface: connect to an acceptor on another machine (Sisyphus), without/with collector and markers; includes the real network latency.",
   "factors": {
     "instr": [
       "none",

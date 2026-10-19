@@ -1,6 +1,6 @@
 {
   "experiment": "E7r",
-  "description": "Reprodução sem modelo do E7c e do E7o: cada rodada repete, sem chamar API nenhuma, as chamadas de ferramenta gravadas de uma rodada original (mesmo modelo, mesmo K, mesma semente e portanto mesmo plano), na mesma ordem, com os mesmos argumentos e rótulos e no mesmo instante relativo. src escolhe a gravação do 1º (0) ou do 2º (1) boot original. Mostra que o resultado do E7c/E7o pode ser reproduzido sem os modelos comerciais, que podem mudar ou deixar de existir.",
+  "description": "Model-free replay of E7c and E7o: each run repeats, without calling any API, the recorded tool calls of an original run (same model, same K, same seed, and hence the same plan), in the same order, with the same arguments and labels, and at the same relative instant. src chooses the recording from the first (0) or second (1) original boot. Shows that the E7c/E7o outcome can be reproduced without the commercial models, which may change or cease to exist.",
   "factors": {
     "model": [
       "claude-opus-5-5",

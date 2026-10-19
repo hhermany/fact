@@ -1,10 +1,10 @@
-"""Integração com o SDK oficial do MCP (FastMCP): cada chamada de ferramenta roda
-ligada à identidade da execução que a pediu, sem mudar o código das ferramentas.
+"""Integration with the official MCP SDK (FastMCP): each tool call runs bound to
+the identity of the execution that requested it, without changing tool code.
 
-A identidade vem de params._meta["agentnet/exec"] da requisição tools/call
-(campo reservado pelo MCP para metadados); na ausência dele, de uma identidade
-por sessão MCP (uma sessão = uma execução do agente). O cliente envia o _meta
-com call_tool_with_exec().
+The identity comes from params._meta["agentnet/exec"] of the tools/call request
+(a field the MCP reserves for metadata); if absent, from a per-MCP-session
+identity (one session = one agent execution). The client sends the _meta with
+call_tool_with_exec().
 """
 from . import agentctx
 
@@ -27,7 +27,7 @@ def _exec_of_request(server, key, per_session):
 
 
 def instrument(fastmcp, key=META_KEY, per_session=True):
-    """Envolve o tratador tools/call de uma instância FastMCP."""
+    """Wraps the tools/call handler of a FastMCP instance."""
     agentctx.install()
     orig = fastmcp.call_tool
     low = fastmcp._mcp_server
@@ -41,7 +41,7 @@ def instrument(fastmcp, key=META_KEY, per_session=True):
 
 
 async def call_tool_with_exec(session, name, arguments, exec_id, key=META_KEY):
-    """Lado cliente: tools/call com a identidade da execução em _meta."""
+    """Client side: tools/call with the execution identity in _meta."""
     from mcp import types
     params = types.CallToolRequestParams.model_validate(
         {"name": name, "arguments": arguments, "_meta": {key: exec_id}})

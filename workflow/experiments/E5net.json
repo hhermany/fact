@@ -1,6 +1,6 @@
 {
   "experiment": "E5net",
-  "description": "E5 pela placa de rede real: as ferramentas conectam a serviços em outra máquina (Sisyphus, remote_farm.py) em vez do loopback. Mesmo servidor MCP, ferramentas, fatores e referência (porta exclusiva).",
+  "description": "E5 over the real network interface: the tools connect to services on another machine (Sisyphus, remote_farm.py) instead of loopback. Same MCP server, tools, factors, and reference (exclusive port).",
   "factors": {
     "binding_mode": [
       "manual",

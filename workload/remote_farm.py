@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Serviços de destino numa segunda máquina (experimentos pela placa de rede).
+"""Destination services on a second machine (experiments over the network interface).
 
-Aceita e fecha conexões em todas as portas das faixas dadas, como o Listener
-local dos workloads, mas ouvindo no endereço da placa de rede. Roda na máquina
-de destino (não instrumentada); o host medido conecta a ela pelos workloads com
---dest-host. Não precisa de root (portas acima de 1024).
+Accepts and closes connections on every port of the given ranges, like the
+workloads' local Listener, but listening on the network interface's address. Runs
+on the destination machine (not instrumented); the measured host connects to it
+through the workloads' --dest-host. Does not need root (ports above 1024).
 
-Uso: python3 remote_farm.py --addr 0.0.0.0 --ranges 61000-61999 65000-65499
+Usage: python3 remote_farm.py --addr 0.0.0.0 --ranges 61000-61999 65000-65499
 """
 import argparse
 import resource

@@ -1,6 +1,6 @@
 {
   "experiment": "E6Ls",
-  "description": "Controle da verificação de linhagem num worker compartilhado (servidor MCP real, vínculo automático, sem rótulos errados): a raiz é compartilhada e não é registrada, então não pode haver vetos falsos.",
+  "description": "Control of the lineage check in a shared worker (real MCP server, automatic binding, no mislabels): the root is shared and not registered, so there can be no false vetoes.",
   "factors": {
     "tool": [
       "sync",

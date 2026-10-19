@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
-"""agentnetd — atribuição e contabilidade por execução AO VIVO.
+"""agentnetd: LIVE per-execution attribution and accounting.
 
-Lê o fluxo JSON do coletor (stdin ou --replay arquivo), mantém a árvore de
-processos e o registro de execuções, atribui cada connect com o resolvedor
-fundido (mesma função usada na avaliação offline; recebe só ts, pid, tid,
-cgroup e ctx) e exporta, a cada intervalo, registros de fluxo por execução:
+Reads the collector's JSON stream (stdin or --replay file), keeps the process
+tree and the execution registry, attributes each connect with the fused
+resolver (the same function used in the offline evaluation; it receives only
+ts, pid, tid, cgroup, and ctx), and exports, at each interval, one flow record
+per execution:
 
   {"type":"exec_flow","t0":..,"t1":..,"exec":"E01","connections":n,
    "established":x,"failed":y,"destinations":d}
   {"type":"uncredited","t0":..,"t1":..,"ambiguous":a,"unattributed":m,
    "ambiguous_sets":{"E01|E02": k, ...}}
 
-Conexões ambíguas ou sem atribuição NUNCA são creditadas a uma execução: são
-exportadas à parte, com os conjuntos de candidatos (ambiguidade explícita).
+Ambiguous or unattributed connections are NEVER credited to an execution: they
+are exported separately, with their candidate sets (explicit ambiguity).
 
-Eventos de CPUs diferentes podem chegar fora de ordem; um buffer de
-reordenação (--reorder-ms) libera eventos em ordem de ts quando ficam mais
-antigos que (maior ts visto - janela).
+Events from different CPUs may arrive out of order; a reordering buffer
+(--reorder-ms) releases events in ts order once they are older than
+(largest ts seen - window).
 
-Uso:
+Usage:
   bpftrace -B line collector/agentnet-fast.bt | agentnetd.py --registry reg.json
   agentnetd.py --replay events.jsonl --registry reg.json --out flows.jsonl
 """
@@ -42,12 +43,12 @@ class Daemon:
         self.interval = interval_ns
         self.reorder = reorder_ns
         self.emit = emit or (lambda r: print(json.dumps(r), flush=True))
-        self.filt = filt                      # usado só em testes (mesmo filtro do score offline)
+        self.filt = filt                      # used only in tests (same filter as the offline score)
         self.heap, self.seq, self.max_ts = [], 0, 0
         self.win0 = None
         self.sk_exec = {}
         self.reset_window()
-        self.total = defaultdict(Counter)     # exec -> totais (para o resumo final)
+        self.total = defaultdict(Counter)     # exec -> totals (for the final summary)
         self.total_unc = Counter()
 
     def load_registry(self, reg):
@@ -148,7 +149,7 @@ def main():
     src = open(a.replay) if a.replay else sys.stdin
     try:
         for ev in iter_lines(src):
-            if not a.replay and os.path.getmtime(a.registry) != reg_mtime:   # registro atualizado
+            if not a.replay and os.path.getmtime(a.registry) != reg_mtime:   # registry updated
                 reg_mtime = os.path.getmtime(a.registry)
                 d.load_registry(json.load(open(a.registry)))
             d.push(ev)

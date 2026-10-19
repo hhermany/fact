@@ -8,7 +8,7 @@ bench/connect_bench
 policy/agentnet_policy
 policy/agentnet_policy.bpf.o
 
-# dados brutos das campanhas ficam fora do git (arquivados com checksums)
+# raw campaign data stays out of git (archived with checksums)
 campaigns/*/runs/
 campaigns/*.tar.gz
 paper/*.aux

@@ -1,32 +1,33 @@
-"""Ligação da identidade de execução no runtime (lado usuário do agentnet).
+"""Task-scoped binding of the execution identity in the runtime (user-space side).
 
-Problema (E4): o contexto do kernel é indexado por thread. Um marcador emitido
-no início de uma chamada de ferramenta async é sobrescrito quando outra
-coroutine roda na mesma thread do event loop, e as conexões saem com a
-identidade errada, sem que nenhum sinal do kernel o detecte.
+Problem (E4): the kernel context is keyed by thread. A marker emitted at the
+start of an async tool call is overwritten when another coroutine runs on the
+same event-loop thread, and connections leave with the wrong identity, without
+any kernel signal detecting it.
 
-Solução: a identidade segue a TAREFA (contextvars, que o asyncio copia para cada
-Task e o anyio/asyncio.to_thread copiam para threads de trabalho) e é entregue ao
-kernel imediatamente antes de cada evento que o kernel atribui:
-  - connect() de socket AF_INET/AF_INET6;
-  - criação de processo (subprocess.Popen e os.fork).
-Entre o marcador e a chamada de sistema não há await, então nenhuma outra
-coroutine pode rodar no meio: a conexão (ou o filho) sai com a identidade da
-tarefa que a originou. Sem identidade corrente, o contexto do kernel é limpo
-antes do connect: a conexão fica sem contexto (o resolvedor a reporta como
-ambígua/sem crédito) em vez de herdar uma identidade antiga.
+Solution: the identity follows the TASK (contextvars, which asyncio copies into
+every Task and anyio/asyncio.to_thread copy into worker threads) and is handed
+to the kernel immediately before each event that the kernel attributes:
+  - connect() on AF_INET/AF_INET6 sockets;
+  - process creation (subprocess.Popen and os.fork).
+There is no await between the marker and the system call, so no other coroutine
+can run in between: the connection (or the child) carries the identity of the
+task that created it. Without a current identity, the kernel context is cleared
+before connect: the connection has no context (the resolver reports it as
+ambiguous/uncredited) instead of inheriting a stale identity.
 
-O mecanismo de entrega é o mesmo do coletor: openat em /run/agentctx/begin/<id>
-ou /run/agentctx/end (caminhos inexistentes; custo de uma syscall que falha).
-Um cache por thread evita remarcar quando a identidade não mudou: o contexto do
-kernel de uma thread só muda pelos marcadores emitidos por ela mesma (ou pela
-herança na criação, quando o cache da thread nova ainda está vazio).
+The delivery mechanism is the same as the collector's: openat on
+/run/agentctx/begin/<id> or /run/agentctx/end (nonexistent paths; the cost is
+one failed system call). A per-thread cache avoids re-marking when the identity
+has not changed: a thread's kernel context only changes through markers emitted
+by that thread (or through inheritance at creation, when the new thread's cache
+is still empty).
 
-Uso:
+Usage:
     from agentnet_rt import agentctx
     agentctx.install()
     with agentctx.bind("exec-42"):
-        ...   # conexões e subprocessos desta tarefa levam exec-42
+        ...   # connections and subprocesses of this task carry exec-42
 """
 import contextvars
 import os
@@ -44,7 +45,7 @@ _tls = threading.local()
 _lock = threading.Lock()
 stats = {"marks": 0, "cached": 0}
 _installed = False
-enabled = True          # False desliga os ganchos sem desinstalá-los (testes)
+enabled = True          # False disables the hooks without uninstalling them (tests)
 _orig = {}
 
 
@@ -60,8 +61,8 @@ def _valid(exec_id):
 
 
 def sync_kernel():
-    """Iguala o contexto do kernel da thread chamadora à identidade da tarefa
-    corrente. Deve ser chamada sem await entre ela e a syscall que protege."""
+    """Sets the calling thread's kernel context to the identity of the current
+    task. Must be called with no await between it and the system call it guards."""
     if not enabled:
         return
     want = current.get()
@@ -76,15 +77,15 @@ def sync_kernel():
 
 
 def invalidate():
-    """Esquece o cache da thread (usar se outro código emitir marcadores)."""
+    """Forgets the per-thread cache (use if other code emits markers)."""
     _tls.last = _UNSET
 
 
 @contextmanager
 def bind(exec_id):
-    """Associa exec_id à tarefa corrente (sync ou async) durante o bloco."""
+    """Binds exec_id to the current task (sync or async) for the duration of the block."""
     if exec_id is not None and not _valid(exec_id):
-        raise ValueError(f"identidade de execução inválida: {exec_id!r}")
+        raise ValueError(f"invalid execution identity: {exec_id!r}")
     tok = current.set(exec_id)
     try:
         yield
@@ -93,7 +94,7 @@ def bind(exec_id):
 
 
 def install():
-    """Instala os ganchos de connect e criação de processo (idempotente)."""
+    """Installs the connect and process-creation hooks (idempotent)."""
     global _installed
     if _installed:
         return

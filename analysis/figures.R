@@ -64,7 +64,7 @@ pct <- function(x) paste0(round(100 * x), "%")
 #' (I/N) or reports as ambiguous (A/N), per execution structure and fault
 #' fraction p. The fused resolver is agentnet's. Operation modes produced
 #' identical counts and are pooled.
-e1 <- read_csv(file.path(indir, "resumo_celulas.csv"), show_col_types = FALSE) |>
+e1 <- read_csv(file.path(indir, "cell_summary.csv"), show_col_types = FALSE) |>
   filter(experiment == "E1", label == "confirmatory") |>
   group_by(cond, wrong_label, resolver) |>
   summarise(A = sum(A_total) / sum(N_total), I = sum(I_total) / sum(N_total), .groups = "drop") |>
@@ -102,7 +102,7 @@ save_fig(g1, "fig_e1", 2.35)
 #' uncredited, with mislabeled markers, and the absolute net accounting error
 #' summed over executions. Context-only accounting has a net error of zero
 #' even when it credits connections wrongly: opposite errors cancel.
-acct <- read_csv(file.path(indir, "E1_contabilidade.csv"), show_col_types = FALSE) |>
+acct <- read_csv(file.path(indir, "E1_accounting.csv"), show_col_types = FALSE) |>
   pivot_longer(matches("^(wrong|unc|net)_(context|fused)$"), names_to = c("kind", "resolver"), names_sep = "_",
                values_to = "conns") |>
   mutate(resolver = factor(resolver, c("context", "fused"), c("context only", "FACT")),

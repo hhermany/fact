@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Servidor MCP de ferramentas de rede usado pelo agente LLM (E7).
+"""MCP server with network tools, used by the LLM agents (E7).
 
-Um único processo atende todas as sessões (worker compartilhado), instrumentado
-pelo agentnet_rt (vínculo automático: a identidade vem do _meta de cada
-tools/call; as ferramentas não sabem nada do agentnet). Três ferramentas com
-padrões de execução diferentes:
+A single process serves every session (shared worker), instrumented by
+agentnet_rt (automatic binding: the identity comes from the _meta of each
+tools/call; the tools know nothing about agentnet). Three tools with different
+execution patterns:
 
-  http_get(url)     async: requisição HTTP/1.0 com asyncio (intercala no event loop)
-  fetch_url(url)    subprocesso: python -c urllib (o filho herda a identidade)
-  tcp_check(host, port)  thread do pool (anyio.to_thread): teste de conexão TCP
+  http_get(url)     async: HTTP/1.0 request with asyncio (interleaves on the event loop)
+  fetch_url(url)    subprocess: python -c urllib (the child inherits the identity)
+  tcp_check(host, port)  pool thread (anyio.to_thread): TCP connection test
 
-Uso: python3 mcp_agent_server.py --port 64999 [--binding auto|none]
+Usage: python3 mcp_agent_server.py --port 64999 [--binding auto|none]
 """
 import argparse
 import asyncio

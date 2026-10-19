@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
-"""Workload sintético de rede para as condições N0–N3.
+"""Synthetic network workload for conditions N0-N3.
 
-Cada execução (A, B, ...) faz operações de rede para destinos locais. Cada
-operação usa uma PORTA DE DESTINO EXCLUSIVA, conhecida antes da execução e
-registrada em plan.json. Essa porta é a referência independente da origem:
-os resolvers não podem ler daddr/dport.
+Each execution (A, B, ...) performs network operations to local destinations.
+Each operation uses an EXCLUSIVE DESTINATION PORT, known before the execution
+and recorded in plan.json. This port is the independent reference of the origin:
+the resolvers may not read daddr/dport.
 
-Condições:
-  N0  árvores distintas, cgroups distintos               (controle)
-  N1  árvores distintas, MESMO cgroup, concorrentes      (= C1 do manuscrito)
-  N2  UM worker atende A e B em sequência                (reutilização)
-  N3  UM worker atende A e B em threads concorrentes     (multiplexação por thread)
+Conditions:
+  N0  distinct trees, distinct cgroups                   (control)
+  N1  distinct trees, SAME cgroup, concurrent
+  N2  ONE worker serves A and B sequentially             (reuse)
+  N3  ONE worker serves A and B on concurrent threads    (thread multiplexing)
 
-Modos de operação (--mode):
-  inproc   connect() feito pelo próprio processo/thread da execução
-  subproc  connect() feito por um processo filho (fork+exec de python -c)
-  mixed    alterna inproc e subproc
+Operation modes (--mode):
+  inproc   connect() made by the execution's own process/thread
+  subproc  connect() made by a child process (fork+exec of python -c)
+  mixed    alternates inproc and subproc
 
-Execuções: --execs K (K=2 usa A,B; K>2 usa E00..E{K-1}). Taxa: --jitter (pausa
-máxima entre operações de uma execução; 0 = taxa máxima).
+Executions: --execs K (K=2 uses A,B; K>2 uses E00..E{K-1}). Rate: --jitter (maximum
+pause between operations of an execution; 0 = maximum rate).
 
-Uso (como root, com o coletor já ativo e o sentinel "ready" recebido):
+Usage (as root, with the collector already active and the "ready" sentinel received):
   sudo python3 workload.py --cond N1 --ops 50 --mode mixed --out runs/r001 --seed 1
 
-Saídas em --out:
-  plan.json      mapa dport -> (exec_id, op_id) e parâmetros
-  registry.json  raízes (pid -> exec_ids), cgroups (id -> exec_ids)
-  ops.jsonl      operações efetivamente tentadas, com timestamps e resultado
+Outputs in --out:
+  plan.json      map dport -> (exec_id, op_id) and parameters
+  registry.json  roots (pid -> exec_ids), cgroups (id -> exec_ids)
+  ops.jsonl      operations actually attempted, with timestamps and outcome
 """
 import argparse
 import resource
@@ -44,10 +44,10 @@ CG_ROOT = "/sys/fs/cgroup/agentnet"
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
 LISTEN_ADDR = "127.0.0.1"
-EXECS = ["A", "B"]          # redefinido em main() conforme --execs
+EXECS = ["A", "B"]          # redefined in main() according to --execs
 
 
-# ---------------------------------------------------------------- marcadores
+# ---------------------------------------------------------------- markers
 def ctx_mark(path):
     try:
         fd = os.open(path, os.O_RDONLY)
@@ -70,7 +70,7 @@ def ctx_end(enabled):
 def cg_create(name):
     path = os.path.join(CG_ROOT, name)
     os.makedirs(path, exist_ok=True)
-    return path, os.stat(path).st_ino   # inode == id do cgroup v2 visto pelo eBPF
+    return path, os.stat(path).st_ino   # inode == cgroup v2 id as seen by eBPF
 
 
 def cg_move(path, pid):
@@ -80,7 +80,7 @@ def cg_move(path, pid):
 
 # ---------------------------------------------------------------- listener
 class Listener(threading.Thread):
-    """Aceita e fecha conexões em todas as portas do plano."""
+    """Accepts and closes connections on every planned port."""
 
     def __init__(self, ports):
         super().__init__(daemon=True)
@@ -106,7 +106,7 @@ class Listener(threading.Thread):
                     pass
 
 
-# ---------------------------------------------------------------- operações
+# ---------------------------------------------------------------- operations
 SUBPROC_CODE = (
     "import socket,sys;s=socket.socket();s.settimeout(2);"
     "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)"
@@ -132,14 +132,14 @@ def do_op(op, mode, log, lock):
 
 
 def label_for(op):
-    """Rótulo emitido pelo runtime: pré-sorteado no plano (ver main). Um número
-    EXATO de operações por execução recebe o rótulo de outra execução (modelo de
-    falha do vínculo), para que a injeção de falha não acrescente variância."""
+    """Label emitted by the runtime: drawn in advance in the plan (see main). An EXACT
+    number of operations per execution receives another execution's label (binding
+    fault model), so that fault injection adds no variance."""
     return op.get("label", op["exec_id"])
 
 
 def run_op_with_ctx(op, mode, binding, log, lock):
-    """Marca contexto por operação (tool call), em qualquer condição."""
+    """Marks the context per operation (tool call), in any condition."""
     label = label_for(op)
     ctx_begin(label, binding)
     try:
@@ -149,7 +149,7 @@ def run_op_with_ctx(op, mode, binding, log, lock):
 
 
 def run_execution(exec_id, ops, mode, binding, log, lock, jitter):
-    """Uma execução com raiz própria (N0/N1)."""
+    """One execution with its own root (N0/N1)."""
     for op in ops:
         run_op_with_ctx(op, mode, binding, log, lock)
         time.sleep(random.uniform(0, jitter))
@@ -159,18 +159,18 @@ def run_execution(exec_id, ops, mode, binding, log, lock, jitter):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cond", required=True, choices=["N0", "N1", "N2", "N3"])
-    ap.add_argument("--ops", type=int, default=50, help="operações por execução")
+    ap.add_argument("--ops", type=int, default=50, help="operations per execution")
     ap.add_argument("--mode", default="mixed", choices=["inproc", "subproc", "mixed"])
-    ap.add_argument("--no-binding", action="store_true", help="não emitir marcadores de contexto")
+    ap.add_argument("--no-binding", action="store_true", help="do not emit context markers")
     ap.add_argument("--base-port", type=int, default=61000)
     ap.add_argument("--jitter", type=float, default=0.01)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--execs", type=int, default=2, help="número K de execuções concorrentes")
-    ap.add_argument("--threads", type=int, default=8, help="threads do worker em N3")
+    ap.add_argument("--execs", type=int, default=2, help="number K of concurrent executions")
+    ap.add_argument("--threads", type=int, default=8, help="worker threads in N3")
     ap.add_argument("--wrong-label", type=float, default=0.0,
-                    help="fração de operações por execução rotuladas com outra execução (número exato, posições sorteadas)")
+                    help="fraction of operations per execution labeled with another execution (exact count, random positions)")
     ap.add_argument("--policy", type=int, default=0,
-                    help="1: carrega a política por execução (exige o agentnet_policy ativo)")
+                    help="1: loads the per-execution policy (requires agentnet_policy running)")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
@@ -178,13 +178,13 @@ def main():
     global EXECS
     EXECS = ["A", "B"] if a.execs == 2 else [f"E{i:02d}" for i in range(a.execs)]
     if a.base_port + a.ops * len(EXECS) > 65535:
-        sys.exit("portas insuficientes: reduza --ops ou --execs")
-    # as portas de escuta não podem cair na faixa efêmera (senão conexões de
-    # cliente as ocupam e o bind falha sob carga)
+        sys.exit("not enough ports: reduce --ops or --execs")
+    # the listening ports must not fall in the ephemeral range (otherwise client
+    # connections take them and bind fails under load)
     lo, hi = map(int, open("/proc/sys/net/ipv4/ip_local_port_range").read().split())
     if a.base_port <= hi and a.base_port + a.ops * len(EXECS) - 1 >= lo:
-        sys.exit(f"portas {a.base_port}+ sobrepõem a faixa efêmera {lo}-{hi}: use --base-port acima de {hi}")
-    # uma porta de escuta por operação: eleva o limite de descritores
+        sys.exit(f"ports {a.base_port}+ overlap the ephemeral range {lo}-{hi}: use --base-port above {hi}")
+    # one listening port per operation: raise the file-descriptor limit
     soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
     need = a.ops * len(EXECS) + 256
     if soft < need:
@@ -192,17 +192,17 @@ def main():
     os.makedirs(a.out, exist_ok=True)
     binding = not a.no_binding
 
-    # Plano: porta exclusiva por operação, embaralhada para não codificar a execução na ordem.
+    # Plan: one exclusive port per operation, shuffled so that the order does not encode the execution.
     ports = list(range(a.base_port, a.base_port + a.ops * len(EXECS)))
     random.shuffle(ports)
     ops, it = {e: [] for e in EXECS}, iter(ports)
     for e in EXECS:
         for i in range(a.ops):
             ops[e].append({"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": next(it)})
-    # falhas de rótulo: exatamente round(p * ops) operações por execução, posições sorteadas
+    # label faults: exactly round(p * ops) operations per execution, at random positions
     n_wrong = round(a.wrong_label * a.ops)
     if abs(n_wrong - a.wrong_label * a.ops) > 1e-9:
-        sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} não é inteiro: escolha níveis que dão contagem exata")
+        sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} is not an integer: choose levels that give an exact count")
     for e in EXECS:
         for i in random.sample(range(a.ops), n_wrong):
             ops[e][i]["label"] = random.choice([x for x in EXECS if x != e])
@@ -213,8 +213,8 @@ def main():
             "listen_addr": LISTEN_ADDR,
             "dport_map": {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in EXECS for o in ops[e]}}
     if a.policy:
-        # mesmas classes do E6: P (todos os destinos do plano) e R (metade sorteada dos
-        # próprios); gerador separado, para não alterar o plano das demais condições
+        # same classes as E6: P (every planned destination) and R (a random half of its
+        # own); separate generator, so as not to change the plan of the other conditions
         prng = random.Random(a.seed + 7919)
         classes = {e: ("P" if i % 2 == 0 else "R") for i, e in enumerate(EXECS)}
         allow = {}
@@ -229,7 +229,7 @@ def main():
         import policyctl
         policyctl.load_dict(plan["policy"]["allow"])
 
-    listener = Listener(ports)   # thread iniciada só depois dos forks
+    listener = Listener(ports)   # thread started only after the forks
     lock = threading.Lock()
     log = open(os.path.join(a.out, "ops.jsonl"), "w")
     registry = {"roots": {}, "cgroups": {}}
@@ -241,10 +241,10 @@ def main():
             rfd, wfd = os.pipe()
             pid = os.fork()
             if pid == 0:
-                # Filho = raiz da execução e. Espera ser movido para o cgroup
-                # e a liberação simultânea das duas raízes (concorrência).
+                # Child = root of execution e. Waits to be moved into its cgroup
+                # and for the simultaneous release of the roots (concurrency).
                 os.close(wfd)
-                random.seed(a.seed * 1000 + EXECS.index(e) + 1)   # sequência própria por raiz
+                random.seed(a.seed * 1000 + EXECS.index(e) + 1)   # own sequence per root
                 os.read(rfd, 1)
                 clog = open(os.path.join(a.out, f"ops-{e}.jsonl"), "w")
                 run_execution(e, ops[e], a.mode, binding, clog, threading.Lock(), a.jitter)
@@ -253,18 +253,18 @@ def main():
             os.close(rfd)
             cg_path, cg_id = cgs[e]
             cg_move(cg_path, pid)
-            if a.policy:     # raiz de dono único: a política pode checar a linhagem
+            if a.policy:     # single-owner root: the policy can check lineage
                 policyctl.register_root(pid, e)
             children[e], gates[e] = pid, wfd
             registry["roots"][str(pid)] = [e]
             registry["cgroups"].setdefault(str(cg_id), []).append(e)
         listener.start()
-        for e in EXECS:          # libera as raízes juntas
+        for e in EXECS:          # releases the roots together
             os.write(gates[e], b"g")
             os.close(gates[e])
         for e in EXECS:
             os.waitpid(children[e], 0)
-        # junta os logs das raízes em ops.jsonl
+        # merges the roots' logs into ops.jsonl
         for e in EXECS:
             p = os.path.join(a.out, f"ops-{e}.jsonl")
             with open(p) as f:

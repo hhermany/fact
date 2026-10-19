@@ -1,9 +1,9 @@
-# Orquestração do agentnet (mesmo modelo do CMP223):
-#   preflight -> piloto_<E> -> dimensionar_<E> -> campanha_<E> -> validar -> relatorio
-# O alvo padrão (all) só reconstrói a análise a partir das campanhas existentes:
-# não coleta dado novo. Coletar é sempre um alvo explícito, ex.:
-#   snakemake --cores 1 piloto_E1
-# Rodar dentro de `nix develop`, como root (o coletor eBPF exige).
+# Workflow of the experiments:
+#   preflight -> pilot_<E> -> size_<E> -> campaign_<E> -> validate -> report
+# The default target (all) only rebuilds the analysis from the existing campaigns:
+# it collects no new data. Collecting is always an explicit target, e.g.:
+#   snakemake --cores 1 pilot_E1
+# Run inside `nix develop`, as root (the eBPF collector requires it).
 import glob
 
 configfile: "workflow/config.yaml"
@@ -13,7 +13,7 @@ SEED = config["campaign_seed"]
 
 rule all:
     input:
-        "analysis/output/resumo_celulas.csv",
+        "analysis/output/cell_summary.csv",
         "analysis/output/fig/fig_e1.pdf"
 
 
@@ -24,11 +24,11 @@ rule preflight:
         "rm -rf preflight/last && scripts/preflight.sh preflight/last"
 
 
-rule piloto:
+rule pilot:
     input:
         "preflight/last/preflight.txt"
     output:
-        touch(".sentinels/piloto_{exp}.done")
+        touch(".sentinels/pilot_{exp}.done")
     params:
         spec=lambda w: config["experiments"][w.exp]["spec"],
         n=lambda w: config["experiments"][w.exp]["pilot_n"]
@@ -37,27 +37,27 @@ rule piloto:
         "--label pilot --preflight preflight/last"
 
 
-def n_decidido(w):
+def n_decided(w):
     n = config["experiments"][w.exp].get("n")
     if not n:
-        raise ValueError(f"N de {w.exp} ainda não decidido em workflow/config.yaml (decisão humana após o piloto)")
+        raise ValueError(f"N of {w.exp} not decided yet in workflow/config.yaml (a human decision after the pilot)")
     return n
 
 
-rule campanha:
+rule campaign:
     input:
         "preflight/last/preflight.txt"
     output:
-        touch(".sentinels/campanha_{exp}.done")
+        touch(".sentinels/campaign_{exp}.done")
     params:
         spec=lambda w: config["experiments"][w.exp]["spec"],
-        n=n_decidido
+        n=n_decided
     shell:
         "python3 -I scripts/campaign.py --spec {params.spec} --n {params.n} --seed {SEED} "
         "--label confirmatory --preflight preflight/last"
 
 
-rule validar:
+rule validate:
     input:
         glob.glob("campaigns/*/manifest.json")
     output:
@@ -66,23 +66,23 @@ rule validar:
         "python3 -I analysis/collect_runs.py campaigns --out {output}"
 
 
-rule dimensionar:
+rule size:
     input:
         "analysis/runs.csv"
     output:
-        "analysis/n_projetado_{exp}.json"
+        "analysis/n_projected_{exp}.json"
     params:
         target=config["precision_target"]
     shell:
-        "python3 -I scripts/dimensionar_n.py {input} --experiment {wildcards.exp} --label pilot "
+        "python3 -I scripts/size_n.py {input} --experiment {wildcards.exp} --label pilot "
         "--target {params.target} --output {output}"
 
 
-rule relatorio:
+rule report:
     input:
         "analysis/runs.csv"
     output:
-        "analysis/output/resumo_celulas.csv",
+        "analysis/output/cell_summary.csv",
         "analysis/output/tex/results_meta.tex"
     shell:
         "(python3 -I analysis/collect_overhead.py campaigns --out analysis/overhead.csv || rm -f analysis/overhead.csv) && "
@@ -110,7 +110,7 @@ rule agentprov:
 
 
 rule e7c_tokens:
-    # tokens informados pela API da Anthropic em cada chamada do E7c, e o custo
+    # tokens reported by the Anthropic API in each E7c call, and the cost
     output:
         "analysis/output/E7c_tokens.csv"
     shell:
@@ -118,7 +118,7 @@ rule e7c_tokens:
 
 
 rule e7o_tokens:
-    # idem para o E7o (OpenAI); tokens de raciocínio incluídos na saída
+    # the same for E7o (OpenAI); reasoning tokens are included in the output
     output:
         "analysis/output/E7o_tokens.csv"
     shell:
@@ -126,7 +126,7 @@ rule e7o_tokens:
 
 
 rule replay_compare:
-    # E7r: cada rodada reproduzida sem modelo comparada com a gravação original (E7c/E7o)
+    # E7r: each run replayed without a model, compared with the original recording (E7c/E7o)
     output:
         "analysis/output/E7r_replay.csv"
     shell:
@@ -136,7 +136,7 @@ rule replay_compare:
 rule figures:
     # figures of the paper (ggplot), from the summarized results only
     input:
-        "analysis/output/resumo_celulas.csv",
+        "analysis/output/cell_summary.csv",
         "analysis/output/baselines.csv",
         "analysis/output/E5ap_agentprov.csv",
         "analysis/output/E7c_tokens.csv",
@@ -158,11 +158,11 @@ rule faults:
         "python3 -I analysis/fault_tables.py campaigns analysis/output/tex && python3 -I scripts/fullwidth_tables.py analysis/output/tex"
 
 
-# atalhos legíveis
+# readable shortcuts
 for e in EXPS:
     rule:
-        name: f"piloto_{e}"
-        input: f".sentinels/piloto_{e}.done"
+        name: f"pilot_{e}"
+        input: f".sentinels/pilot_{e}.done"
     rule:
-        name: f"campanha_{e}"
-        input: f".sentinels/campanha_{e}.done"
+        name: f"campaign_{e}"
+        input: f".sentinels/campaign_{e}.done"

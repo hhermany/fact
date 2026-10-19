@@ -1,23 +1,23 @@
 #!/usr/bin/env bpftrace
 /*
- * agentnet.bt — coletor eBPF para atribuição de conexões TCP a execuções.
+ * agentnet.bt: eBPF collector for attributing TCP connections to executions.
  *
- * Emite uma linha JSON por evento em stdout. Requer root, kernel com BTF e
- * bpftrace >= 0.16. Somente IPv4 nesta versão.
+ * Emits one JSON line per event on stdout. Requires root, a kernel with BTF, and
+ * bpftrace >= 0.16. IPv4 only in this version.
  *
- * Sinais coletados por evento de rede (D1–D5):
- *   - pid/tid e comm             -> lineage (o resolver reconstrói a árvore com fork/exit)
- *   - cgroup (id cgroup v2)      -> resolver por cgroup
- *   - ctx (string ou "")         -> vínculo de contexto da aplicação (marcador openat)
- *   - sk (ponteiro do socket)    -> junção connect <-> mudança de estado
- *   - daddr/dport                -> SOMENTE para a referência independente; o
- *                                   resolver não pode ler esses campos.
+ * Signals collected per network event:
+ *   - pid/tid and comm           -> lineage (the resolver rebuilds the tree from fork/exit)
+ *   - cgroup (cgroup v2 id)      -> cgroup resolver
+ *   - ctx (string or "")         -> application context binding (openat marker)
+ *   - sk (socket pointer)        -> join connect <-> state change
+ *   - daddr/dport                -> ONLY for the independent reference; the
+ *                                   resolver may not read these fields.
  *
- * Vínculo de contexto: o runtime chama openat() em
- *   /run/agentctx/begin/<exec_id>   (início da operação)
- *   /run/agentctx/end               (fim da operação)
- * Os caminhos não precisam existir (ENOENT é esperado). O contexto é mantido
- * por tid e herdado por threads e processos filhos em sched_process_fork.
+ * Context binding: the runtime calls openat() on
+ *   /run/agentctx/begin/<exec_id>   (start of the operation)
+ *   /run/agentctx/end               (end of the operation)
+ * The paths need not exist (ENOENT is expected). The context is kept per tid
+ * and inherited by threads and child processes at sched_process_fork.
  */
 
 BEGIN
@@ -41,7 +41,7 @@ tracepoint:syscalls:sys_enter_openat
 
 tracepoint:sched:sched_process_fork
 {
-	/* parent_pid/child_pid são ids de task (tid); cobre threads e processos. */
+	/* parent_pid/child_pid are task ids (tid); covers threads and processes. */
 	@ctx[args->child_pid] = @ctx[args->parent_pid];
 	printf("{\"ev\":\"fork\",\"ts\":%llu,\"ptid\":%d,\"ctid\":%d,\"ppid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
 	       nsecs, args->parent_pid, args->child_pid, pid, cgroup, @ctx[args->child_pid]);
@@ -74,8 +74,8 @@ kprobe:tcp_connect
 tracepoint:sock:inet_sock_set_state
 / args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
 {
-	/* Saída de SYN_SENT: 1 = ESTABLISHED (sucesso), 7 = CLOSE (falha).
-	 * Pode rodar em softirq: pid/tid aqui NÃO são usados para atribuição. */
+	/* Leaving SYN_SENT: 1 = ESTABLISHED (success), 7 = CLOSE (failure).
+	 * May run in softirq: pid/tid here are NOT used for attribution. */
 	printf("{\"ev\":\"tcp_state\",\"ts\":%llu,\"sk\":%llu,\"old\":%d,\"new\":%d}\n",
 	       nsecs, (uint64)args->skaddr, args->oldstate, args->newstate);
 }

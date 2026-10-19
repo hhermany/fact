@@ -1,6 +1,6 @@
 {
   "experiment": "E1",
-  "description": "Correção da atribuição (RQ1-RQ3): estrutura x taxa de rótulo errado x modo de operação, K=2.",
+  "description": "Attribution correctness: structure x mislabel rate x operation mode, K=2.",
   "factors": {
     "cond": ["N0", "N1", "N2", "N3"],
     "wrong_label": [0.0, 0.05, 0.2],

@@ -1,4 +1,4 @@
-cond,wrong_label,mode,resolver,C,A,M,I,C_f,A_f,M_f,I_f,capture_f,runs_f,igual
+cond,wrong_label,mode,resolver,C,A,M,I,C_f,A_f,M_f,I_f,capture_f,runs_f,equal
 N0,0,inproc,cgroup,1,0,0,0,1,0,0,0,1,1,TRUE
 N0,0,inproc,lineage,1,0,0,0,1,0,0,0,1,1,TRUE
 N0,0,inproc,context,1,0,0,0,1,0,0,0,1,1,TRUE

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Executa uma campanha completa a partir de uma especificação de experimento.
+"""Runs a complete campaign from an experiment specification.
 
-- Desenho: produto cartesiano dos níveis dos fatores × N repetições (sementes
+- Design: Cartesian product of the factor levels x N repetitions (seeds
   base_seed+rep).
-- Ordem das rodadas sorteada com a semente da campanha e registrada.
-- Ambiente capturado no início e no fim; commit/branch/dirty registrados.
-- Saída imutável: campaigns/<campaign_id>/ + manifest.json + checksums.sha256
-  + campaigns/<campaign_id>.tar.gz. Nunca sobrescreve campanha existente.
-- label=confirmatory exige árvore git limpa e preflight PASS.
+- Run order drawn with the campaign seed and recorded.
+- Environment captured at the start and at the end; commit/branch/dirty recorded.
+- Immutable output: campaigns/<campaign_id>/ + manifest.json + checksums.sha256
+  + campaigns/<campaign_id>.tar.gz. An existing campaign is never overwritten.
+- label=confirmatory requires a clean git tree and a preflight PASS.
 
-Uso (root):
+Usage (root):
   python3 scripts/campaign.py --spec workflow/experiments/E1.json --n 10 \
       --seed 22301 --label pilot --campaigns-dir campaigns
 """
@@ -28,7 +28,7 @@ import time
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# fator do spec -> argumento do workload.py
+# spec factor -> workload.py argument
 ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": "--execs",
        "jitter": "--jitter", "ops": "--ops", "threads": "--threads", "tool": "--tool",
        "binding_mode": "--binding-mode", "model": "--model", "ollama": "--ollama", "dest_host": "--dest-host", "num_predict": "--num-predict",
@@ -39,18 +39,18 @@ def sh(cmd, cwd=None):
     try:
         return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=60).stdout.strip()
     except Exception as e:   # noqa: BLE001
-        return f"INDISPONIVEL: {e}"
+        return f"UNAVAILABLE: {e}"
 
 
 def git_info():
     top = sh(["git", "rev-parse", "--show-toplevel"], cwd=HERE)
-    if top.startswith("INDISPONIVEL") or not top:
-        return {"commit": None, "branch": None, "dirty": None, "status": "sem git"}
-    # diretórios de dados/saída não contam como "sujeira" de código
+    if top.startswith("UNAVAILABLE") or not top:
+        return {"commit": None, "branch": None, "dirty": None, "status": "no git"}
+    # data/output directories do not count as code "dirtiness"
     status = sh(["git", "status", "--porcelain", "--", HERE,
                  ":(exclude)campaigns", ":(exclude)preflight", ":(exclude)analysis/output",
                  ":(exclude)analysis/runs.csv", ":(exclude)analysis/overhead.csv", ":(exclude)analysis/capacity.csv",
-                 ":(exclude)analysis/n_projetado_*.json"], cwd=HERE)
+                 ":(exclude)analysis/n_projected_*.json"], cwd=HERE)
     return {"toplevel": top, "commit": sh(["git", "rev-parse", "HEAD"], cwd=HERE),
             "branch": sh(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=HERE),
             "dirty": bool(status), "status_porcelain": status.splitlines()[:200]}
@@ -67,30 +67,30 @@ def sha256(path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--spec", required=True)
-    ap.add_argument("--n", type=int, required=True, help="repetições por célula")
-    ap.add_argument("--seed", type=int, required=True, help="semente da campanha (ordem e sementes das rodadas)")
+    ap.add_argument("--n", type=int, required=True, help="repetitions per cell")
+    ap.add_argument("--seed", type=int, required=True, help="campaign seed (run order and run seeds)")
     ap.add_argument("--label", required=True, choices=["smoke", "pilot", "validation", "confirmatory"])
     ap.add_argument("--campaigns-dir", default=os.path.join(HERE, "campaigns"))
-    ap.add_argument("--preflight", help="diretório de um preflight PASS (obrigatório para confirmatory)")
+    ap.add_argument("--preflight", help="directory of a preflight PASS (required for confirmatory)")
     a = ap.parse_args()
 
     if os.geteuid() != 0:
-        sys.exit("rode como root")
+        sys.exit("run as root")
     spec = json.load(open(a.spec))
     git = git_info()
     if a.label == "confirmatory":
         if git["dirty"] is not False:
-            sys.exit("campanha confirmatória exige árvore git limpa (commit antes)")
-        if not a.preflight or "RESULTADO PASS" not in open(os.path.join(a.preflight, "preflight.txt")).read():
-            sys.exit("campanha confirmatória exige --preflight com RESULTADO PASS")
+            sys.exit("a confirmatory campaign requires a clean git tree (commit first)")
+        if not a.preflight or "RESULT PASS" not in open(os.path.join(a.preflight, "preflight.txt")).read():
+            sys.exit("a confirmatory campaign requires --preflight with RESULT PASS")
 
-    # dependências externas (modelos, segunda máquina, AgentProvenance): checadas antes
-    # de criar a campanha; se alguma faltar, nenhuma rodada é executada
+    # external dependencies (models, second machine, AgentProvenance): checked before
+    # creating the campaign; if any is missing, no run is executed
     chk = subprocess.run([sys.executable, os.path.join(HERE, "scripts", "check_deps.py"), a.spec],
                          capture_output=True, text=True)
     print(chk.stdout, end="", flush=True)
     if chk.returncode != 0:
-        sys.exit("dependências externas indisponíveis (acima): campanha não iniciada\n" + chk.stderr[-2000:])
+        sys.exit("external dependencies unavailable (above): campaign not started\n" + chk.stderr[-2000:])
 
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     cid = f"{socket.gethostname()}-{spec['experiment']}-{a.label}-{stamp}"
@@ -99,15 +99,15 @@ def main():
     with open(os.path.join(cdir, "deps_check.txt"), "w") as f:
         f.write(chk.stdout)
 
-    # desenho
+    # design
     names = list(spec["factors"])
     cells = [dict(zip(names, vals)) for vals in itertools.product(*(spec["factors"][n] for n in names))]
     runs = []
     for ci, cell in enumerate(cells):
         for rep in range(a.n):
             params = dict(spec.get("fixed", {}), **cell)
-            # números aleatórios comuns: a mesma repetição usa a mesma semente em
-            # todas as células (comparações pareadas entre condições; declarado na metodologia)
+            # common random numbers: the same repetition uses the same seed in every
+            # cell (paired comparisons between conditions; stated in the methodology)
             runs.append({"cell": ci, "rep": rep, "seed": a.seed + rep, "params": params})
     rng = random.Random(a.seed)
     rng.shuffle(runs)
@@ -119,7 +119,7 @@ def main():
 
     with open(os.path.join(cdir, "run_order.json"), "w") as f:
         json.dump({"campaign_seed": a.seed, "order": [(r["position"], r["run_id"]) for r in runs]}, f, indent=1)
-    subprocess.run([os.path.join(HERE, "scripts", "capture_env.sh"), os.path.join(cdir, "environment"), "-inicio"])
+    subprocess.run([os.path.join(HERE, "scripts", "capture_env.sh"), os.path.join(cdir, "environment"), "-start"])
     for fn in ("flake.nix", "flake.lock"):
         if os.path.exists(os.path.join(HERE, fn)):
             with open(os.path.join(HERE, fn)) as src, open(os.path.join(cdir, fn), "w") as dst:
@@ -133,16 +133,16 @@ def main():
     for r in runs:
         p = r["params"]
         rdir = os.path.join(cdir, "runs", r["run_id"])
-        if runner == "overhead":       # E3: microbenchmark de connect
+        if runner == "overhead":       # E3: connect microbenchmark
             cmd = [os.path.join(HERE, "scripts", "e3_round.sh"), rdir, "--instr", str(p["instr"]),
                    "--markers", str(p["markers"]), "--n", str(p.get("n", 20000)),
                    "--warmup", str(p.get("warmup", 1000)), "--seed", str(r["seed"])]
             if p.get("dest_host"):
                 cmd += ["--host", str(p["dest_host"])]
-        elif runner == "capacity":     # E2b: capacidade do coletor
+        elif runner == "capacity":     # E2b: collector capacity
             cmd = [os.path.join(HERE, "scripts", "e2b_round.sh"), rdir, "--par", str(p["par"]),
                    "--n", str(p.get("n", 50000)), "--collector", str(p["collector"]), "--seed", str(r["seed"])]
-        else:                          # E1/E2: atribuição
+        else:                          # E1/E2: attribution
             cmd = [os.path.join(HERE, "run_round.sh"), p["cond"], rdir, "--seed", str(r["seed"])]
             for k, v in p.items():
                 if ARG.get(k):
@@ -154,7 +154,7 @@ def main():
             env["COLLECTOR"] = str(p["collector"])
         if p.get("workload"):
             env["WORKLOAD"] = str(p["workload"])
-        if p.get("agentprov"):         # sistema relacionado executado de verdade, ao lado do agentnet
+        if p.get("agentprov"):         # related system actually run, next to agentnet
             env["AGENTPROV"] = str(p["agentprov"])
         if p.get("policy"):
             env["POLICY"] = "1"
@@ -163,13 +163,13 @@ def main():
         ts = time.time()
         res = subprocess.run(cmd, capture_output=True, text=True, env=env)
         r.update(returncode=res.returncode, seconds=round(time.time() - ts, 3), command=cmd[1:])
-        r["status"] = "OK" if res.returncode == 0 and os.path.exists(os.path.join(rdir, expected)) else "FALHA"
+        r["status"] = "OK" if res.returncode == 0 and os.path.exists(os.path.join(rdir, expected)) else "FAILED"
         if r["status"] != "OK":
             with open(os.path.join(cdir, "runs", r["run_id"] + ".stderr"), "w") as f:
                 f.write(res.stdout[-5000:] + "\n---\n" + res.stderr[-5000:])
         print(f"[{r['position']}/{len(runs)}] {r['run_id']} {r['status']} {r['seconds']}s", flush=True)
 
-    subprocess.run([os.path.join(HERE, "scripts", "capture_env.sh"), os.path.join(cdir, "environment"), "-fim"])
+    subprocess.run([os.path.join(HERE, "scripts", "capture_env.sh"), os.path.join(cdir, "environment"), "-end"])
     env = {k: sh(["cat", f"/proc/sys/kernel/{k}"]) for k in ("hostname",)}
     env["boot_id"] = sh(["cat", "/proc/sys/kernel/random/boot_id"])
     env["kernel"] = sh(["uname", "-r"])
@@ -182,13 +182,13 @@ def main():
         "started_utc": stamp, "duration_s": round(time.time() - t0, 1),
         "runs_ok": sum(r["status"] == "OK" for r in runs), "runs_failed": sum(r["status"] != "OK" for r in runs),
         "git": git, "environment": env, "preflight": a.preflight,
-        "unavailable_note": "itens INDISPONIVEL em environment/ não puderam ser observados",
+        "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
         "runs": runs,
     }
     with open(os.path.join(cdir, "manifest.json"), "w") as f:
         json.dump(manifest, f, indent=1)
 
-    # checksums de tudo, depois o pacote
+    # checksums of everything, then the archive
     with open(os.path.join(cdir, "checksums.sha256"), "w") as out:
         for root, _, files in os.walk(cdir):
             for fn in sorted(files):
@@ -198,8 +198,8 @@ def main():
                 out.write(f"{sha256(path)}  {os.path.relpath(path, cdir)}\n")
     with tarfile.open(cdir + ".tar.gz", "w:gz") as tar:
         tar.add(cdir, arcname=cid)
-    print(f"CAMPANHA {cid}: {manifest['runs_ok']}/{len(runs)} OK em {manifest['duration_s']}s")
-    print(f"PACOTE {cdir}.tar.gz")
+    print(f"CAMPAIGN {cid}: {manifest['runs_ok']}/{len(runs)} OK in {manifest['duration_s']}s")
+    print(f"ARCHIVE {cdir}.tar.gz")
     sys.exit(0 if manifest["runs_failed"] == 0 else 1)
 
 

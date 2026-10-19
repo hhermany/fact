@@ -1,6 +1,6 @@
 {
   "experiment": "E1fast",
-  "description": "Equivalência: E1 com o coletor otimizado (agentnet-fast.bt). Deve reproduzir exatamente os desfechos do E1 com o coletor completo.",
+  "description": "Equivalence: E1 with the optimized collector (agentnet-fast.bt). Must reproduce exactly the E1 outcomes obtained with the full collector.",
   "factors": {
     "cond": ["N0", "N1", "N2", "N3"],
     "wrong_label": [0.0, 0.05, 0.2],

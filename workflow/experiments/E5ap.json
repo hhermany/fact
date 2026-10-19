@@ -1,6 +1,6 @@
 {
   "experiment": "E5ap",
-  "description": "Sistema relacionado executado de verdade: AgentProvenance v0.9.0 (sensor eBPF próprio + vínculos ToolCallScope por chamada de ferramenta, com pid/cgroup do servidor e a janela exata da chamada) roda ao lado do agentnet nas mesmas rodadas do E5 (vínculo automático). Mesmas conexões, mesma referência (porta de destino -> execução).",
+  "description": "Related system actually run: AgentProvenance v0.9.0 (its own eBPF sensor + ToolCallScope bindings per tool call, with the server's pid/cgroup and the exact call window) runs next to agentnet in the same E5 rounds (automatic binding). Same connections, same reference (destination port -> execution).",
   "factors": {
     "tool": ["sync", "thread", "subproc", "async"],
     "execs": [2, 4, 8]

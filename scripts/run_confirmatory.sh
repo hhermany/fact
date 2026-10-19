@@ -37,7 +37,7 @@ fi
 echo "experiments: $EXPS"
 
 rm -rf preflight/last && scripts/preflight.sh preflight/last > /dev/null 2>&1 || true
-grep -q "RESULTADO PASS" preflight/last/preflight.txt || { echo "PREFLIGHT FAILED"; tail -20 preflight/last/preflight.txt; exit 1; }
+grep -q "RESULT PASS" preflight/last/preflight.txt || { echo "PREFLIGHT FAILED"; tail -20 preflight/last/preflight.txt; exit 1; }
 echo "preflight PASS"
 
 case " $EXPS " in *" E7"*)
@@ -59,4 +59,4 @@ for e in $EXPS; do
 done
 exit $status
 '
-echo "done. After the second boot: snakemake --cores 1 validar relatorio baselines faults"
+echo "done. After the second boot: snakemake --cores 1 validate report baselines faults"

@@ -1,6 +1,6 @@
 {
   "experiment": "E7",
-  "description": "Agentes LLM reais (modelo local via Ollama, temperatura 0) compartilhando um servidor MCP instrumentado (vínculo automático) com política por execução ativa. O modelo decide as chamadas de ferramenta; referência independente pela porta exclusiva de cada serviço.",
+  "description": "Real LLM agents (local model via Ollama, temperature 0) sharing an instrumented MCP server (automatic binding) with the per-execution policy active. The model decides the tool calls; independent reference via each service's exclusive port.",
   "factors": {
     "execs": [4]
   },

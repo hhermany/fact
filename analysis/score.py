@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""Pontua uma rodada: referência independente, C/A/M/I por resolver e
-contabilização de conexões por execução.
+"""Scores one run: independent reference, C/A/M/I per resolver, and per-execution
+connection accounting.
 
-Uso:
+Usage:
   python3 score.py RUN_DIR [--events RUN_DIR/events.jsonl]
 
-Arquivos esperados em RUN_DIR: events.jsonl (saída do coletor), plan.json,
-registry.json, ops.jsonl. Saída: RUN_DIR/score.json e um resumo em stdout.
+Files expected in RUN_DIR: events.jsonl (collector output), plan.json,
+registry.json, ops.jsonl. Output: RUN_DIR/score.json and a summary on stdout.
 
-Definições (para eventos connect com referência válida):
-  C  origem atribuída == referência
-  A  conjunto de candidatos com > 1 elemento        (A_in: contém a referência)
-  M  conjunto vazio
-  I  origem atribuída != referência
-Eventos connect sem referência (porta fora do plano) são contados e excluídos,
-nunca descartados em silêncio. Operações do plano sem connect capturado
-contam como perda de captura.
+Definitions (for connect events with a valid reference):
+  C  attributed origin == reference
+  A  candidate set with > 1 element                 (A_in: contains the reference)
+  M  empty set
+  I  attributed origin != reference
+Connect events without a reference (port outside the plan) are counted and
+excluded, never silently dropped. Planned operations without a captured
+connect count as capture loss.
 """
 import argparse
 import json
@@ -60,12 +60,12 @@ def score(run_dir, events_path=None):
     seen_ports = Counter()
     state_by_sk = {}
 
-    # 1ª passada: resultado do handshake por socket (para contabilizar sucesso)
+    # first pass: handshake outcome per socket (to account for success)
     for ev in events:
         if ev.get("ev") == "tcp_state":
             state_by_sk[ev["sk"]] = ev["new"]
 
-    # 2ª passada em ordem temporal: atualiza árvore e pontua connects
+    # second pass, in time order: update the tree and score connects
     for ev in sorted(events, key=lambda e: e.get("ts", 0)):
         kind = ev.get("ev")
         if kind == "fork":
@@ -93,9 +93,9 @@ def score(run_dir, events_path=None):
                 if cat == "C":
                     acct[name][ref]["credited_ok"] += 1
                 elif cat == "I":
-                    acct[name][next(iter(out))]["credited_wrong"] += 1   # creditada à execução errada
+                    acct[name][next(iter(out))]["credited_wrong"] += 1   # credited to the wrong execution
                 else:
-                    acct[name][ref]["uncredited"] += 1                   # A ou M: sinalizada, não creditada
+                    acct[name][ref]["uncredited"] += 1                   # A or M: flagged, not credited
 
     planned = set(dmap)
     attempted = {o["dport"] for o in ops if "dport" in o}
@@ -118,9 +118,9 @@ def score(run_dir, events_path=None):
             "C/N": c["C"] / n if n else None, "A/N": c["A"] / n if n else None,
             "M/N": c["M"] / n if n else None, "I/N": c["I"] / n if n else None,
             "C/(C+I)": c["C"] / (c["C"] + c["I"]) if (c["C"] + c["I"]) else None,
-            # contabilização por execução. O erro líquido (credited - reference) pode
-            # esconder atribuições erradas que se cancelam; por isso reportamos as
-            # parcelas: corretas, creditadas à execução errada e não creditadas.
+            # per-execution accounting. The net error (credited - reference) can
+            # hide misattributions that cancel out; we therefore report the
+            # parts: correct, credited to the wrong execution, and uncredited.
             "accounting": {e: {"reference": ref_acct[e],
                                "credited_ok": acct[name][e]["credited_ok"],
                                "credited_wrong": acct[name][e]["credited_wrong"],
@@ -142,8 +142,8 @@ def main():
         json.dump(r, f, indent=1)
     cap = r["capture"]
     print(f"{r['cond']} mode={r['mode']} binding={r['binding']}  "
-          f"captura {cap['captured']}/{cap['attempted']}  perdidos={cap['n_lost']}  excluídos={cap['excluded']}")
-    print(f"{'resolver':8} {'N':>5} {'C':>5} {'A':>5} {'M':>5} {'I':>5}  C/(C+I)  contab. por execução [ok/errada/não-cred.; erro líquido]")
+          f"capture {cap['captured']}/{cap['attempted']}  lost={cap['n_lost']}  excluded={cap['excluded']}")
+    print(f"{'resolver':8} {'N':>5} {'C':>5} {'A':>5} {'M':>5} {'I':>5}  C/(C+I)  per-execution accounting [ok/wrong/uncredited; net error]")
     for name, v in r["resolvers"].items():
         prec = f"{v['C/(C+I)']:.3f}" if v["C/(C+I)"] is not None else "  -  "
         err = "  ".join(f"{e}:{d['credited_ok']}/{d['credited_wrong']}/{d['uncredited']};{d['net_error']:+d}"

@@ -1,6 +1,6 @@
 {
   "experiment": "E6L",
-  "description": "Política com verificação de linhagem no kernel (raízes de dono único registradas), estruturas N0/N1 com rótulos errados. policy_lineage: 0 = só o rótulo (como E6n); 1 = rótulo contradito pela linhagem é negado; 2 = rótulo contradito é substituído pelo dono da árvore.",
+  "description": "Policy with an in-kernel lineage check (single-owner roots registered), structures N0/N1 with mislabels. policy_lineage: 0 = label only (as E6n); 1 = a label contradicted by lineage is denied; 2 = a contradicted label is replaced by the tree owner.",
   "factors": {
     "cond": ["N0", "N1"],
     "mode": ["inproc", "subproc"],

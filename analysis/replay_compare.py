@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""E7r: compara cada rodada reproduzida sem modelo com a rodada gravada que ela repete.
+"""E7r: compares each run replayed without a model with the recorded run it repeats.
 
-Para cada rodada OK das campanhas E7r (rótulo dado), lê plan.json (replay_of), e compara
-com a gravação original (E7c/E7o):
-- as chamadas de ferramenta (ferramenta, argumentos, rótulo, na ordem de cada agente);
-- o resultado do resolver fused (N, C, A, M, I);
-- as decisões da política (N, TA, TD, FA, FD, ND).
-Escreve analysis/output/E7r_replay.csv por célula (modelo, K) e imprime o total.
+For each OK run of the E7r campaigns (given label), reads plan.json (replay_of) and
+compares it with the original recording (E7c/E7o):
+- the tool calls (tool, arguments, label, in each agent's order);
+- the outcome of the fused resolver (N, C, A, M, I);
+- the policy decisions (N, TA, TD, FA, FD, ND).
+Writes analysis/output/E7r_replay.csv per cell (model, K) and prints the total.
 
-Uso: replay_compare.py [--label confirmatory] [--campaigns campaigns] [--out analysis/output]
+Usage: replay_compare.py [--label confirmatory] [--campaigns campaigns] [--out analysis/output]
 """
 import argparse
 import collections
@@ -48,7 +48,7 @@ def main():
             rdir = os.path.join(cdir, "runs", r["run_id"])
             plan = json.load(open(os.path.join(rdir, "plan.json")))
             parts = plan["replay_of"].rstrip("/").split("/")
-            orig = os.path.join(a.campaigns, parts[-3], parts[-2], parts[-1])   # <campanha>/runs/<rodada>
+            orig = os.path.join(a.campaigns, parts[-3], parts[-2], parts[-1])   # <campaign>/runs/<run>
             new, old = outcome(rdir), outcome(orig)
             c = cells[(plan["model"], plan["execs"])]
             c["runs"] += 1
@@ -65,8 +65,8 @@ def main():
         for (model, k), c in sorted(cells.items()):
             w.writerow([model, k] + [c[x] for x in cols[2:]])
     tot = sum(cells.values(), collections.Counter())
-    print(f"E7r: {tot['runs']} rodadas; chamadas iguais {tot['same_calls']}; resultado igual {tot['same_outcome']}; "
-          f"conexões {tot['N']} (I={tot['I']}, A={tot['A']}, M={tot['M']}); decisões {tot['pN']} "
+    print(f"E7r: {tot['runs']} runs; same calls {tot['same_calls']}; same outcome {tot['same_outcome']}; "
+          f"connections {tot['N']} (I={tot['I']}, A={tot['A']}, M={tot['M']}); decisions {tot['pN']} "
           f"(FA={tot['pFA']}, FD={tot['pFD']}, ND={tot['pND']})")
 
 

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Driver do E4: servidor MCP real compartilhado por K sessões de cliente.
+"""E4 driver: a real MCP server shared by K client sessions.
 
-- Sobe mcp_e4_server.py num cgroup próprio (raiz registrada = processo servidor).
-- Abre K sessões MCP concorrentes (uma por execução); cada sessão faz --ops
-  chamadas sequenciais da ferramenta --tool, cada uma para uma porta de destino
-  exclusiva (referência independente, como no workload sintético).
-- Grava plan.json, registry.json, ops.jsonl no formato do score.py, mais
-  e4_summary.json com a latência das chamadas vista pelo cliente.
+- Starts mcp_e4_server.py in its own cgroup (registered root = server process).
+- Opens K concurrent MCP sessions (one per execution); each session makes --ops
+  sequential calls of the --tool tool, each to an exclusive destination port
+  (independent reference, as in the synthetic workload).
+- Writes plan.json, registry.json, and ops.jsonl in score.py's format, plus
+  e4_summary.json with the call latency seen by the client.
 
-Conexões cliente<->servidor MCP (porta do servidor) ficam fora do plano e são
-contadas como "excluídas sem referência" pelo score.py.
+Client<->MCP server connections (server port) are outside the plan and are
+counted as "excluded without reference" by score.py.
 
-Uso (root, dentro do nix develop, com o coletor ativo):
+Usage (root, inside nix develop, with the collector active):
   python3 mcp_e4.py --tool async --execs 2 --ops 25 --seed 1 --out runs/x
 """
 import argparse
@@ -57,7 +57,7 @@ async def session(url, tool, exec_id, ops, log, binding):
                 t0 = time.time_ns()
                 args = {"exec_id": exec_id, "port": op["dport"]}
                 label = op.get("label", exec_id)
-                if binding == "auto":   # identidade no _meta; a ferramenta não a usa
+                if binding == "auto":   # identity in _meta; the tool does not use it
                     res = await call_tool_with_exec(s, TOOLS[tool], args, label)
                 else:
                     res = await s.call_tool(TOOLS[tool], args)
@@ -84,11 +84,11 @@ def main():
     ap.add_argument("--server-port", type=int, default=64999)
     ap.add_argument("--binding-mode", choices=["manual", "auto"], default="manual")
     ap.add_argument("--dest-host", default="127.0.0.1",
-                    help="destino das ferramentas; fora do loopback, os serviços rodam em outra máquina (workload/remote_farm.py)")
+                    help="destination of the tools; outside loopback, the services run on another machine (workload/remote_farm.py)")
     ap.add_argument("--policy", type=int, default=0,
-                    help="1: carrega a política por execução (exige o agentnet_policy ativo)")
+                    help="1: loads the per-execution policy (requires agentnet_policy running)")
     ap.add_argument("--out", required=True)
-    ap.add_argument("--mode", default="mcp")          # aceitos por compatibilidade com o run_round
+    ap.add_argument("--mode", default="mcp")          # accepted for compatibility with run_round
     ap.add_argument("--wrong-label", type=float, default=0.0)
     ap.add_argument("--jitter", type=float, default=0.0)
     ap.add_argument("--threads", type=int, default=0)
@@ -102,13 +102,13 @@ def main():
     it = iter(ports)
     ops_by_exec = {e: [{"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": next(it)}
                        for i in range(a.ops)] for e in execs}
-    # falhas de vínculo (como no E1): exatamente round(p * ops) chamadas por execução
-    # levam no _meta a identidade de outra execução; posições sorteadas
+    # binding faults (as in E1): exactly round(p * ops) calls per execution carry
+    # another execution's identity in _meta; random positions
     n_wrong = round(a.wrong_label * a.ops)
     if abs(n_wrong - a.wrong_label * a.ops) > 1e-9:
-        sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} não é inteiro")
+        sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} is not an integer")
     if n_wrong and a.binding_mode != "auto":
-        sys.exit("--wrong-label se aplica ao vínculo automático (identidade no _meta)")
+        sys.exit("--wrong-label applies to the automatic binding (identity in _meta)")
     if n_wrong:
         frng = random.Random(a.seed + 104729)
         for e in execs:
@@ -121,9 +121,9 @@ def main():
             "listen_addr": a.dest_host, "mcp_version": version("mcp"),
             "dport_map": {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
     if a.policy:
-        # classes alternadas: P (permissiva: todos os destinos do plano) e R (restrita:
-        # metade sorteada dos próprios destinos). Rótulo errado R->P permite indevidamente;
-        # P->R ou entre R nega indevidamente.
+        # alternating classes: P (permissive: every planned destination) and R (restricted:
+        # a random half of its own destinations). A wrong label R->P wrongly allows;
+        # P->R or between R wrongly denies.
         rng = random.Random(a.seed + 7919)
         classes = {e: ("P" if i % 2 == 0 else "R") for i, e in enumerate(execs)}
         allow = {}
@@ -138,15 +138,15 @@ def main():
         policyctl.load_dict(plan["policy"]["allow"])
 
     remote = a.dest_host != "127.0.0.1"
-    if remote:   # serviços na outra máquina: confere que a faixa do plano responde antes de medir
-        # com a política ativa, as portas do plano (61000-64998) sem identidade são negadas
-        # já aqui; confere então uma porta do remote_farm fora da faixa policiada
+    if remote:   # services on the other machine: check that the planned range answers before measuring
+        # with the policy active, planned ports (61000-64998) without identity are denied
+        # already here; so check a remote_farm port outside the policed range
         for p in ((65000,) if a.policy else (min(ports), max(ports))):
             s = socket.socket()
             s.settimeout(2)
             try:
                 if s.connect_ex((a.dest_host, p)) != 0:
-                    sys.exit(f"destino remoto {a.dest_host}:{p} não responde (remote_farm.py ativo?)")
+                    sys.exit(f"remote destination {a.dest_host}:{p} does not answer (is remote_farm.py running?)")
             finally:
                 s.close()
         listener = None
@@ -164,7 +164,7 @@ def main():
               open(os.path.join(a.out, "registry.json"), "w"), indent=1)
     try:
         if not wait_port(a.server_port):
-            sys.exit("servidor MCP não subiu (ver server.log)")
+            sys.exit("MCP server did not start (see server.log)")
         with open(os.path.join(a.out, "ops.jsonl"), "w") as log:
             lats = asyncio.run(run_clients(f"http://127.0.0.1:{a.server_port}/sse", a.tool, ops_by_exec, log, a.binding_mode))
     finally:

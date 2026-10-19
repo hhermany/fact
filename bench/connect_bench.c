@@ -1,16 +1,16 @@
-// connect_bench.c — microbenchmark de latência de connect() em loopback (E3).
+// connect_bench.c: connect() latency microbenchmark (E3).
 //
-// Um processo filho aceita e fecha conexões; o pai mede, para cada iteração,
-// o tempo de parede de socket()+connect()+close() com CLOCK_MONOTONIC.
-// Opcionalmente emite os marcadores de contexto (openat begin/end) em volta de
-// cada connect, exatamente como o workload do agentnet faz, para medir o custo
-// do vínculo de contexto do lado do runtime.
+// A child process accepts and closes connections; the parent measures, for each
+// iteration, the wall-clock time of socket()+connect()+close() with CLOCK_MONOTONIC.
+// Optionally emits the context markers (openat begin/end) around each connect,
+// exactly as the agentnet workload does, to measure the runtime-side cost of the
+// context binding.
 //
-// Uso: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1 --out lat.csv [--host IP]
-// Com --host, não há aceitador local: conecta ao IP dado (placa de rede real; o
-// aceitador remoto é workload/remote_farm.py).
-// Fechamento do cliente com SO_LINGER=0 (RST), para não acumular TIME_WAIT.
-// Saída: CSV com uma linha por iteração medida (iter,ns) e resumo em stdout (JSON).
+// Usage: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1 --out lat.csv [--host IP]
+// With --host there is no local acceptor: it connects to the given IP (real network
+// interface; the remote acceptor is workload/remote_farm.py).
+// The client closes with SO_LINGER=0 (RST), so that TIME_WAIT does not accumulate.
+// Output: CSV with one line per measured iteration (iter,ns) and a summary on stdout (JSON).
 #define _GNU_SOURCE
 #include <arpa/inet.h>
 #include <errno.h>
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
         else if (!strcmp(argv[i], "--markers") && i + 1 < argc) markers = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--out") && i + 1 < argc) out = argv[++i];
         else if (!strcmp(argv[i], "--host") && i + 1 < argc) host = argv[++i];
-        else { fprintf(stderr, "argumento desconhecido: %s\n", argv[i]); return 2; }
+        else { fprintf(stderr, "unknown argument: %s\n", argv[i]); return 2; }
     }
 
     struct sockaddr_in addr = {0};
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
     addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     pid_t child = -1;
     if (host) {
-        if (inet_pton(AF_INET, host, &addr.sin_addr) != 1) { fprintf(stderr, "host inválido: %s\n", host); return 2; }
+        if (inet_pton(AF_INET, host, &addr.sin_addr) != 1) { fprintf(stderr, "invalid host: %s\n", host); return 2; }
         goto measure;
     }
 
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     child = fork();
-    if (child == 0) {                       // aceitador
+    if (child == 0) {                       // acceptor
         for (;;) {
             int c = accept(ls, NULL, NULL);
             if (c >= 0) close(c);
@@ -91,8 +91,8 @@ measure:;
         uint64_t t0 = now_ns();
         if (markers) marker("/run/agentctx/begin/BENCH");
         int s = socket(AF_INET, SOCK_STREAM, 0);
-        // fechamento abortivo (RST): evita acumular TIME_WAIT e esgotar portas
-        // efêmeras entre rodadas; registrado como decisão de medição.
+        // abortive close (RST): avoids accumulating TIME_WAIT and exhausting
+        // ephemeral ports between runs; recorded as a measurement decision.
         struct linger lg = {1, 0};
         setsockopt(s, SOL_SOCKET, SO_LINGER, &lg, sizeof lg);
         int r = connect(s, (struct sockaddr *)&addr, sizeof addr);

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Teste do agentnet_rt sem eBPF: simula o mapa de contexto do kernel (tid -> id)
-e verifica, para cada connect e cada fork de subprocesso, se a identidade que o
-kernel veria é a da execução que pediu a chamada. Referência independente: cada
-execução conecta numa porta exclusiva.
+"""Test of agentnet_rt without eBPF: simulates the kernel's context map (tid -> id)
+and checks, for each connect and each subprocess fork, whether the identity the
+kernel would see is that of the execution that requested the call. Independent
+reference: each execution connects to an exclusive port.
 
-Também roda o modo manual (marcadores na ferramenta) para reproduzir a falha do
-E4 com ferramentas async. Uso: python3 tests/test_agentctx_sim.py
+It also runs the manual mode (markers in the tool) to reproduce the E4 failure
+with async tools. Usage: python3 tests/test_agentctx_sim.py
 """
 import asyncio
 import os
@@ -18,8 +18,8 @@ import threading
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agentnet_rt import agentctx  # noqa: E402
 
-SIM = {}            # tid -> contexto (simulação do mapa @ctx do coletor)
-LOG = []            # (dport, ctx no momento do connect)
+SIM = {}            # tid -> context (simulation of the collector's @ctx map)
+LOG = []            # (dport, ctx at connect time)
 MANUAL = {"on": False}
 
 
@@ -44,7 +44,7 @@ def rec_connect(self, address):
 
 
 def rec_exec(self, args, *rest, **kw):
-    # o filho herdaria o contexto da thread que faz o fork; registra pela porta pedida
+    # the child would inherit the forking thread's context; record it by the requested port
     port = int(args[-1]) if args and str(args[-1]).isdigit() else None
     if port:
         LOG.append((port, SIM.get(threading.get_native_id())))
@@ -153,10 +153,10 @@ def main():
     for tool in ["sync_get", "thread_get", "subproc_get", "async_get"]:
         for mode in ["manual", "auto"]:
             n, ok, wrong, none = asyncio.run(run(mode, tool))
-            print(f"{tool:12s} {mode:6s} N={n:4d} correto={ok:4d} errado={wrong:4d} sem_ctx={none:4d}")
+            print(f"{tool:12s} {mode:6s} N={n:4d} correct={ok:4d} wrong={wrong:4d} no_ctx={none:4d}")
             if mode == "auto" and ok != n:
                 bad += 1
-    print("marcas:", agentctx.stats)
+    print("marks:", agentctx.stats)
     sys.exit(1 if bad else 0)
 
 

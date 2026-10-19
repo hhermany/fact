@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Reúne as rodadas do E3 (overhead.json) de todas as campanhas num CSV (uma linha por rodada).
-Uso: python3 collect_overhead.py campaigns/ --out analysis/overhead.csv
+"""Collects the E3 runs (overhead.json) of all campaigns into a CSV (one row per run).
+Usage: python3 collect_overhead.py campaigns/ --out analysis/overhead.csv
 """
 import argparse
 import csv
@@ -37,12 +37,12 @@ def main():
                 "collector_process_cpu_s": o.get("collector_process_cpu_s"),
             })
     if not rows:
-        raise SystemExit("nenhuma rodada de overhead encontrada")
+        raise SystemExit("no overhead run found")
     with open(a.out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
-    print(f"{len(rows)} rodadas de overhead -> {a.out}")
+    print(f"{len(rows)} overhead runs -> {a.out}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 {
   "experiment": "E6",
-  "description": "Política de saída por execução (agentnet_policy, cgroup/connect4) com a mesma identidade, no servidor MCP real; vínculo manual vs. automático. Execuções alternam classe permissiva (P) e restrita (R); referência independente pela porta exclusiva.",
+  "description": "Per-execution egress policy (agentnet_policy, cgroup/connect4) with the same identity, in the real MCP server; manual vs. automatic binding. Executions alternate a permissive (P) and a restricted (R) class; independent reference via the exclusive port.",
   "factors": {
     "binding_mode": ["manual", "auto"],
     "tool": ["sync", "thread", "subproc", "async"],

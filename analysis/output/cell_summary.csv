@@ -1,4 +1,4 @@
-experiment,label,cond,wrong_label,mode,execs,jitter,resolver,rodadas,C_N_media,C_N_ic95,A_N_media,A_N_ic95,M_N_media,M_N_ic95,I_N_media,I_N_ic95,wrong_N_media,wrong_N_ic95,capture_media,capture_ic95,C_total,A_total,M_total,I_total,N_total
+experiment,label,cond,wrong_label,mode,execs,jitter,resolver,runs,C_N_mean,C_N_ci95,A_N_mean,A_N_ci95,M_N_mean,M_N_ci95,I_N_mean,I_N_ci95,wrong_N_mean,wrong_N_ci95,capture_mean,capture_ci95,C_total,A_total,M_total,I_total,N_total
 E1,confirmatory,N0,0,inproc,2,0.01,cgroup,6,1,0,0,0,0,0,0,0,0,0,1,0,1200,0,0,0,1200
 E1,confirmatory,N0,0,inproc,2,0.01,lineage,6,1,0,0,0,0,0,0,0,0,0,1,0,1200,0,0,0,1200
 E1,confirmatory,N0,0,inproc,2,0.01,context,6,1,0,0,0,0,0,0,0,0,0,1,0,1200,0,0,0,1200

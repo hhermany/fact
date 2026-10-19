@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Controle dos mapas fixados da política agentnet (/sys/fs/bpf/agentnet).
+"""Control of the pinned maps of the agentnet policy (/sys/fs/bpf/agentnet).
 
-  policyctl.py allow <exec_id> <porta> [<porta> ...]   adiciona permissões
-  policyctl.py load  <arquivo.json>                    {"exec": [portas, ...], ...}
-  policyctl.py clear                                   remove todas as permissões
+  policyctl.py allow <exec_id> <port> [<port> ...]     adds permissions
+  policyctl.py load  <file.json>                       {"exec": [ports, ...], ...}
+  policyctl.py clear                                   removes every permission
 
-Usa bpftool (chave = id[48] + porta u32, valor = u8 1).
+Uses bpftool (key = id[48] + port u32, value = u8 1).
 """
 import json
 import subprocess
@@ -18,7 +18,7 @@ ID_LEN = 48
 def key_bytes(exec_id, port):
     b = exec_id.encode()
     if len(b) >= ID_LEN or b"/" in b:
-        raise ValueError(f"id inválido: {exec_id!r}")
+        raise ValueError(f"invalid id: {exec_id!r}")
     raw = b + b"\0" * (ID_LEN - len(b)) + int(port).to_bytes(4, "little")
     return [str(x) for x in raw]
 
@@ -30,7 +30,7 @@ def allow(exec_id, ports):
 
 
 def load_dict(d):
-    """Carrega {exec: [portas]} num único processo bpftool (modo batch)."""
+    """Loads {exec: [ports]} in a single bpftool process (batch mode)."""
     import tempfile
     lines = [f"map update pinned {PIN} key {' '.join(key_bytes(e, p))} value 1"
              for e, ports in d.items() for p in ports]
@@ -43,12 +43,12 @@ def load_dict(d):
 
 
 def register_root(pid, exec_id):
-    """Registra a raiz de uma árvore de processos que pertence a UMA execução
-    (usado pela verificação de linhagem da política)."""
+    """Registers the root of a process tree that belongs to ONE execution
+    (used by the policy's lineage check)."""
     k = [str(x) for x in int(pid).to_bytes(4, "little")]
     b = exec_id.encode()
     if len(b) >= ID_LEN:
-        raise ValueError(f"id inválido: {exec_id!r}")
+        raise ValueError(f"invalid id: {exec_id!r}")
     val = [str(x) for x in b + b"\0" * (ID_LEN - len(b))]
     base = PIN.rsplit("/", 1)[0]
     subprocess.run(["bpftool", "map", "update", "pinned", f"{base}/dom_map", "key", *k, "value", *k], check=True)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     if cmd == "allow":
         allow(sys.argv[2], sys.argv[3:])
     elif cmd == "load":
-        print(load(sys.argv[2]), "permissões")
+        print(load(sys.argv[2]), "permissions")
     elif cmd == "clear":
         clear()
     else:

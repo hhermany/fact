@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Consumo de tokens e custo dos agentes com modelos comerciais via API (E7c: Anthropic; E7o: OpenAI).
+"""Token usage and cost of the agents driven by commercial models via API (E7c: Anthropic; E7o: OpenAI).
 
-Lê as campanhas do experimento (rótulo dado) com manifest e, por célula (modelo, K), soma os
-tokens de entrada e saída que a própria API informou em cada chamada
-(e7_summary.json, campos input_tokens/output_tokens de cada agente). O custo usa a
-tabela de preços de cada empresa (US$ por milhão de tokens), consultada em 18/10/2026
-em https://platform.claude.com/docs/en/about-claude/pricing e https://developers.openai.com/api/docs/pricing.
-Escreve analysis/output/<exp>_tokens.csv.
+Reads the experiment's campaigns (given label) that have a manifest and, per cell (model, K),
+sums the input and output tokens that the API itself reported in each call
+(e7_summary.json, input_tokens/output_tokens fields of each agent). The cost uses each
+provider's price list (US$ per million tokens), checked on 2026-10-18 at
+https://platform.claude.com/docs/en/about-claude/pricing and https://developers.openai.com/api/docs/pricing.
+Writes analysis/output/<exp>_tokens.csv.
 
-Uso: e7c_tokens.py [--exp E7c|E7o] [--label confirmatory] [--out analysis/output]
+Usage: e7c_tokens.py [--exp E7c|E7o] [--label confirmatory] [--out analysis/output]
 """
 import argparse
 import collections
@@ -17,16 +17,16 @@ import glob
 import json
 import os
 
-PRICE = {"claude-opus-5-5": (4.00, 20.00), "claude-haiku-5-5": (0.10, 0.50),     # (entrada, saída)
+PRICE = {"claude-opus-5-5": (4.00, 20.00), "claude-haiku-5-5": (0.10, 0.50),     # (input, output)
          "gpt-6.1-sol": (2.00, 10.00), "gpt-6-luna": (0.10, 0.50)}
-# OpenAI: preços em https://developers.openai.com/api/docs/pricing (18/10/2026); o raciocínio
-# conta como saída e já está em output_tokens
+# OpenAI: prices at https://developers.openai.com/api/docs/pricing (2026-10-18); reasoning
+# counts as output and is already included in output_tokens
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--label", default="confirmatory")
-    ap.add_argument("--exp", default="E7c", help="E7c (Anthropic) ou E7o (OpenAI)")
+    ap.add_argument("--exp", default="E7c", help="E7c (Anthropic) or E7o (OpenAI)")
     ap.add_argument("--campaigns", default="campaigns")
     ap.add_argument("--out", default="analysis/output")
     a = ap.parse_args()

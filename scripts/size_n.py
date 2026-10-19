@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Projeta o N de repetições por célula a partir de um piloto (Hoefler & Belli 2015),
-mesma lógica do dimensionar_n.py do CMP223: N = ceil((t * s / (e * média))^2),
-com t do piloto (df = n-1) e e = precisão relativa alvo.
+"""Projects the number of repetitions N per cell from a pilot (Hoefler & Belli 2015):
+N = ceil((t * s / (e * mean))^2), with t from the pilot (df = n-1) and e the target
+relative precision.
 
-Métrica por rodada (lida de analysis/runs.csv):
-  E1: I/N do resolver 'context' em células com p > 0 (a única com variabilidade
-      no piloto; as demais são determinísticas e reportadas como contagens).
-  E2: captura (captured/attempted) e I/N do 'fused'.
-  E3: p50, p99 de latência de connect e vazão, por (instr, markers), de analysis/overhead.csv.
-Células com desvio padrão 0 são reportadas como 'determinística' (N mínimo = pilot_n).
-A decisão final de N é humana e vai para workflow/config.yaml.
+Per-run metric (read from analysis/runs.csv):
+  E1: I/N of the 'context' resolver in cells with p > 0 (the only one with variability
+      in the pilot; the others are deterministic and reported as counts).
+  E2: capture (captured/attempted) and I/N of 'fused'.
+  E3: connect latency p50 and p99 and throughput, per (instr, markers), from analysis/overhead.csv.
+Cells with standard deviation 0 are reported as 'deterministic' (minimum N = pilot_n).
+The final choice of N is a human decision and goes into workflow/config.yaml.
 
-Uso: python3 dimensionar_n.py analysis/runs.csv --experiment E1 --label pilot \
-        --target 0.05 --output analysis/n_projetado_E1.json
+Usage: python3 size_n.py analysis/runs.csv --experiment E1 --label pilot \
+        --target 0.05 --output analysis/n_projected_E1.json
 """
 import argparse
 import csv
@@ -34,7 +34,7 @@ def main():
     a = ap.parse_args()
 
     cells = defaultdict(list)
-    if a.experiment == "E3":   # overhead: lê analysis/overhead.csv ao lado de runs.csv
+    if a.experiment == "E3":   # overhead: reads analysis/overhead.csv next to runs.csv
         import os
         ovh = os.path.join(os.path.dirname(os.path.abspath(a.runs_csv)), "overhead.csv")
         for r in csv.DictReader(open(ovh)):
@@ -51,7 +51,7 @@ def main():
         if a.experiment == "E1" and r["resolver"] == "context" and float(r["wrong_label"]) > 0:
             cells[key_base + ("context I/N",)].append(int(r["I"]) / n)
         if a.experiment != "E1" and r["resolver"] == "fused":
-            cells[key_base + ("captura",)].append(int(r["captured"]) / max(int(r["attempted"]), 1))
+            cells[key_base + ("capture",)].append(int(r["captured"]) / max(int(r["attempted"]), 1))
             cells[key_base + ("fused I/N",)].append(int(r["I"]) / n)
 
     out = []
@@ -60,15 +60,15 @@ def main():
         m = st.mean(xs)
         s = st.stdev(xs) if k > 1 else 0.0
         if s == 0:
-            proj, note = k, "determinística no piloto"
+            proj, note = k, "deterministic in the pilot"
         elif m == 0:
-            proj, note = None, "média 0 com variância: precisão relativa indefinida (usar absoluta)"
+            proj, note = None, "mean 0 with variance: relative precision undefined (use absolute)"
         else:
             t = T975.get(k - 1, 1.96)
             proj, note = math.ceil((t * s / (a.target * m)) ** 2), ""
         out.append({"cell": list(key[:-1]), "metric": key[-1], "pilot_n": k, "mean": m, "sd": s,
-                    "n_projetado": proj, "nota": note})
-        print(f"{key}: n={k} média={m:.4f} dp={s:.4f} -> N={proj} {note}")
+                    "n_projected": proj, "note": note})
+        print(f"{key}: n={k} mean={m:.4f} sd={s:.4f} -> N={proj} {note}")
     if a.output:
         json.dump({"experiment": a.experiment, "target": a.target, "cells": out}, open(a.output, "w"), indent=1)
 

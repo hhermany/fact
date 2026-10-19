@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * agentnet_policy.bpf.c — política de saída por execução de agente.
+ * agentnet_policy.bpf.c: per-execution egress policy for agents.
  *
- * Mesma identidade do coletor: o runtime entrega a identidade da execução ao
- * kernel por openat em /run/agentctx/begin/<id> (ou /run/agentctx/end); a
- * identidade fica num mapa por thread e é herdada na criação de threads e
- * processos. No connect() IPv4 (cgroup/connect4), a decisão é tomada pela
- * identidade da thread que conecta:
- *   - com identidade: permite se (id, porta) está na lista de permissões;
- *     caso contrário nega (EPERM);
- *   - sem identidade: ação padrão configurável (cfg.no_ctx_allow).
- * Linhagem (cfg.lineage): o espaço de usuário registra as raízes de árvores de
- * processos que pertencem a UMA execução (owner_map); a raiz é herdada por
- * threads e processos filhos (dom_map). Se o rótulo da thread contradiz o dono
- * da árvore: modo 1 nega a conexão (conflito); modo 2 decide pelo dono da
- * árvore. Sem rótulo, decide pelo dono da árvore. Raízes compartilhadas por
- * várias execuções (worker compartilhado) não são registradas: lá a linhagem
- * não separa execuções e a decisão segue o rótulo, como antes.
- * Só portas no intervalo policiado [cfg.lo, cfg.hi] são avaliadas; as demais
- * passam (para não afetar SSH, DNS etc. no host de teste).
- * Cada decisão é registrada num ring buffer (auditoria e avaliação).
+ * Same identity as the collector: the runtime hands the execution identity to
+ * the kernel via openat on /run/agentctx/begin/<id> (or /run/agentctx/end); the
+ * identity is kept in a per-thread map and inherited when threads and processes
+ * are created. On IPv4 connect() (cgroup/connect4), the decision is taken by the
+ * identity of the connecting thread:
+ *   - with identity: allow if (id, port) is in the allow-list;
+ *     otherwise deny (EPERM);
+ *   - without identity: configurable default action (cfg.no_ctx_allow).
+ * Lineage (cfg.lineage): user space registers the roots of process trees that
+ * belong to ONE execution (owner_map); the root is inherited by threads and
+ * child processes (dom_map). If the thread's label contradicts the tree owner:
+ * mode 1 denies the connection (conflict); mode 2 decides by the tree owner.
+ * Without a label, it decides by the tree owner. Roots shared by several
+ * executions (a shared worker) are not registered: there lineage does not
+ * separate executions and the decision follows the label, as before.
+ * Only ports in the policed range [cfg.lo, cfg.hi] are evaluated; the others
+ * pass (so as not to affect SSH, DNS, etc. on the test host).
+ * Every decision is logged to a ring buffer (auditing and evaluation).
  */
 #include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
@@ -43,14 +43,14 @@ struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
 	 __type(key, struct pkey); __type(value, __u8); } allow_map SEC(".maps");
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
-	 __type(key, __u32); __type(value, __u32); } dom_map SEC(".maps");      /* tid -> raiz */
+	 __type(key, __u32); __type(value, __u32); } dom_map SEC(".maps");      /* tid -> root */
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
-	 __type(key, __u32); __type(value, struct ident); } owner_map SEC(".maps"); /* raiz -> execução */
+	 __type(key, __u32); __type(value, struct ident); } owner_map SEC(".maps"); /* root -> execution */
 struct { __uint(type, BPF_MAP_TYPE_ARRAY); __uint(max_entries, 1);
 	 __type(key, __u32); __type(value, struct cfg); } cfg_map SEC(".maps");
 struct { __uint(type, BPF_MAP_TYPE_RINGBUF); __uint(max_entries, 1 << 22); } events SEC(".maps");
 
-/* syscalls:sys_enter_openat (formato: __syscall_nr em 8, dfd em 16, filename em 24) */
+/* syscalls:sys_enter_openat (format: __syscall_nr at 8, dfd at 16, filename at 24) */
 struct openat_args { __u64 common; int nr; int pad; long dfd; const char *filename; long flags; long mode; };
 
 static const char BEGIN[] = "/run/agentctx/begin/";   /* 20 bytes */
@@ -140,7 +140,7 @@ int on_connect4(struct bpf_sock_addr *sa)
 		if (r)
 			own = bpf_map_lookup_elem(&owner_map, r);
 	}
-	struct ident *who = v;        /* identidade usada na decisão */
+	struct ident *who = v;        /* identity used in the decision */
 	__u8 conflict = 0, from_lineage = 0;
 	if (own) {
 		if (!v) {

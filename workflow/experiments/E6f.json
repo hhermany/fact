@@ -1,6 +1,6 @@
 {
   "experiment": "E6f",
-  "description": "Injeção de falhas no vínculo automático com a política por execução ativa (servidor MCP real): mede liberações (FA) e negações (FD) indevidas causadas por rótulos errados.",
+  "description": "Fault injection into the automatic binding with the per-execution policy active (real MCP server): measures wrong allows (FA) and wrong denies (FD) caused by mislabels.",
   "factors": {
     "tool": [
       "sync",

@@ -1,4 +1,4 @@
-# Compila o programa BPF e o carregador (clang/libbpf do host).
+# Builds the BPF program and the loader (host clang/libbpf).
 ARCH_INC ?= /usr/include/$(shell uname -m)-linux-gnu
 all: agentnet_policy.bpf.o agentnet_policy
 agentnet_policy.bpf.o: agentnet_policy.bpf.c

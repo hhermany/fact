@@ -1,6 +1,6 @@
 {
   "experiment": "E7f",
-  "description": "Agentes LLM reais (como no E7) com uma das três primeiras chamadas de ferramenta de cada agente rotulada com a identidade de outro agente; política ativa.",
+  "description": "Real LLM agents (as in E7) with one of each agent's first three tool calls labeled with another agent's identity; policy active.",
   "factors": {
     "execs": [
       4

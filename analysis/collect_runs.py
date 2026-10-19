@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Reúne todas as rodadas de todas as campanhas num CSV longo (uma linha por
-rodada × resolver), entrada única da análise em R.
+"""Collects every run of every campaign into one long CSV (one row per
+run x resolver), the single input of the R analysis.
 
-Lê campaigns/<campaign_id>/manifest.json e runs/<run_id>/{plan,score}.json.
-Não altera nada nas campanhas.
+Reads campaigns/<campaign_id>/manifest.json and runs/<run_id>/{plan,score}.json.
+Changes nothing in the campaigns.
 
-Uso: python3 collect_runs.py campaigns/ --out analysis/runs.csv
+Usage: python3 collect_runs.py campaigns/ --out analysis/runs.csv
 """
 import argparse
 import csv
@@ -22,8 +22,8 @@ def main():
     ap.add_argument("campaigns_dir")
     ap.add_argument("--out", required=True)
     ap.add_argument("--exclude-experiments", default="",
-                    help="lista separada por vírgulas; os experimentos de falhas (E5f, E6f, E6n, E6L, E6Ls, E7f) "
-                         "são analisados por fault_tables.py e ficam fora do runs.csv versionado")
+                    help="comma-separated list; the fault experiments (E5f, E6f, E6n, E6L, E6Ls, E7f) "
+                         "are analyzed by fault_tables.py and stay out of the versioned runs.csv")
     a = ap.parse_args()
     skip = {e for e in a.exclude_experiments.split(",") if e}
 
@@ -78,13 +78,13 @@ def main():
                            abs_net_error=sum(abs(d["net_error"]) for d in acc))
                 rows.append(row)
     if not rows:
-        raise SystemExit("nenhuma rodada encontrada")
+        raise SystemExit("no run found")
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
-    print(f"{len(rows)} linhas ({len(rows) // 4} rodadas) -> {a.out}")
+    print(f"{len(rows)} rows ({len(rows) // 4} runs) -> {a.out}")
 
 
 if __name__ == "__main__":
