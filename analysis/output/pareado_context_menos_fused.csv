@@ -211,3 +211,7 @@ E7o,confirmatory,E7o,0,agent,4,NA,52,0,0
 E7o,confirmatory,E7o,0,agent,8,NA,52,0,0
 E7o,pilot,E7o,0,agent,4,NA,2,0,0
 E7o,pilot,E7o,0,agent,8,NA,2,0,0
+E7r,confirmatory,E7r,0,agent,4,NA,208,0,0
+E7r,confirmatory,E7r,0,agent,8,NA,208,0,0
+E7r,pilot,E7r,0,agent,4,NA,8,0,0
+E7r,pilot,E7r,0,agent,8,NA,8,0,0
