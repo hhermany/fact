@@ -1,0 +1,10 @@
+{
+  "experiment": "E3send",
+  "runner": "sendcost",
+  "description": "Cost of the egress policy per send (bench/send_bench.c, 64-byte messages on loopback): no policy; policy without per-send authorization (cgroup/connect4 + cgroup/sendmsg4); per-send authorization (BPF LSM socket_sendmsg) on a port inside the policed range (identity allowed) and outside it (the cost every other send on the host pays). Connected TCP, connected UDP, and unconnected UDP (sendto).",
+  "factors": {
+    "policy": ["none", "conn", "send_in", "send_out"],
+    "proto": ["tcp", "udp", "udpu"]
+  },
+  "fixed": {"n": 200000, "warmup": 10000}
+}

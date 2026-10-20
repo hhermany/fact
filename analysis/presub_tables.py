@@ -230,6 +230,27 @@ def main():
           [[t, e, v["runs"], v["N"], v["TA"], v["TD"], v["FA"], v["FD"], v["ND"], v["label_owner"],
             v["label_other"], v["label_none"]] for (t, e), v in sorted(c.items())])
 
+    # E3send: policy cost per send (medians over runs; delta against no policy, same protocol)
+    c = collections.defaultdict(list)
+    for p, rd in runs(a.campaigns, "E3send", a.label):
+        c[(p["proto"], p["policy"])].append(json.load(open(os.path.join(rd, "overhead.json"))))
+    if c:
+        rows = []
+        for (proto, pol), rs in sorted(c.items()):
+            base = c.get((proto, "none"), [])
+            b50 = st.median(r["p50_ns"] for r in base) if base else None
+            p50 = st.median(r["p50_ns"] for r in rs)
+            lsm = [g["ns_per_run"] for r in rs for g in r.get("bpf_progs", []) if g["name"] == "on_sock_sendmsg"]
+            sm4 = [g["ns_per_run"] for r in rs for g in r.get("bpf_progs", []) if g["name"] == "on_sendmsg4"]
+            rows.append([proto, pol, len(rs), round(p50), round(p50 - b50) if b50 is not None else "",
+                         round(st.median(r["p99_ns"] for r in rs)),
+                         round(st.median(r["throughput_sps"] for r in rs) / 1000, 1),
+                         round(st.median(lsm), 1) if lsm else "", round(st.median(sm4), 1) if sm4 else "",
+                         sum(r.get("failures", 0) for r in rs), sum(r.get("policy_denials", 0) for r in rs)])
+        write(os.path.join(a.out, "E3send_cost.csv"),
+              ["proto", "policy", "runs", "p50_ns", "p50_delta_ns", "p99_ns", "k_sends_per_s",
+               "lsm_ns_per_run", "sendmsg4_ns_per_run", "failures", "denials"], rows)
+
     # E7rc
     c = collections.defaultdict(list)
     for p, rd in runs(a.campaigns, "E7rc", a.label):

@@ -22,6 +22,10 @@ experiments:
     spec: workflow/experiments/E3b.json
     pilot_n: 5
     n: 5   # one boot
+  E3send:
+    spec: workflow/experiments/E3send.json
+    pilot_n: 2
+    n: 5   # per boot (2 boots = 10 per cell)
   E1fast:
     spec: workflow/experiments/E1fast.json
     pilot_n: 1

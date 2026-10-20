@@ -129,7 +129,8 @@ def main():
         f.write(" ".join(sys.argv) + "\n")
 
     runner = spec.get("runner", "attribution")
-    expected = {"overhead": "overhead.json", "capacity": "capacity.json"}.get(runner, "score.json")
+    expected = {"overhead": "overhead.json", "sendcost": "overhead.json",
+                "capacity": "capacity.json"}.get(runner, "score.json")
     t0 = time.time()
     for r in runs:
         p = r["params"]
@@ -140,6 +141,10 @@ def main():
                    "--warmup", str(p.get("warmup", 1000)), "--seed", str(r["seed"])]
             if p.get("dest_host"):
                 cmd += ["--host", str(p["dest_host"])]
+        elif runner == "sendcost":     # E3send: policy cost per send
+            cmd = [os.path.join(HERE, "scripts", "e3send_round.sh"), rdir, "--policy", str(p["policy"]),
+                   "--proto", str(p["proto"]), "--n", str(p.get("n", 200000)),
+                   "--warmup", str(p.get("warmup", 10000)), "--seed", str(r["seed"])]
         elif runner == "capacity":     # E2b: collector capacity
             cmd = [os.path.join(HERE, "scripts", "e2b_round.sh"), rdir, "--par", str(p["par"]),
                    "--n", str(p.get("n", 50000)), "--collector", str(p["collector"]), "--seed", str(r["seed"])]

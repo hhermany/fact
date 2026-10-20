@@ -18,3 +18,4 @@ paper/*.bbl
 paper/*.blg
 campaigns/logs/
 node_modules
+bench/send_bench
