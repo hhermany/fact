@@ -148,7 +148,8 @@ save_fig(g3, "fig_e5e6", 2.05)
 #' ## Related systems vs FACT in shared workers
 #'
 #' Emulations of the correlation mechanisms of related systems on the same
-#' logs (`analysis/baselines.py`) and AgentProvenance executed for real (E5ap):
+#' logs (`analysis/baselines.py`) and AgentProvenance executed for real with
+#' client-side (E5ap) and server-side (E5aps) call windows:
 #' share of connections credited to the wrong execution.
 bl_csv <- file.path(indir, "baselines.csv")
 if (file.exists(bl_csv)) {
@@ -169,10 +170,17 @@ if (file.exists(bl_csv)) {
       transmute(cell = paste("E5", tool), resolver = "agentprov", I = I / N)
     bl <- bind_rows(bl, ap)
   }
+  #' The same with the call windows measured inside the server (E5aps).
+  aps_csv <- file.path(indir, "E5aps_agentprov.csv")
+  if (file.exists(aps_csv)) {
+    aps <- read_csv(aps_csv, show_col_types = FALSE) |> filter(system == "AgentProvenance", execs == 8) |>
+      transmute(cell = paste("E5", tool), resolver = "agentprov_srv", I = I / N)
+    bl <- bind_rows(bl, aps)
+  }
   bl <- bl |>
-    mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "agentprov", "fused"),
+    mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "agentprov", "agentprov_srv", "fused"),
                          c("time window (emulated)", "latest scope (emulated)",
-                           "AgentProvenance (executed)", "FACT")),
+                           "AgentProvenance (executed)", "AgentProvenance (server windows)", "FACT")),
            cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"))) |>
     select(cell, mech, I) |> complete(cell, mech)   # empty slot where a system was not run
   g4 <- ggplot(bl, aes(cell, I, fill = mech)) +
@@ -180,7 +188,7 @@ if (file.exists(bl_csv)) {
     geom_text(aes(y = ifelse(is.na(I), 0, I), label = ifelse(is.na(I), "", round(100 * I)), group = mech), position = position_dodge(width = 0.86),
               vjust = -0.35, size = 1.8, family = fam) +
     scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
-    scale_fill_manual(values = c(greys[1], greys[2], greys[3], ours), drop = FALSE) +
+    scale_fill_manual(values = c(greys[1], greys[2], greys[3], "white", ours), drop = FALSE) +
     guides(fill = guide_legend(nrow = 2)) +
     labs(x = NULL, y = "credited to the wrong execution") + theme_paper()
   save_fig(g4, "fig_baselines", 2.2)
