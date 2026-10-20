@@ -73,6 +73,8 @@ def main():
     for p, rd in runs(a.campaigns, "E5reuse", a.label):
         r = score_bytes.score(rd)
         k = c[(p["tool"], int(p["send_binding"]), int(p["execs"]))]
+        k.setdefault("lat", [])
+        k["lat"].append(json.load(open(os.path.join(rd, "e4_summary.json")))["tool_ms_p50"])
         k["runs"] += 1
         k["requests"] += r["requests"]
         k["connections"] += r["connections"]
@@ -87,12 +89,14 @@ def main():
     write(os.path.join(a.out, "E5reuse_bytes.csv"),
           ["tool", "send_binding", "execs", "runs", "requests", "connections", "shared_connections",
            "sent_bytes", "sent_I_pct_opener", "sent_I_pct_sender", "received_bytes",
-           "received_I_pct_opener", "received_I_pct_sender", "unattributed_or_ambiguous_bytes_sender"],
+           "received_I_pct_opener", "received_I_pct_sender", "unattributed_or_ambiguous_bytes_sender",
+           "tool_ms_p50_median"],
           [[t, sb, e, v["runs"], v["requests"], v["connections"], v["shared"],
             v["sent_N"], pct(v["sent_opener_I"], v["sent_N"]), pct(v["sent_sender_I"], v["sent_N"]),
             v["received_N"], pct(v["received_opener_I"], v["received_N"]),
             pct(v["received_sender_I"], v["received_N"]),
-            v["sent_sender_A"] + v["sent_sender_M"] + v["received_sender_A"] + v["received_sender_M"]]
+            v["sent_sender_A"] + v["sent_sender_M"] + v["received_sender_A"] + v["received_sender_M"],
+            round(st.median(v["lat"]), 3)]
            for (t, sb, e), v in sorted(c.items())])
 
     # E6spoof
