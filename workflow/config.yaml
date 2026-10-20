@@ -139,6 +139,10 @@ experiments:
     spec: workflow/experiments/E5partial.json
     pilot_n: 1
     n: 5   # per boot (2 boots)
+  E10budget:
+    spec: workflow/experiments/E10budget.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots)
   E9cost:
     spec: workflow/experiments/E9cost.json
     pilot_n: 1

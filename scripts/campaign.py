@@ -34,7 +34,8 @@ ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": 
        "binding_mode": "--binding-mode", "model": "--model", "ollama": "--ollama", "dest_host": "--dest-host", "num_predict": "--num-predict",
        "replay_from": "--replay-from", "src": "--replay-src", "send_binding": "--send-binding", "trust": "--trust",
        "identity": "--identity", "client_spoof": "--client-spoof", "clear_after": "--clear-after",
-       "server_windows": "--server-windows", "allow_all": "--allow-all"}
+       "server_windows": "--server-windows", "allow_all": "--allow-all",
+       "budget_conns": "--budget-conns", "budget_bytes": "--budget-bytes"}
 
 
 def sh(cmd, cwd=None):
@@ -179,6 +180,9 @@ def main():
             env["POLICY_NOCTX_ALLOW"] = str(p.get("policy_noctx_allow", 0))
             env["POLICY_LINEAGE"] = str(p.get("policy_lineage", 0))
             env["POLICY_PER_SEND"] = str(p.get("per_send", 0))
+            env["POLICY_BUDGET"] = str(p.get("budget", 0))
+            if p.get("budget_conns") or p.get("budget_bytes"):
+                env["POLICY_BUDGET_PLAN"] = "1"
         ts = time.time()
         res = subprocess.run(cmd, capture_output=True, text=True, env=env)
         r.update(returncode=res.returncode, seconds=round(time.time() - ts, 3), command=cmd[1:])

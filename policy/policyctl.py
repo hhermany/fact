@@ -4,6 +4,7 @@
   policyctl.py allow <exec_id> <port> [<port> ...]     adds permissions
   policyctl.py load  <file.json>                       {"exec": [ports, ...], ...}
   policyctl.py clear                                   removes every permission
+  policyctl.py usage                                   prints the per-execution budget usage (JSON)
 
 Uses bpftool (key = id[48] + port u32, value = u8 1).
 """
@@ -65,6 +66,39 @@ def trust(pid):
                         "key", *[str(x) for x in k.to_bytes(4, "little")], "value", "1"], check=True)
 
 
+def load_budgets(d):
+    """Per-execution budgets {exec: {"bytes": B, "conns": C}} (0 = no limit) and zeroed
+    usage counters, in one bpftool process (E10budget)."""
+    import tempfile
+    base = PIN.rsplit("/", 1)[0]
+    lines = []
+    for e, b in d.items():
+        k = " ".join(key_bytes(e, 0)[:ID_LEN])
+        bv = " ".join(str(x) for x in int(b.get("bytes", 0)).to_bytes(8, "little") + int(b.get("conns", 0)).to_bytes(8, "little"))
+        lines.append(f"map update pinned {base}/budget_map key {k} value {bv}")
+        lines.append(f"map update pinned {base}/usage_map key {k} value {' '.join(['0'] * 24)}")
+    if not lines:
+        return 0
+    with tempfile.NamedTemporaryFile("w", suffix=".bpftool", delete=False) as f:
+        f.write("\n".join(lines) + "\n")
+    subprocess.run(["bpftool", "batch", "file", f.name], check=True, capture_output=True)
+    return len(d)
+
+
+def usage():
+    """{exec: {"bytes", "conns", "denied"}} read from the pinned usage map."""
+    base = PIN.rsplit("/", 1)[0]
+    out = subprocess.run(["bpftool", "-j", "map", "dump", "pinned", f"{base}/usage_map"], check=True,
+                         capture_output=True, text=True).stdout
+    res = {}
+    for e in json.loads(out or "[]"):
+        key = bytes(int(x, 16) for x in e["key"]).split(b"\0")[0].decode()
+        v = bytes(int(x, 16) for x in e["value"])
+        res[key] = {"bytes": int.from_bytes(v[0:8], "little"), "conns": int.from_bytes(v[8:16], "little"),
+                    "denied": int.from_bytes(v[16:24], "little")}
+    return res
+
+
 def load(path):
     return load_dict(json.load(open(path)))
 
@@ -85,5 +119,7 @@ if __name__ == "__main__":
         print(load(sys.argv[2]), "permissions")
     elif cmd == "clear":
         clear()
+    elif cmd == "usage":
+        print(json.dumps(usage()))
     else:
         sys.exit(__doc__)

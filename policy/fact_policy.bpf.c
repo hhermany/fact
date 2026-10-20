@@ -53,7 +53,10 @@ struct fact_sin { unsigned short family; __be16 port; __be32 addr; };
 
 struct ident { char id[ID_LEN]; };
 struct pkey { char id[ID_LEN]; __u32 dport; };
-struct cfg { __u32 lo; __u32 hi; __u32 no_ctx_allow; __u32 lineage; __u32 per_send; };
+struct cfg { __u32 lo; __u32 hi; __u32 no_ctx_allow; __u32 lineage; __u32 per_send; __u32 budget; };
+/* per-execution budget (0 = no limit) and usage, kept in the kernel (E10budget) */
+struct budget { __u64 max_bytes; __u64 max_conns; };
+struct usage { __u64 bytes; __u64 conns; __u64 denied; };
 struct decision {
 	__u64 ts; __u32 pid; __u32 tid; __u32 dport; __u32 daddr;
 	__u8 verdict; __u8 has_ctx; __u8 pad[6]; char id[ID_LEN];
@@ -73,6 +76,10 @@ struct { __uint(type, BPF_MAP_TYPE_RINGBUF); __uint(max_entries, 1 << 22); } eve
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 1024);
 	 __type(key, __u32); __type(value, __u8); } trust_map SEC(".maps");      /* tgid -> 1; TRUST_ON -> 1 */
 #define TRUST_ON 0xffffffffu
+struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
+	 __type(key, struct ident); __type(value, struct budget); } budget_map SEC(".maps");
+struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
+	 __type(key, struct ident); __type(value, struct usage); } usage_map SEC(".maps");
 
 /* syscalls:sys_enter_openat (format: __syscall_nr at 8, dfd at 16, filename at 24) */
 struct openat_args { __u64 common; int nr; int pad; long dfd; const char *filename; long flags; long mode; };
@@ -184,7 +191,7 @@ static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 
 			if (c->lineage == 2) { who = own; from_lineage = 1; }
 		}
 	}
-	__u8 verdict;
+	__u8 verdict, over = 0;
 	struct pkey k = {};
 	if (conflict && c->lineage == 1) {
 		verdict = 0;
@@ -195,6 +202,28 @@ static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 
 	} else {
 		verdict = c->no_ctx_allow ? 1 : 0;
 	}
+	/* budget: the accounting of the same identity, kept in the kernel, drives the
+	 * decision. A connection is allowed while fewer than max_conns were attempted; a
+	 * send or datagram is allowed while the bytes accepted so far (charged at the
+	 * return of tcp_sendmsg/udp_sendmsg) are below max_bytes, so an execution can
+	 * exceed its byte budget by at most the send that crosses it. */
+	if (verdict && who && c->budget == 1) {   /* 1: count and enforce; 2: count only */
+		struct budget *b = bpf_map_lookup_elem(&budget_map, who);
+		struct usage *u = bpf_map_lookup_elem(&usage_map, who);
+		if (b && u) {
+			if (kind == 0 && b->max_conns) {
+				__u64 old = __sync_fetch_and_add(&u->conns, 1);
+				if (old >= b->max_conns)
+					over = 1;
+			} else if (kind != 0 && b->max_bytes && u->bytes >= b->max_bytes) {
+				over = 1;
+			}
+			if (over) {
+				verdict = 0;
+				__sync_fetch_and_add(&u->denied, 1);
+			}
+		}
+	}
 	if (kind != 0 && verdict)
 		return verdict;
 	struct decision *d = bpf_ringbuf_reserve(&events, sizeof(*d), 0);
@@ -203,7 +232,7 @@ static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 
 		d->dport = dport; d->daddr = daddr; d->verdict = verdict;
 		d->has_ctx = v ? 1 : 0;
 		__builtin_memset(d->pad, 0, sizeof(d->pad));
-		d->pad[0] = conflict; d->pad[1] = from_lineage; d->pad[3] = kind;
+		d->pad[0] = conflict; d->pad[1] = from_lineage; d->pad[3] = kind; d->pad[4] = over;
 		if (v) __builtin_memcpy(d->id, v->id, ID_LEN); else __builtin_memset(d->id, 0, ID_LEN);
 		bpf_ringbuf_submit(d, 0);
 	}
@@ -260,6 +289,54 @@ int BPF_PROG(on_sock_sendmsg, struct socket *sock, struct msghdr *msg, int size,
 	if (dport < c->lo || dport > c->hi)
 		return 0;
 	return decide(c, dport, addr, 2) ? 0 : -1;   /* -EPERM */
+}
+
+/* Budget accounting: bytes accepted by the kernel (return value), charged to the
+ * identity of the sending thread (as in decide), for policed destinations. */
+static __always_inline void charge(struct sock *sk, struct msghdr *msg, int ret)
+{
+	if (ret <= 0)
+		return;
+	__u32 k0 = 0;
+	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
+	if (!c || !c->budget || !sk || BPF_CORE_READ(sk, __sk_common.skc_family) != 2)
+		return;
+	__be16 port = BPF_CORE_READ(sk, __sk_common.skc_dport);
+	void *name = BPF_CORE_READ(msg, msg_name);
+	if (name) {
+		struct fact_sin sin = {};
+		bpf_probe_read_kernel(&sin, sizeof(sin), name);
+		if (sin.family == 2) port = sin.port;
+	}
+	__u32 dport = bpf_ntohs(port);
+	if (dport < c->lo || dport > c->hi)
+		return;
+	__u32 tid = (__u32)bpf_get_current_pid_tgid();
+	struct ident *who = bpf_map_lookup_elem(&ctx_map, &tid);
+	if (!who && c->lineage) {
+		__u32 *r = bpf_map_lookup_elem(&dom_map, &tid);
+		if (r)
+			who = bpf_map_lookup_elem(&owner_map, r);
+	}
+	if (!who)
+		return;
+	struct usage *u = bpf_map_lookup_elem(&usage_map, who);
+	if (u)
+		__sync_fetch_and_add(&u->bytes, (__u64)ret);
+}
+
+SEC("fexit/tcp_sendmsg")
+int BPF_PROG(on_tcp_sent, struct sock *sk, struct msghdr *msg, __u64 size, int ret)
+{
+	charge(sk, msg, ret);
+	return 0;
+}
+
+SEC("fexit/udp_sendmsg")
+int BPF_PROG(on_udp_sent, struct sock *sk, struct msghdr *msg, __u64 size, int ret)
+{
+	charge(sk, msg, ret);
+	return 0;
 }
 
 char LICENSE[] SEC("license") = "GPL";

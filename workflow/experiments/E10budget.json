@@ -1,0 +1,32 @@
+{
+  "experiment": "E10budget",
+  "description": "Per-execution budgets enforced in the kernel: every second execution of the shared MCP server gets a budget, kept with its usage in BPF maps by the policy (connections: counted at cgroup/connect4; sent bytes: the bytes tcp_sendmsg/udp_sendmsg accepted, charged at their return by fexit programs and checked at every send by the BPF LSM program). Tools: async (new connection per call, budget of 10 connections) and httpx_shared (keep-alive pool shared by the sessions, budget of 1500 sent bytes). Budget mode 2 (usage counted in the kernel, nothing denied) and 1 (counted and enforced). Reference: the destination's per-request log (bytes) and the outcome of each call at the client (connections).",
+  "factors": {
+    "budget": [
+      2,
+      1
+    ],
+    "tool": [
+      "async",
+      "httpx_shared"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E10budget",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "send_binding": 1,
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "per_send": 1,
+    "allow_all": 1,
+    "budget_conns": 10,
+    "budget_bytes": 1500,
+    "collector": "fact-bytes.bt"
+  }
+}

@@ -137,6 +137,10 @@ def main():
     ap.add_argument("--binding-mode", choices=["manual", "auto", "none"], default="manual")
     ap.add_argument("--server-windows", type=int, default=0,
                     help="1: the server records each call's window inside the server (server_calls.jsonl, E5aps)")
+    ap.add_argument("--budget-conns", type=int, default=0,
+                    help="E10budget: connection budget of every second execution (0 = none)")
+    ap.add_argument("--budget-bytes", type=int, default=0,
+                    help="E10budget: sent-byte budget of every second execution (0 = none)")
     ap.add_argument("--allow-all", type=int, default=0,
                     help="1 with --policy 1: every execution may reach all its destinations (E9cost)")
     ap.add_argument("--dest-host", default="127.0.0.1",
@@ -226,11 +230,17 @@ def main():
             else:
                 allow[e] = sorted(ports) if classes[e] == "P" else sorted(rng.sample(own, len(own) // 2))
         plan["policy"] = {"classes": classes, "allow": allow}
+        if a.budget_conns or a.budget_bytes:   # E10budget: every second execution gets a budget
+            # byte budgets for the shared pools (few connections), connection budgets otherwise
+            kind = {"bytes": a.budget_bytes} if reuse else {"conns": a.budget_conns}
+            plan["budget"] = {e: dict(kind) for i, e in enumerate(execs) if i % 2 == 1}
     json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
     if a.policy:
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "policy"))
         import policyctl
         policyctl.load_dict(plan["policy"]["allow"])
+        if plan.get("budget"):
+            policyctl.load_budgets(plan["budget"])
     if a.tool == "spoof":
         # restricted executions' calls claim the identity of the first permissive one;
         # permissive executions' calls claim their own (a harmless re-assertion)
