@@ -6,7 +6,7 @@
  * fact-bytes.bt: fact.bt plus per-send and per-receive events (bytes), for
  * attributing traffic on reused connections and for byte accounting (E5reuse).
  * Everything in fact.bt is unchanged; the probes below are added:
- *   - tcp_sendmsg: bytes sent by a thread, with the thread's context at the
+ *   - tcp_sendmsg (entry and return): bytes accepted by the kernel (return value) for a thread, with the thread's context at the
  *     send (the runtime hands it over right before each send when send binding
  *     is enabled in fact_rt) and the socket; the socket remembers the context of
  *     its last sender (@skctx);
@@ -102,9 +102,25 @@ kprobe:tcp_sendmsg
 	$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
 	if ($sk->__sk_common.skc_family == 2 && $dport >= 61000 && $dport <= 64998) {
 		@skctx[$sk] = @ctx[tid];
-		printf("{\"ev\":\"send\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"sk\":%llu,\"ctx\":\"%s\",\"bytes\":%llu,\"sport\":%d,\"dport\":%d}\n",
-		       nsecs, pid, tid, cgroup, (uint64)$sk, @ctx[tid], (uint64)arg2, $sk->__sk_common.skc_num, $dport);
+		@snd_sk[tid] = (uint64)$sk;
+		@snd_req[tid] = (uint64)arg2;
 	}
+}
+
+/* bytes sent = what tcp_sendmsg accepted (its return value), not the size requested:
+ * a failed or partial send (e.g., a nonblocking socket under backpressure) counts only
+ * the bytes it queued; "req" keeps the requested size (E5partial) */
+kretprobe:tcp_sendmsg
+/ @snd_sk[tid] /
+{
+	$sk = (struct sock *)@snd_sk[tid];
+	$dp = $sk->__sk_common.skc_dport;
+	$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
+	$n = (int64)retval;
+	printf("{\"ev\":\"send\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"sk\":%llu,\"ctx\":\"%s\",\"bytes\":%lld,\"req\":%llu,\"sport\":%d,\"dport\":%d}\n",
+	       nsecs, pid, tid, cgroup, (uint64)$sk, @ctx[tid], $n > 0 ? $n : 0, @snd_req[tid], $sk->__sk_common.skc_num, $dport);
+	delete(@snd_sk[tid]);
+	delete(@snd_req[tid]);
 }
 
 kprobe:tcp_cleanup_rbuf
@@ -159,4 +175,6 @@ END
 	clear(@udp_last);
 	clear(@ctx);
 	clear(@skctx);
+	clear(@snd_sk);
+	clear(@snd_req);
 }

@@ -251,6 +251,21 @@ def main():
               ["proto", "policy", "runs", "p50_ns", "p50_delta_ns", "p99_ns", "k_sends_per_s",
                "lsm_ns_per_run", "sendmsg4_ns_per_run", "failures", "denials"], rows)
 
+    # E5partial: byte accounting under backpressure
+    rows = []
+    for p, rd in runs(a.campaigns, "E5partial", a.label):
+        r = json.load(open(os.path.join(rd, "partial_score.json")))
+        rows.append(r)
+    if rows:
+        tot = lambda f: sum(f(r) for r in rows)
+        write(os.path.join(a.out, "E5partial.csv"),
+              ["runs", "send_calls", "partial", "eagain", "received_bytes", "collector_bytes", "requested_bytes",
+               "runs_exact", "requested_overcount_pct_median"],
+              [[len(rows), tot(lambda r: r["bench"]["calls"]), tot(lambda r: r["bench"]["partial"]),
+                tot(lambda r: r["bench"]["eagain"]), tot(lambda r: r["bench"]["received"]),
+                tot(lambda r: r["collector_bytes"]), tot(lambda r: r["collector_requested"]),
+                tot(lambda r: int(r["exact"])), st.median(r["requested_overcount_pct"] for r in rows)]])
+
     # E9cost: full recommended configuration vs no FACT (medians over runs)
     c = collections.defaultdict(list)
     for p, rd in runs(a.campaigns, "E9cost", a.label):

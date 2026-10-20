@@ -1,0 +1,7 @@
+{
+  "experiment": "E5partial",
+  "runner": "partial",
+  "description": "Byte accounting under backpressure: a nonblocking sender with a small send buffer and a slow receiver (bench/partial_send.py), so that many sends are partial or fail with EAGAIN. The collector (fact-bytes.bt) credits the return value of tcp_sendmsg; the run compares it with the destination's count and with the sum of the requested sizes (what counting the argument of tcp_sendmsg would credit).",
+  "factors": {"total": [8000000]},
+  "fixed": {}
+}

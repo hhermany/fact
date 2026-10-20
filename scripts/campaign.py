@@ -131,6 +131,7 @@ def main():
 
     runner = spec.get("runner", "attribution")
     expected = {"overhead": "overhead.json", "sendcost": "overhead.json", "fullcost": "e4_summary.json",
+                "partial": "partial_score.json",
                 "capacity": "capacity.json"}.get(runner, "score.json")
     t0 = time.time()
     for r in runs:
@@ -149,6 +150,8 @@ def main():
         elif runner == "fullcost":     # E9cost: full recommended configuration vs no FACT
             cmd = [os.path.join(HERE, "scripts", "e9cost_round.sh"), rdir, "--fact", str(p["fact"]),
                    "--execs", str(p["execs"]), "--ops", str(p.get("ops", 25)), "--seed", str(r["seed"])]
+        elif runner == "partial":      # E5partial: byte accounting under backpressure
+            cmd = [os.path.join(HERE, "scripts", "partial_round.sh"), rdir, "--seed", str(r["seed"])]
         elif runner == "capacity":     # E2b: collector capacity
             cmd = [os.path.join(HERE, "scripts", "e2b_round.sh"), rdir, "--par", str(p["par"]),
                    "--n", str(p.get("n", 50000)), "--collector", str(p["collector"]), "--seed", str(r["seed"])]
