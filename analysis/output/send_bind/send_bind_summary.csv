@@ -1,0 +1,13 @@
+collector,mode,reps,ns_per_send_median,ns_min,ns_max
+fact-bytes.bt,alternate,10,30472.7,30236.0,30662.3
+fact-bytes.bt,off,10,6451.4,6405.0,6701.8
+fact-bytes.bt,rebind,10,17008.8,16442.9,24631.9
+fact-bytes.bt,same,10,12586.7,12353.1,12819.2
+fact.bt,alternate,10,34871.4,29933.8,35260.0
+fact.bt,off,10,6350.6,6260.6,6417.6
+fact.bt,rebind,10,22743.7,17033.9,24637.0
+fact.bt,same,10,12904.9,12542.0,13358.4
+none,alternate,10,25677.4,24997.0,26329.8
+none,off,10,6382.4,6317.9,6448.1
+none,rebind,10,18712.0,17150.4,25939.4
+none,same,10,13573.5,12568.6,15624.0
