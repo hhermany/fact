@@ -20,6 +20,9 @@ import glob
 import json
 import os
 import statistics as st
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def runs(campaigns, exp, label):
@@ -62,10 +65,13 @@ def main():
     write(os.path.join(a.out, "E5lib_libs.csv"), ["tool", "execs", "runs", "N", "C", "I", "A", "M"],
           [[t, e, v["runs"], v["N"], v["C"], v["I"], v["A"], v["M"]] for (t, e), v in sorted(c.items())])
 
-    # E5reuse
+    # E5reuse: rescored from the raw events with the current score_bytes.score() (the
+    # score_bytes.json written during each run keyed connections by source port only, so a
+    # port reused by a later connection merged two connections; campaigns stay unchanged)
+    import score_bytes
     c = collections.defaultdict(collections.Counter)
     for p, rd in runs(a.campaigns, "E5reuse", a.label):
-        r = json.load(open(os.path.join(rd, "score_bytes.json")))
+        r = score_bytes.score(rd)
         k = c[(p["tool"], int(p["send_binding"]), int(p["execs"]))]
         k["runs"] += 1
         k["requests"] += r["requests"]

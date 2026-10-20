@@ -64,14 +64,25 @@ def score(rdir):
     op_exec = plan["op_map"]
     ports = set(plan["reuse_ports"])
 
-    # reference ranges per connection (client source port): client->server and server->client
+    # reference ranges per connection: client->server and server->client. A connection is
+    # (client source port, epoch): the kernel may give a closed connection's source port to a
+    # later one, so the k-th connection seen with a port on each side is matched with the k-th
+    # on the other. At the destination a connection's first request starts at byte 0; in the
+    # collector a new connection on a port is a new (socket, connect) pair.
     ref_tx, ref_rx = defaultdict(list), defaultdict(list)
     conn_execs = defaultdict(set)
+    srv_epoch = Counter()
     for r in reqs:
+        p = r["peer_port"]
+        if r["req"][0] == 0:
+            srv_epoch[p] += 1
+        key = (p, srv_epoch[p])
         e = op_exec.get(r["path"].strip("/"))
-        ref_tx[r["peer_port"]].append((r["req"][0], r["req"][1], e))
-        ref_rx[r["peer_port"]].append((r["resp"][0], r["resp"][1], e))
-        conn_execs[r["peer_port"]].add(e)
+        ref_tx[key].append((r["req"][0], r["req"][1], e))
+        ref_rx[key].append((r["resp"][0], r["resp"][1], e))
+        conn_execs[key].add(e)
+    conn_seq = {}                     # sk -> sequence of its last connect (sockets are reused)
+    cli_epoch, cli_last = Counter(), {}
 
     opener = {}                       # sk -> identity resolved at connect
     off_tx, off_rx = Counter(), Counter()
@@ -83,8 +94,14 @@ def score(rdir):
             w.parent[ev["ctid"]] = ev["ptid"]
         elif kind == "connect" and ev.get("dport") in ports:
             opener[ev["sk"]] = resolve_fused(strip_reference_fields(ev), w)
+            conn_seq[ev["sk"]] = conn_seq.get(ev["sk"], 0) + 1
         elif kind in ("send", "recv") and ev.get("dport") in ports:
-            sk, sport, n = ev["sk"], ev["sport"], int(ev["bytes"])
+            sk, p, n = ev["sk"], ev["sport"], int(ev["bytes"])
+            ident = (sk, conn_seq.get(sk, 0))
+            if cli_last.get(p) != ident:
+                cli_epoch[p] += 1
+                cli_last[p] = ident
+            sport = (p, cli_epoch[p])
             if kind == "send":
                 lo = off_tx[sport]
                 off_tx[sport] += n
