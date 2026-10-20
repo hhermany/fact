@@ -31,6 +31,11 @@ static int on_event(void *ctx, void *data, size_t sz)
 	inet_ntop(AF_INET, &d->daddr, ip, sizeof(ip));
 	char id[ID_LEN + 1];
 	memcpy(id, d->id, ID_LEN); id[ID_LEN] = 0;
+	if (d->pad[2]) {   /* marker ignored: emitted by a process outside the trusted runtime */
+		printf("{\"ev\":\"marker_ignored\",\"ts\":%llu,\"pid\":%u,\"tid\":%u,\"marker\":\"%s\"}\n",
+		       d->ts, d->pid, d->tid, id);
+		return 0;
+	}
 	printf("{\"ev\":\"decision\",\"ts\":%llu,\"pid\":%u,\"tid\":%u,\"daddr\":\"%s\",\"dport\":%u,"
 	       "\"verdict\":\"%s\",\"has_ctx\":%u,\"ctx\":\"%s\",\"conflict\":%u,\"from_lineage\":%u}\n",
 	       d->ts, d->pid, d->tid, ip, d->dport, d->verdict ? "allow" : "deny", d->has_ctx, id,
@@ -53,8 +58,8 @@ int main(int argc, char **argv)
 	if (bpf_object__load(obj)) { fprintf(stderr, "load failed\n"); return 1; }
 
 	mkdir("/sys/fs/bpf/fact", 0700);
-	const char *pins[] = {"ctx_map", "allow_map", "cfg_map", "dom_map", "owner_map"};
-	for (int i = 0; i < 5; i++) {
+	const char *pins[] = {"ctx_map", "allow_map", "cfg_map", "dom_map", "owner_map", "trust_map"};
+	for (int i = 0; i < 6; i++) {
 		char p[128];
 		snprintf(p, sizeof(p), "/sys/fs/bpf/fact/%s", pins[i]);
 		unlink(p);
@@ -92,7 +97,7 @@ int main(int argc, char **argv)
 	ring_buffer__poll(rb, 0);
 	ring_buffer__free(rb);
 	for (int i = 0; i < nl; i++) bpf_link__destroy(links[i]);
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 6; i++) {
 		char p[128];
 		snprintf(p, sizeof(p), "/sys/fs/bpf/fact/%s", pins[i]);
 		unlink(p);

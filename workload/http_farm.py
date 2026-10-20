@@ -72,6 +72,79 @@ class HttpListener(threading.Thread):
                     threading.Thread(target=_serve, args=(c,), daemon=True).start()
 
 
+def _serve_keepalive(conn, port, log, lock):
+    """Serves several requests on one connection (HTTP/1.1 keep-alive) and logs,
+    for each request, the byte ranges it occupied on the connection in each
+    direction. The client's source port identifies the connection; the request
+    path carries the operation id (the reference)."""
+    peer = conn.getpeername()[1]
+    rx = tx = 0
+    buf = b""
+    try:
+        conn.settimeout(30)
+        while True:
+            while b"\r\n\r\n" not in buf:
+                chunk = conn.recv(65536)
+                if not chunk:
+                    return
+                buf += chunk
+            head, buf = buf.split(b"\r\n\r\n", 1)
+            req_len = len(head) + 4
+            length = 0
+            for line in head.split(b"\r\n")[1:]:
+                k, _, v = line.partition(b":")
+                if k.strip().lower() == b"content-length":
+                    length = int(v.strip())
+            while len(buf) < length:
+                chunk = conn.recv(65536)
+                if not chunk:
+                    return
+                buf += chunk
+            buf = buf[length:]
+            req_len += length
+            path = head.split(b"\r\n", 1)[0].split(b" ")[1].decode()
+            resp = (b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n"
+                    b"Connection: keep-alive\r\n\r\nok")
+            with lock:   # logged before answering, so the log is complete when the client sees the response
+                log.append({"port": port, "peer_port": peer, "path": path,
+                            "req": [rx, rx + req_len], "resp": [tx, tx + len(resp)]})
+            conn.sendall(resp)
+            rx += req_len
+            tx += len(resp)
+    except (OSError, ValueError, IndexError):
+        pass
+    finally:
+        conn.close()
+
+
+class KeepAliveHttpListener(HttpListener):
+    """Like HttpListener, but keeps connections open across requests (so a client
+    pool can reuse them) and records every request's byte ranges (E5reuse)."""
+
+    def __init__(self, ports, addr="127.0.0.1"):
+        super().__init__(ports, addr)
+        self.log, self.lock = [], threading.Lock()
+
+    def run(self):
+        while not self.stop:
+            for key, _ in self.sel.select(timeout=0.2):
+                while True:
+                    try:
+                        c, _ = key.fileobj.accept()
+                    except (BlockingIOError, ConnectionAbortedError):
+                        break
+                    c.setblocking(True)
+                    port = key.fileobj.getsockname()[1]
+                    threading.Thread(target=_serve_keepalive, args=(c, port, self.log, self.lock),
+                                     daemon=True).start()
+
+    def dump(self, path):
+        import json
+        with self.lock, open(path, "w") as f:
+            for r in self.log:
+                f.write(json.dumps(r) + "\n")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--addr", default="0.0.0.0")

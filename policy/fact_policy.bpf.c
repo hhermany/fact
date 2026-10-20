@@ -20,6 +20,12 @@
  * Only ports in the policed range [cfg.lo, cfg.hi] are evaluated; the others
  * pass (so as not to affect SSH, DNS, etc. on the test host).
  * Every decision is logged to a ring buffer (auditing and evaluation).
+ * Trusted runtime (optional, E6spoof): when user space sets the key TRUST_ON in
+ * trust_map, markers are accepted only from the thread groups (processes)
+ * registered in trust_map, i.e., the agent runtime itself. A marker emitted by
+ * any other process (e.g., a tool's child process) is ignored and logged, so the
+ * child keeps the identity it inherited at fork. Without TRUST_ON, every marker
+ * is accepted, as before.
  */
 #include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
@@ -49,6 +55,9 @@ struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
 struct { __uint(type, BPF_MAP_TYPE_ARRAY); __uint(max_entries, 1);
 	 __type(key, __u32); __type(value, struct cfg); } cfg_map SEC(".maps");
 struct { __uint(type, BPF_MAP_TYPE_RINGBUF); __uint(max_entries, 1 << 22); } events SEC(".maps");
+struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 1024);
+	 __type(key, __u32); __type(value, __u8); } trust_map SEC(".maps");      /* tgid -> 1; TRUST_ON -> 1 */
+#define TRUST_ON 0xffffffffu
 
 /* syscalls:sys_enter_openat (format: __syscall_nr at 8, dfd at 16, filename at 24) */
 struct openat_args { __u64 common; int nr; int pad; long dfd; const char *filename; long flags; long mode; };
@@ -66,7 +75,21 @@ int on_openat(struct openat_args *a)
 	for (int i = 0; i < 14; i++)
 		if (buf[i] != BEGIN[i])
 			return 0;
-	__u32 tid = (__u32)bpf_get_current_pid_tgid();
+	__u64 pt = bpf_get_current_pid_tgid();
+	__u32 tid = (__u32)pt;
+	__u32 on = TRUST_ON, tgid = pt >> 32;
+	if (bpf_map_lookup_elem(&trust_map, &on) && !bpf_map_lookup_elem(&trust_map, &tgid)) {
+		struct decision *d = bpf_ringbuf_reserve(&events, sizeof(*d), 0);
+		if (d) {   /* marker from an untrusted process: ignored, logged */
+			d->ts = bpf_ktime_get_ns(); d->pid = tgid; d->tid = tid; d->dport = 0; d->daddr = 0;
+			d->verdict = 0; d->has_ctx = 0;
+			__builtin_memset(d->pad, 0, sizeof(d->pad));
+			d->pad[2] = 1;
+			bpf_probe_read_kernel_str(d->id, ID_LEN, buf + 14);   /* "begin/<id>" or "end" */
+			bpf_ringbuf_submit(d, 0);
+		}
+		return 0;
+	}
 	int is_begin = 1;
 	for (int i = 14; i < 20; i++)
 		if (buf[i] != BEGIN[i]) { is_begin = 0; break; }

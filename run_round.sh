@@ -92,6 +92,9 @@ if [ -n "$PPOL" ]; then
 fi
 
 "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score.py" "$OUT" | tee "$OUT/summary.txt"
+if [ -f "$OUT/requests.jsonl" ]; then   # E5reuse: per-request reference on reused connections
+  "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_bytes.py" "$OUT" | tee "$OUT/summary_bytes.txt"
+fi
 if [ "${COST:-0}" = 1 ]; then
   "${FACT_PYTHON:-python3}" -I "$HERE/scripts/cost_probe.py" factd "$OUT"
 fi

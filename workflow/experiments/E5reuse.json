@@ -1,0 +1,11 @@
+{
+  "experiment": "E5reuse",
+  "description": "Connection reuse: the shared MCP server's tools send HTTP/1.1 requests to two shared destinations through a client whose keep-alive pool is shared by every session (httpx, aiohttp, requests), or through a new client per call (httpx_fresh, control). The destination logs each request's byte ranges and operation id (independent per-request reference). Byte attribution is scored with the identity of the connection's opener and with the identity at each send (fact_rt send binding on or off). Collector fact-bytes.bt.",
+  "factors": {
+    "tool": ["httpx_fresh", "httpx_shared", "aiohttp_shared", "requests_shared"],
+    "send_binding": [0, 1],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E5reuse", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py",
+            "collector": "fact-bytes.bt"}
+}

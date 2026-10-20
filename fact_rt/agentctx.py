@@ -23,6 +23,15 @@ has not changed: a thread's kernel context only changes through markers emitted
 by that thread (or through inheritance at creation, when the new thread's cache
 is still empty).
 
+Optional send binding (install(sends=True)): the identity is also handed to the
+kernel right before each send on an AF_INET/AF_INET6 socket (send, sendall,
+sendto, sendmsg), so that the bytes of a connection reused by several tasks
+(e.g., an HTTP client's connection pool shared by sessions) carry the identity
+of the task that sends them, not of the task that opened the connection. With
+asyncio, a transport's write() sends immediately from the calling task, and a
+deferred write runs in the context captured when the writer was registered.
+It is off by default; the experiments before E5reuse ran without it.
+
 Usage:
     from fact_rt import agentctx
     agentctx.install()
@@ -93,9 +102,12 @@ def bind(exec_id):
         current.reset(tok)
 
 
-def install():
-    """Installs the connect and process-creation hooks (idempotent)."""
+def install(sends=False):
+    """Installs the connect and process-creation hooks (idempotent); with
+    sends=True, also the send hooks (see the module docstring)."""
     global _installed
+    if sends and not _orig.get("send"):
+        _install_sends()
     if _installed:
         return
     _orig["connect"] = socket.socket.connect
@@ -121,3 +133,17 @@ def install():
     subprocess.Popen._execute_child = execute_child
     os.register_at_fork(before=sync_kernel)
     _installed = True
+
+
+def _install_sends():
+    for name in ("send", "sendall", "sendto", "sendmsg"):
+        orig = getattr(socket.socket, name)
+        _orig[name] = orig
+
+        def hook(self, *args, _orig_fn=orig, **kwargs):
+            if self.family in (socket.AF_INET, socket.AF_INET6):
+                sync_kernel()
+            return _orig_fn(self, *args, **kwargs)
+
+        hook.__name__ = name
+        setattr(socket.socket, name, hook)

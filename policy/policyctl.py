@@ -55,6 +55,16 @@ def register_root(pid, exec_id):
     subprocess.run(["bpftool", "map", "update", "pinned", f"{base}/owner_map", "key", *k, "value", *val], check=True)
 
 
+def trust(pid):
+    """Accepts markers only from the given process (the agent runtime) and from
+    other processes registered the same way; markers from any other process are
+    ignored by the policy (trusted-runtime mode, see fact_policy.bpf.c)."""
+    base = PIN.rsplit("/", 1)[0]
+    for k in (int(pid), 0xFFFFFFFF):   # the runtime first, then the switch
+        subprocess.run(["bpftool", "map", "update", "pinned", f"{base}/trust_map",
+                        "key", *[str(x) for x in k.to_bytes(4, "little")], "value", "1"], check=True)
+
+
 def load(path):
     return load_dict(json.load(open(path)))
 

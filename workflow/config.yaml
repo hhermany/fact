@@ -144,5 +144,17 @@ experiments:
     pilot_n: 1
     n: 1   # per boot (2 boots): 16 runs per boot, each recording replayed once
 
+  # connection reuse: byte attribution with a shared keep-alive pool, with and without send binding
+  E5reuse:
+    spec: workflow/experiments/E5reuse.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): 100+ requests per run
+
+  # misbehaving tool claiming another identity, with and without the trusted-runtime filter
+  E6spoof:
+    spec: workflow/experiments/E6spoof.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots), as E6: K=2 has 50 decisions per run -> 300 >= 299
+
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05

@@ -28,14 +28,22 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from workload import Listener, cg_create, cg_move  # noqa: E402
-from http_farm import HttpListener  # noqa: E402
+from http_farm import HttpListener, KeepAliveHttpListener  # noqa: E402
 from fact_rt.mcp import call_tool_with_exec  # noqa: E402
 
 TOOLS = {"sync": "sync_get", "thread": "thread_get", "subproc": "subproc_get", "async": "async_get"}
 # E5lib: tools whose request is made by third-party client code (workload/mcp_lib_server.py)
 LIB_TOOLS = {"httpx": "httpx_get", "aiohttp": "aiohttp_get", "requests": "requests_get", "urllib": "urllib_get",
              "fetch": "fetch", "curl": "curl"}
+# E5reuse: requests to a few shared destinations, with the operation id in the URL path;
+# the destination logs each request's byte ranges (the reference, workload/http_farm.py)
+REUSE_TOOLS = {"httpx_fresh": "httpx_fresh", "httpx_shared": "httpx_shared", "aiohttp_shared": "aiohttp_shared",
+               "requests_shared": "requests_shared"}
+LIB_TOOLS.update(REUSE_TOOLS)
 TOOLS.update(LIB_TOOLS)
+# E6spoof: the tool's child process claims another execution's identity (mcp_e4_server.py)
+TOOLS["spoof"] = "spoof_get"
+REUSE_PORTS = 2      # shared destination ports in E5reuse
 
 
 def wait_port(port, timeout=20.0):
@@ -61,6 +69,10 @@ async def session(url, tool, exec_id, ops, log, binding):
             for op in ops:
                 t0 = time.time_ns()
                 args = {"exec_id": exec_id, "port": op["dport"]}
+                if tool in REUSE_TOOLS:
+                    args["op"] = op["op_id"]
+                if "claim" in op:
+                    args["claim"] = op["claim"]
                 label = op.get("label", exec_id)
                 if binding == "auto":   # identity in _meta; the tool does not use it
                     res = await call_tool_with_exec(s, TOOLS[tool], args, label)
@@ -97,16 +109,26 @@ def main():
     ap.add_argument("--wrong-label", type=float, default=0.0)
     ap.add_argument("--jitter", type=float, default=0.0)
     ap.add_argument("--threads", type=int, default=0)
+    ap.add_argument("--trust", type=int, default=0,
+                    help="1: the policy accepts markers only from the MCP server process (E6spoof)")
+    ap.add_argument("--send-binding", type=int, default=0,
+                    help="1: fact_rt also hands the identity to the kernel before each send (E5reuse)")
     a = ap.parse_args()
     random.seed(a.seed)
     os.makedirs(a.out, exist_ok=True)
 
     execs = ["A", "B"] if a.execs == 2 else [f"E{i:02d}" for i in range(a.execs)]
-    ports = list(range(a.base_port, a.base_port + a.ops * len(execs)))
-    random.shuffle(ports)
-    it = iter(ports)
-    ops_by_exec = {e: [{"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": next(it)}
-                       for i in range(a.ops)] for e in execs}
+    reuse = a.tool in REUSE_TOOLS
+    if reuse:   # a few shared destinations: the port no longer identifies the operation
+        ports = list(range(a.base_port, a.base_port + REUSE_PORTS))
+        ops_by_exec = {e: [{"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": ports[i % REUSE_PORTS]}
+                           for i in range(a.ops)] for e in execs}
+    else:
+        ports = list(range(a.base_port, a.base_port + a.ops * len(execs)))
+        random.shuffle(ports)
+        it = iter(ports)
+        ops_by_exec = {e: [{"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": next(it)}
+                           for i in range(a.ops)] for e in execs}
     # binding faults (as in E1): exactly round(p * ops) calls per execution carry
     # another execution's identity in _meta; random positions
     n_wrong = round(a.wrong_label * a.ops)
@@ -127,7 +149,12 @@ def main():
             "ops_per_exec": a.ops, "execs": len(execs), "exec_ids": execs, "wrong_label": a.wrong_label,
             "wrong_per_exec": n_wrong,
             "listen_addr": a.dest_host, "mcp_version": version("mcp"),
-            "dport_map": {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
+            "dport_map": {} if reuse else {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
+    if lib:
+        plan["send_binding"] = a.send_binding
+    if reuse:   # reference per request: operation id (URL path) -> execution
+        plan["op_map"] = {o["op_id"]: o["exec_id"] for e in execs for o in ops_by_exec[e]}
+        plan["reuse_ports"] = ports
     if a.policy:
         # alternating classes: P (permissive: every planned destination) and R (restricted:
         # a random half of its own destinations). A wrong label R->P wrongly allows;
@@ -144,6 +171,17 @@ def main():
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "policy"))
         import policyctl
         policyctl.load_dict(plan["policy"]["allow"])
+    if a.tool == "spoof":
+        # restricted executions' calls claim the identity of the first permissive one;
+        # permissive executions' calls claim their own (a harmless re-assertion)
+        if not a.policy or a.binding_mode != "auto":
+            sys.exit("spoof requires --policy 1 and --binding-mode auto")
+        perm = next(e for e in execs if plan["policy"]["classes"][e] == "P")
+        for e in execs:
+            for o in ops_by_exec[e]:
+                o["claim"] = e if plan["policy"]["classes"][e] == "P" else perm
+        plan["spoof"] = {"claimed_by_restricted": perm, "trust": a.trust}
+        json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
 
     remote = a.dest_host != "127.0.0.1"
     if remote:   # services on the other machine: check that the planned range answers before measuring
@@ -159,15 +197,20 @@ def main():
                 s.close()
         listener = None
     else:
-        listener = HttpListener(ports) if lib else Listener(ports)
+        listener = KeepAliveHttpListener(ports) if reuse else HttpListener(ports) if lib else Listener(ports)
         listener.start()
     cg_path, cg_id = cg_create("E4-server")
     here = os.path.dirname(os.path.abspath(__file__))
     srv = subprocess.Popen([sys.executable, "-I", os.path.join(here, "mcp_lib_server.py" if lib else "mcp_e4_server.py"),
-                            "--port", str(a.server_port), "--binding", a.binding_mode],
+                            "--port", str(a.server_port), "--binding", a.binding_mode]
+                           + (["--send-binding"] if lib and a.send_binding else []),
                            env=dict(os.environ, FACT_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)
     cg_move(cg_path, srv.pid)
+    if a.trust:   # trusted-runtime mode: only the MCP server process may emit markers
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "policy"))
+        import policyctl
+        policyctl.trust(srv.pid)
     json.dump({"roots": {str(srv.pid): execs}, "cgroups": {str(cg_id): execs}},
               open(os.path.join(a.out, "registry.json"), "w"), indent=1)
     try:
@@ -183,6 +226,8 @@ def main():
             srv.kill()
         if listener:
             listener.stop = True
+            if reuse:
+                listener.dump(os.path.join(a.out, "requests.jsonl"))
     allv = [x for l in lats for x in l]
     json.dump({"tool": a.tool, "calls": len(allv), "tool_ms_p50": st.median(allv),
                "tool_ms_mean": st.mean(allv), "tool_ms_p90": sorted(allv)[int(0.9 * (len(allv) - 1))]},

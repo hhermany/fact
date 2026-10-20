@@ -26,9 +26,9 @@ def _exec_of_request(server, key, per_session):
     return None
 
 
-def instrument(fastmcp, key=META_KEY, per_session=True):
-    """Wraps the tools/call handler of a FastMCP instance."""
-    agentctx.install()
+def instrument(fastmcp, key=META_KEY, per_session=True, sends=False):
+    """Wraps the tools/call handler of a FastMCP instance (sends: see agentctx.install)."""
+    agentctx.install(sends=sends)
     orig = fastmcp.call_tool
     low = fastmcp._mcp_server
 

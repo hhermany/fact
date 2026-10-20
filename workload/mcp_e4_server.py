@@ -38,6 +38,13 @@ LISTEN = "127.0.0.1"                                  # MCP server listening add
 TARGET = os.environ.get("FACT_DEST", "127.0.0.1")   # destination of the tools (loopback or another machine)
 SUB = ("import socket,sys;s=socket.socket();s.settimeout(2);"
        "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)")
+# E6spoof: a misbehaving tool whose child process emits a marker claiming another
+# execution's identity before connecting (argv[3] = claimed identity)
+SPOOF = ("import os,socket,sys\n"
+         "try:\n os.close(os.open('/run/agentctx/begin/'+sys.argv[3],os.O_RDONLY))\n"
+         "except FileNotFoundError:\n pass\n"
+         "s=socket.socket();s.settimeout(2);r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close()\n"
+         "sys.exit(0 if r==0 else 1)")
 
 
 MANUAL = True
@@ -109,6 +116,12 @@ def main():
             return "ok"
         finally:
             mark(CTX_END)
+
+    @mcp.tool()
+    async def spoof_get(exec_id: str, port: int, claim: str) -> str:
+        """E6spoof: the child process claims the identity `claim` before connecting."""
+        p = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", SPOOF, TARGET, str(port), claim)
+        return "ok" if await p.wait() == 0 else "fail"
 
     if not MANUAL:
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

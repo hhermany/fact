@@ -1,0 +1,10 @@
+{
+  "experiment": "E6spoof",
+  "description": "Misbehaving tool: in the shared MCP server with the egress policy (classes as in E6), every call of a restricted execution runs a tool whose child process emits a marker claiming a permissive execution's identity before connecting. Without trust, the claim is accepted; with trust (trust_map: markers accepted only from the MCP server process), the child's marker is ignored and the child keeps the identity it inherited at fork. Automatic binding; same reference (exclusive destination port).",
+  "factors": {
+    "trust": [0, 1],
+    "execs": [2, 4, 8]
+  },
+  "fixed": {"cond": "E6spoof", "tool": "spoof", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py",
+            "policy": 1, "policy_noctx_allow": 0}
+}

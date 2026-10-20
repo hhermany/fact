@@ -1,0 +1,128 @@
+#!/usr/bin/env bpftrace
+/*
+ * fact-bytes.bt: fact.bt plus per-send and per-receive events (bytes), for
+ * attributing traffic on reused connections and for byte accounting (E5reuse).
+ * Everything in fact.bt is unchanged; the probes below are added:
+ *   - tcp_sendmsg: bytes sent by a thread, with the thread's context at the
+ *     send (the runtime hands it over right before each send when send binding
+ *     is enabled in fact_rt) and the socket; the socket remembers the context of
+ *     its last sender (@skctx);
+ *   - tcp_cleanup_rbuf: bytes delivered to the application, with the context of
+ *     the socket's last sender (request/response protocols: a response belongs
+ *     to the request sent before it) and the reading thread's context;
+ *   - tcp_close: forgets the socket.
+ * Only sockets to the measured destinations (ports 61000-64998) are reported, to
+ * bound the event volume; the port is not passed to the resolver.
+ *
+ * Emits one JSON line per event on stdout. Requires root, a kernel with BTF, and
+ * bpftrace >= 0.16. IPv4 only in this version.
+ *
+ * Signals collected per network event:
+ *   - pid/tid and comm           -> lineage (the resolver rebuilds the tree from fork/exit)
+ *   - cgroup (cgroup v2 id)      -> cgroup resolver
+ *   - ctx (string or "")         -> application context binding (openat marker)
+ *   - sk (socket pointer)        -> join connect <-> state change
+ *   - daddr/dport                -> ONLY for the independent reference; the
+ *                                   resolver may not read these fields.
+ *
+ * Context binding: the runtime calls openat() on
+ *   /run/agentctx/begin/<exec_id>   (start of the operation)
+ *   /run/agentctx/end               (end of the operation)
+ * The paths need not exist (ENOENT is expected). The context is kept per tid
+ * and inherited by threads and child processes at sched_process_fork.
+ */
+
+BEGIN
+{
+	printf("{\"ev\":\"ready\",\"ts\":%llu}\n", nsecs);
+}
+
+tracepoint:syscalls:sys_enter_openat
+/ strncmp(str(args->filename), "/run/agentctx/", 14) == 0 /
+{
+	if (strncmp(str(args->filename), "/run/agentctx/begin/", 20) == 0) {
+		@ctx[tid] = str(args->filename);
+		printf("{\"ev\":\"ctx_begin\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
+		       nsecs, pid, tid, cgroup, str(args->filename));
+	} else {
+		printf("{\"ev\":\"ctx_end\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
+		       nsecs, pid, tid, cgroup, @ctx[tid]);
+		delete(@ctx[tid]);
+	}
+}
+
+tracepoint:sched:sched_process_fork
+{
+	/* parent_pid/child_pid are task ids (tid); covers threads and processes. */
+	@ctx[args->child_pid] = @ctx[args->parent_pid];
+	printf("{\"ev\":\"fork\",\"ts\":%llu,\"ptid\":%d,\"ctid\":%d,\"ppid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
+	       nsecs, args->parent_pid, args->child_pid, pid, cgroup, @ctx[args->child_pid]);
+}
+
+tracepoint:sched:sched_process_exec
+{
+	printf("{\"ev\":\"exec\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"comm\":\"%s\",\"ctx\":\"%s\"}\n",
+	       nsecs, pid, tid, cgroup, comm, @ctx[tid]);
+}
+
+tracepoint:sched:sched_process_exit
+{
+	printf("{\"ev\":\"exit\",\"ts\":%llu,\"pid\":%d,\"tid\":%d}\n", nsecs, pid, tid);
+	delete(@ctx[tid]);
+}
+
+kprobe:tcp_connect
+{
+	$sk = (struct sock *)arg0;
+	if ($sk->__sk_common.skc_family == 2) {   /* AF_INET */
+		$dp = $sk->__sk_common.skc_dport;
+		$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
+		printf("{\"ev\":\"connect\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"comm\":\"%s\",\"sk\":%llu,\"ctx\":\"%s\",\"daddr\":\"%s\",\"dport\":%d}\n",
+		       nsecs, pid, tid, cgroup, comm, (uint64)$sk, @ctx[tid],
+		       ntop(2, $sk->__sk_common.skc_daddr), $dport);
+	}
+}
+
+tracepoint:sock:inet_sock_set_state
+/ args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
+{
+	/* Leaving SYN_SENT: 1 = ESTABLISHED (success), 7 = CLOSE (failure).
+	 * May run in softirq: pid/tid here are NOT used for attribution. */
+	printf("{\"ev\":\"tcp_state\",\"ts\":%llu,\"sk\":%llu,\"old\":%d,\"new\":%d}\n",
+	       nsecs, (uint64)args->skaddr, args->oldstate, args->newstate);
+}
+
+kprobe:tcp_sendmsg
+{
+	$sk = (struct sock *)arg0;
+	$dp = $sk->__sk_common.skc_dport;
+	$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
+	if ($sk->__sk_common.skc_family == 2 && $dport >= 61000 && $dport <= 64998) {
+		@skctx[$sk] = @ctx[tid];
+		printf("{\"ev\":\"send\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"sk\":%llu,\"ctx\":\"%s\",\"bytes\":%llu,\"sport\":%d,\"dport\":%d}\n",
+		       nsecs, pid, tid, cgroup, (uint64)$sk, @ctx[tid], (uint64)arg2, $sk->__sk_common.skc_num, $dport);
+	}
+}
+
+kprobe:tcp_cleanup_rbuf
+/ (int32)arg1 > 0 /
+{
+	$sk = (struct sock *)arg0;
+	$dp = $sk->__sk_common.skc_dport;
+	$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
+	if ($sk->__sk_common.skc_family == 2 && $dport >= 61000 && $dport <= 64998) {
+		printf("{\"ev\":\"recv\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"sk\":%llu,\"ctx\":\"%s\",\"sk_ctx\":\"%s\",\"bytes\":%d,\"sport\":%d,\"dport\":%d}\n",
+		       nsecs, pid, tid, cgroup, (uint64)$sk, @ctx[tid], @skctx[$sk], (int32)arg1, $sk->__sk_common.skc_num, $dport);
+	}
+}
+
+kprobe:tcp_close
+{
+	delete(@skctx[(struct sock *)arg0]);
+}
+
+END
+{
+	clear(@ctx);
+	clear(@skctx);
+}
