@@ -92,6 +92,8 @@ kprobe:udp_sendmsg
 {
 	$sk = (struct sock *)arg0;
 	$msg = (struct msghdr *)arg1;
+	$da = (uint32)0;
+	$dp = (uint16)0;
 	if ($sk->__sk_common.skc_family == 2) {   /* AF_INET */
 		if ($msg->msg_name != 0) {
 			$sin = (struct sockaddr_in *)$msg->msg_name;

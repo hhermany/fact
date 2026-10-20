@@ -4,11 +4,6 @@
 /home/ikki/projetos/agentnet/collector/fact.bt:59:2-19: WARNING: Return value discarded.
     delete(@ctx[tid]);
     ~~~~~~~~~~~~~~~~~
-{"ev":"ready","ts":605623649393}
-{"ev":"fork","ts":605813575768,"ptid":699,"ctid":2049,"ppid":699,"cgroup":1688,"ctx":""}
-{"ev":"fork","ts":605813630335,"ptid":699,"ctid":2050,"ppid":699,"cgroup":1688,"ctx":""}
-{"ev":"exit","ts":605814055890,"pid":699,"tid":2050}
-{"ev":"exit","ts":605814356086,"pid":699,"tid":2049}
-{"ev":"fork","ts":607594061442,"ptid":2,"ctid":2051,"ppid":2,"cgroup":1,"ctx":""}
+{"ev":"ready","ts":44817650126}
 
 
