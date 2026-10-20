@@ -72,28 +72,43 @@ def resolve_fused(x: ResolverInput, w: World):
     """Fusion with explicit ambiguity.
 
     1. Structural signals: K = intersection of the NON-empty lineage and cgroup
-       sets. If both are non-empty and disjoint -> conflict -> union (ambiguous).
-    2. Context c (if any):
+       sets. If both are non-empty and disjoint, the structure contradicts itself
+       (structural conflict): K = their union, and the result is K | {c}, i.e. the
+       context never settles a structural conflict (it stays ambiguous).
+    2. Otherwise, context c (if any):
          - K empty (no structural information)      -> {c}
          - c in K                                   -> {c}   (context refines K)
          - c not in K                               -> K | {c} (conflict: ambiguous)
     3. No context: K (may be a single origin, ambiguous, or empty).
-    It never chooses among candidates that no information separates.
+    It never chooses among candidates that no information separates. Before
+    E9all (v28) a structural conflict with c in the union returned {c}; no run of
+    any campaign contained a structural conflict (analysis/check_conflicts.py),
+    so every reported outcome is the same under both rules.
     """
     sets = [s for s in (resolve_lineage(x, w), resolve_cgroup(x, w)) if s]
+    conflict = False
     if not sets:
         k = frozenset()
     elif len(sets) == 1:
         k = sets[0]
     else:
         inter = sets[0] & sets[1]
+        conflict = not inter
         k = inter if inter else sets[0] | sets[1]
     c = resolve_context(x, w)
     if not c:
         return k
+    if conflict:
+        return k | c
     if not k or c <= k:
         return c
     return k | c
+
+
+def structural_conflict(x: ResolverInput, w: World):
+    """True when lineage and cgroup are both informative and disjoint."""
+    a, b = resolve_lineage(x, w), resolve_cgroup(x, w)
+    return bool(a) and bool(b) and not (a & b)
 
 
 RESOLVERS = {

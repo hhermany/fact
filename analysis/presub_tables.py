@@ -64,12 +64,12 @@ def fused_table(a, exp, keyf, cols, out_name):
         return
     pol = any(v["pol_N"] for v in c.values())
     head = cols + ["runs", "N", "C", "I", "A", "M", "I_pct"] + (
-        ["decisions", "FA", "FD", "policy_errors"] if pol else [])
+        ["decisions", "TA", "TD", "FA", "FD", "policy_errors"] if pol else [])
     rows = []
     for key, v in sorted(c.items()):
         row = list(key) + [v["runs"], v["N"], v["C"], v["I"], v["A"], v["M"], pct(v["I"], v["N"])]
         if pol:
-            row += [v["pol_N"], v["pol_FA"], v["pol_FD"], v["pol_FA"] + v["pol_FD"]]
+            row += [v["pol_N"], v["pol_TA"], v["pol_TD"], v["pol_FA"], v["pol_FD"], v["pol_FA"] + v["pol_FD"]]
         rows.append(row)
     write(os.path.join(a.out, out_name), head, rows)
 
