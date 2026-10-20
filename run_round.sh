@@ -75,13 +75,16 @@ fi
 FPID=""; TPID=""
 if [ "${IPFIX:-0}" = 1 ]; then
   [ -f "$OUT/registry.json" ] || echo '{"roots":{},"cgroups":{}}' > "$OUT/registry.json"
-  tshark -q -i lo -f "udp port 4739" -w "$OUT/ipfix.pcap" > "$OUT/tshark.log" 2>&1 &
+  # dumpcap may not write into the repository's directories: capture to /tmp, move afterwards
+  TPCAP="$(mktemp /tmp/fact-ipfix-XXXXXX.pcap)"; chmod 666 "$TPCAP"
+  tshark -q -i lo -f "udp port 4739" -w "$TPCAP" > "$OUT/tshark.log" 2>&1 &
   TPID=$!
   for i in $(seq 1 100); do
     grep -q "Capturing on" "$OUT/tshark.log" 2>/dev/null && break
     sleep 0.1
   done
-  grep -q "Capturing on" "$OUT/tshark.log" || { echo "tshark did not start"; cat "$OUT/tshark.log"; exit 1; }
+  sleep 0.5
+  grep -q "Capturing on" "$OUT/tshark.log" && kill -0 "$TPID" 2>/dev/null || { echo "tshark did not start"; cat "$OUT/tshark.log"; exit 1; }
   "${FACT_PYTHON:-python3}" -I "$HERE/factd/factd.py" --follow "$OUT/events.jsonl" --registry "$OUT/registry.json" \
       --ipfix 127.0.0.1:4739 --out "$OUT/factd_live.jsonl" 2> "$OUT/factd.err" &
   FPID=$!
@@ -104,6 +107,7 @@ kill -INT "$BPID"; wait "$BPID" || true
 if [ -n "$FPID" ]; then                # factd drains its buffer, exports the last interval, exits
   kill -TERM "$FPID"; wait "$FPID" || true
   sleep 1; kill -INT "$TPID"; wait "$TPID" || true
+  mv "$TPCAP" "$OUT/ipfix.pcap"
 fi
 if [ -n "$APID" ]; then
   "${FACT_PYTHON:-python3}" -I "$HERE/analysis/agentprov_bind.py" "$OUT" "$AGENTPROV" "$APID"
