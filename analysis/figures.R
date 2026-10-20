@@ -180,7 +180,7 @@ if (file.exists(bl_csv)) {
   bl <- bl |>
     mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "agentprov", "agentprov_srv", "fused"),
                          c("time window (emulated)", "latest scope (emulated)",
-                           "AgentProvenance (executed)", "AgentProvenance (server windows)", "FACT")),
+                           "AgentProvenance, client windows", "AgentProvenance, server windows", "FACT")),
            cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"))) |>
     select(cell, mech, I) |> complete(cell, mech)   # empty slot where a system was not run
   g4 <- ggplot(bl, aes(cell, I, fill = mech)) +
@@ -189,9 +189,9 @@ if (file.exists(bl_csv)) {
               vjust = -0.35, size = 1.8, family = fam) +
     scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
     scale_fill_manual(values = c(greys[1], greys[2], greys[3], "white", ours), drop = FALSE) +
-    guides(fill = guide_legend(nrow = 2)) +
+    guides(fill = guide_legend(nrow = 3)) +
     labs(x = NULL, y = "credited to the wrong execution") + theme_paper()
-  save_fig(g4, "fig_baselines", 2.2)
+  save_fig(g4, "fig_baselines", 2.4)
 } else message("baselines.csv not found: run `snakemake baselines` first")
 
 #+ session
