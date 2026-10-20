@@ -48,6 +48,7 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | Commercial models (E7c, E7o) and model-free replay (E7r) | `hermes-E7c-confirmatory-*`, `hermes-E7o-confirmatory-*`, `hermes-E7r-confirmatory-*` | `analysis/e7c_tokens.py`, `analysis/replay_compare.py`, `analysis/analysis.R` |
 | Live accounting (`factd`) | all confirmatory campaigns (`analysis/output/factd_equiv.json`) | `tests/test_factd_equiv.py` |
 | AgentProvenance in its own setting (E1ap) | `hermes-E1ap-confirmatory-*` | `analysis/agentprov_table.py --experiment E1ap` |
+| Integrated configuration, every option on (E9all) | `hermes-E9all-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Session identity (E6sess), failure boundary (E5native), unmodified fetch server (E5fetch), UDP flows (E5udp), IPFIX export (E8ipfix) | `hermes-E6sess-confirmatory-*`, `hermes-E5native-confirmatory-*`, `hermes-E5fetch-confirmatory-*`, `hermes-E5udp-confirmatory-*`, `hermes-E8ipfix-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Second runtime: Node.js MCP server (E5node) | `hermes-E5node-confirmatory-*` | `analysis/presub_tables.py` |
 | Third-party clients (E5lib), connection reuse and bytes (E5reuse), spoofed markers (E6spoof), CPU cost under agents (E7rc) | `hermes-E5lib-confirmatory-*`, `hermes-E5reuse-confirmatory-*`, `hermes-E6spoof-confirmatory-*`, `hermes-E7rc-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_bytes.py` |

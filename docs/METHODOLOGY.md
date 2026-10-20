@@ -68,6 +68,7 @@ Smoke and pilot numbers quoted in internal documents are always labeled as such.
 | E5udp | 5 | tool ∈ {connected UDP, dnspython} × binding ∈ {manual, automatic} × K ∈ {4,8} | UDP flows (DNS-format queries); collector `fact-udp.bt`; `fact_rt` datagram hooks |
 | E6sess | 6 | identity ∈ {meta, session} × tool ∈ {async, thread} × K ∈ {4,8} | clients of restricted executions claim a permissive identity in `_meta`; with `session` the server derives the identity from the session token |
 | E8ipfix | 8 | tool ∈ {async, httpx_shared} × K ∈ {4,8} | live `factd` exports per-execution records over IPFIX; tshark captures and Wireshark's dissector decodes them; compared with factd and the reference |
+| E9all | 9 | K ∈ {4,8} | integrated configuration: session identity, clearing, send binding, datagram hooks, trusted runtime, policy, live IPFIX, collector `fact-all.bt`; each call sends DNS over UDP, HTTP, and a subprocess connect |
 | E5reuse | 5 | client ∈ {httpx fresh (control), httpx shared, aiohttp shared, requests shared} × send binding ∈ {off, on} × K ∈ {4,8} | keep-alive pool shared by the sessions; collector `fact-bytes.bt`; per-request byte reference at the destination |
 | E6spoof | 5 | trusted-runtime mode ∈ {off, on} × K ∈ {2,4,8} | E6 classes; every call of a restricted execution runs a tool whose child claims a permissive identity |
 | E7rc | 4 | model (the 4 of E7c/E7o) × K ∈ {4,8} × recording | E7r replays with CPU accounting (`COST=1`: process CPU, `bpf_stats`, factd replay) |
@@ -108,7 +109,7 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
   - **E1ap:** 6 runs per cell (3 per boot), 400 connections per run, hence 2400 per cell; the 95% CI half-width of AgentProvenance's error rate is ≤ 2 points.
   - **E5lib:** 6 runs per cell, as E5 (K=4 gives 100 connections per run, 600 ≥ 299 per cell).
   - **E5node:** 6 runs per cell, same criterion as E5lib.
-  - **E5native, E5fetch, E5udp, E6sess, E8ipfix:** 6 runs per cell (3 per boot); each cell has at least 300 connections, flows, or decisions.
+  - **E5native, E5fetch, E5udp, E6sess, E8ipfix, E9all:** 6 runs per cell (3 per boot); each cell has at least 300 connections, flows, or decisions.
   - **E5reuse:** 6 runs per cell; the criterion is applied to bytes, with a per-request reference logged by the destination (byte ranges of each request and response on each connection). Connections are matched by (client source port, epoch), because the kernel can give a closed connection's port to a later one (the first scoring keyed by port only and merged such connections; the campaigns are rescored from the raw events by `analysis/presub_tables.py`).
   - **E6spoof:** 6 runs per cell, as E6 (K=2 gives 50 decisions per run).
   - **E7rc:** one replay of each recorded E7c/E7o run per boot (16 runs per boot); reported as medians and maxima.

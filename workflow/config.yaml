@@ -192,5 +192,11 @@ experiments:
     pilot_n: 1
     n: 3   # per boot (2 boots)
 
+  # integrated configuration: every option on at once
+  E9all:
+    spec: workflow/experiments/E9all.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=4 has 300 flows and 100 decisions per run
+
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05

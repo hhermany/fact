@@ -1,0 +1,10 @@
+{
+  "experiment": "E9all",
+  "description": "Integrated configuration: every option on at once in the shared MCP server. Identity derived from the MCP session (bearer token), clearing after each hooked call, send binding, datagram hooks, trusted-runtime mode, egress policy (classes as in E6), and live factd exporting IPFIX; collector fact-all.bt (bytes and UDP flows). Each tool call sends a DNS query with dnspython (UDP), an HTTP GET with httpx, and a subprocess connect, all to its exclusive port. Same reference (destination port -> execution) for every flow and decision.",
+  "factors": {
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E9all", "tool": "mixed", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py",
+            "identity": "session", "clear_after": 1, "send_binding": 1, "trust": 1,
+            "policy": 1, "policy_noctx_allow": 0, "ipfix": 1, "collector": "fact-all.bt"}
+}

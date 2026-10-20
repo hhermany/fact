@@ -55,6 +55,25 @@ TOOLS["fetch_server"] = "fetch"
 # E5udp: UDP flows (DNS-format queries) over a connected socket and with dnspython
 UDP_TOOLS = {"udp": "udp_get", "dns": "dns_get"}
 TOOLS.update(UDP_TOOLS)
+# E9all: integrated configuration (DNS over UDP, HTTP, and a subprocess per call)
+TOOLS["mixed"] = "mixed_get"
+
+
+class _Both:
+    """HTTP and DNS-format UDP responders on the same planned ports (E9all)."""
+
+    def __init__(self, ports):
+        self.parts = [HttpListener(ports), UdpDnsListener(ports)]
+
+    def start(self):
+        for x in self.parts:
+            x.start()
+
+    def __setattr__(self, k, v):
+        if k == "stop":
+            for x in self.parts:
+                x.stop = v
+        object.__setattr__(self, k, v)
 REUSE_PORTS = 2      # shared destination ports in E5reuse
 
 
@@ -181,7 +200,7 @@ def main():
             "wrong_per_exec": n_wrong,
             "listen_addr": a.dest_host, "mcp_version": version("mcp"), "runtime": "node" if node else "python",
             "dport_map": {} if reuse else {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
-    if lib:
+    if lib or a.tool == "mixed":
         plan["send_binding"] = a.send_binding
     plan["identity"] = a.identity
     plan["clear_after"] = a.clear_after
@@ -254,6 +273,7 @@ def main():
         listener = None
     else:
         listener = (KeepAliveHttpListener(ports) if reuse else UdpDnsListener(ports) if a.tool in UDP_TOOLS else
+                    _Both(ports) if a.tool == "mixed" else
                     HttpListener(ports) if lib or fetch or a.tool == "node_http" else Listener(ports))
         listener.start()
     cg_path, cg_id = cg_create("E4-server")
@@ -276,8 +296,10 @@ def main():
         extra += ["--tokens", tok_path] + (["--identity", "session"] if not fetch else [])
     if a.clear_after:
         extra.append("--clear-after")
-    if a.tool in UDP_TOOLS and a.binding_mode == "auto":
+    if (a.tool in UDP_TOOLS or a.tool == "mixed") and a.binding_mode == "auto":
         extra.append("--udp")
+    if a.tool == "mixed" and a.send_binding:
+        extra.append("--send-binding")
     srv = subprocess.Popen(cmd + ["--port", str(a.server_port), "--binding", a.binding_mode] + extra,
                            env=dict(os.environ, FACT_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)

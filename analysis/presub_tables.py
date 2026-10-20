@@ -145,6 +145,21 @@ def main():
     fused_table(a, "E5udp", lambda p: (p["tool"], p["binding_mode"], int(p["execs"])),
                 ["tool", "binding_mode", "execs"], "E5udp_flows.csv")
     ipfix_table(a)
+    fused_table(a, "E9all", lambda p: (int(p["execs"]),), ["execs"], "E9all_integrated.csv")
+    c = collections.defaultdict(lambda: collections.defaultdict(int))
+    for p, rd in runs(a.campaigns, "E9all", a.label):
+        r = json.load(open(os.path.join(rd, "ipfix_score.json")))
+        k = c[int(p["execs"])]
+        k["runs"] += 1
+        k["decode_errors"] += r["decode_errors"]
+        k["equal_factd"] += int(bool(r["ipfix_equals_factd"]))
+        k["conn_ref"] += r["connections"]["reference"]
+        k["conn_err"] += r["connections"]["abs_error"]
+    if c:
+        write(os.path.join(a.out, "E9all_ipfix.csv"),
+              ["execs", "runs", "decode_errors", "runs_ipfix_equal_factd", "flows_ref", "flows_abs_err"],
+              [[e, v["runs"], v["decode_errors"], v["equal_factd"], v["conn_ref"], v["conn_err"]]
+               for e, v in sorted(c.items())])
 
     # E5reuse: rescored from the raw events with the current score_bytes.score() (the
     # score_bytes.json written during each run keyed connections by source port only, so a

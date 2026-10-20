@@ -31,6 +31,9 @@ Identity source (--identity, automatic binding only):
                same port (E5native; --clear-after clears the thread's kernel
                context after each hooked call)
 
+  mixed_get    E9all (integrated configuration): one DNS query with dnspython (UDP),
+               one HTTP GET with httpx (new client), and one subprocess connect
+               (python -c), all to the requested port
   udp_get      asynchronous: a pending wait, then a DNS-format query over a
                connected UDP socket to the requested port, waiting for the answer
   dns_get      asynchronous: a pending wait, then a DNS query with dnspython's
@@ -116,6 +119,7 @@ def main():
     ap.add_argument("--tokens", help="session identity: JSON file {token: exec_id}")
     ap.add_argument("--clear-after", action="store_true")
     ap.add_argument("--udp", action="store_true")
+    ap.add_argument("--send-binding", action="store_true")
     a = ap.parse_args()
     global MANUAL
     MANUAL = a.binding == "manual"
@@ -214,12 +218,34 @@ def main():
         finally:
             mark(CTX_END)
 
+    @mcp.tool()
+    async def mixed_get(exec_id: str, port: int) -> str:
+        """E9all: DNS over UDP (dnspython), HTTP GET (httpx), and a subprocess connect."""
+        import dns.asyncquery
+        import dns.message
+        import httpx
+        ok = 0
+        try:
+            q = dns.message.make_query(f"op{port}.fact.test", "A")
+            r = await dns.asyncquery.udp(q, TARGET, port=port, timeout=2)
+            ok += r.id == q.id
+        except Exception:   # noqa: BLE001 (denied by the policy, or timeout)
+            pass
+        try:
+            async with httpx.AsyncClient(timeout=5) as c:
+                ok += (await c.get(f"http://{TARGET}:{port}/")).status_code == 200
+        except Exception:   # noqa: BLE001
+            pass
+        p = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", SUB, TARGET, str(port))
+        ok += await p.wait() == 0
+        return "ok" if ok == 3 else "fail"
+
     if not MANUAL:
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         from fact_rt import mcp as fact_mcp
-        if a.udp:
+        if a.udp or a.send_binding:
             from fact_rt import agentctx
-            agentctx.install(udp=True)
+            agentctx.install(udp=a.udp, sends=a.send_binding)
         if a.identity == "session":
             fact_mcp.instrument_session(mcp, json.load(open(a.tokens)), clear=a.clear_after)
         else:
