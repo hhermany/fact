@@ -1,0 +1,13 @@
+tool,binding_mode,execs,runs,N,C,I,A,M,I_pct
+node_async,auto,4,6,600,600,0,0,0,0.0
+node_async,auto,8,6,1200,1200,0,0,0,0.0
+node_async,manual,4,6,600,89,253,258,0,42.17
+node_async,manual,8,6,1200,117,552,531,0,46.0
+node_http,auto,4,6,600,600,0,0,0,0.0
+node_http,auto,8,6,1200,1200,0,0,0,0.0
+node_http,manual,4,6,600,94,205,301,0,34.17
+node_http,manual,8,6,1200,179,537,484,0,44.75
+node_subproc,auto,4,6,600,600,0,0,0,0.0
+node_subproc,auto,8,6,1200,1200,0,0,0,0.0
+node_subproc,manual,4,6,600,600,0,0,0,0.0
+node_subproc,manual,8,6,1200,1200,0,0,0,0.0
