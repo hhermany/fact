@@ -13,7 +13,8 @@
 #        the same calls; attribution, policy, and IPFIX are scored as in E9b, and the
 #        CPU of FACT's components is measured (COST=1, scripts/cost_probe.py).
 # Both record the client-side latency of every call (e4_summary.json: p50/p90/p99)
-# and the CPU time of the whole host during the workload (host_cpu.json).
+# and the CPU time of the whole host during the workload only (host_cpu.json; for 'all',
+# the interval of scripts/cost_probe.py, which excludes the scoring after the workload).
 set -euo pipefail
 OUT="$1"; shift
 FACT=all; K=4; OPS=25; SEED=0
@@ -50,6 +51,11 @@ import json, os, sys
 out, c0, c1, t0, t1, hz, fact = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5]), int(sys.argv[6]), sys.argv[7]
 s = json.load(open(os.path.join(out, "e4_summary.json")))
 res = {"fact": fact, "host_cpu_s": (c1 - c0) / hz, "wall_s": t1 - t0, "calls": s["calls"], "ok": s["ok"]}
+cp = os.path.join(out, "cost.json")
+if os.path.exists(cp):   # 'all': only the workload interval (cost_probe), not the scoring after it
+    c = json.load(open(cp))
+    res["host_cpu_round_s"], res["wall_round_s"] = res["host_cpu_s"], res["wall_s"]
+    res["host_cpu_s"], res["wall_s"] = c["host_cpu_s"], c["wall_s"]
 json.dump(res, open(os.path.join(out, "host_cpu.json"), "w"), indent=1)
 print(json.dumps({**res, **{k: s[k] for k in ("tool_ms_p50", "tool_ms_p90", "tool_ms_p99")}}))
 if s["ok"] != s["calls"]:
