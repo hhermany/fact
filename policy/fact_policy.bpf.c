@@ -20,6 +20,14 @@
  * Only ports in the policed range [cfg.lo, cfg.hi] are evaluated; the others
  * pass (so as not to affect SSH, DNS, etc. on the test host).
  * Every decision is logged to a ring buffer (auditing and evaluation).
+ * Datagrams (cgroup/sendmsg4): an unconnected UDP send (sendto with an address)
+ * is decided like a connect, by the identity of the sending thread.
+ * Per-send authorization (cfg.per_send, BPF LSM socket_sendmsg): every send on an
+ * IPv4 TCP or UDP socket to a policed port is decided again by the identity of the
+ * SENDING thread, so a connection opened by one execution and reused by another
+ * (e.g., a shared keep-alive pool) carries only the sends its current user is
+ * allowed to make. It needs the BPF LSM enabled (lsm=...,bpf) and send binding in
+ * the runtime; denied sends fail with EPERM and are logged.
  * Trusted runtime (optional, E6spoof): when user space sets the key TRUST_ON in
  * trust_map, markers are accepted only from the thread groups (processes)
  * registered in trust_map, i.e., the agent runtime itself. A marker emitted by
@@ -31,14 +39,20 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
 #include <bpf/bpf_core_read.h>
+#include <bpf/bpf_tracing.h>
 
 #define ID_LEN 48
 
 struct task_struct { int pid; int tgid; } __attribute__((preserve_access_index));
+struct sock_common { unsigned short skc_family; __be16 skc_dport; __be32 skc_daddr; } __attribute__((preserve_access_index));
+struct sock { struct sock_common __sk_common; } __attribute__((preserve_access_index));
+struct socket { struct sock *sk; } __attribute__((preserve_access_index));
+struct msghdr { void *msg_name; } __attribute__((preserve_access_index));
+struct fact_sin { unsigned short family; __be16 port; __be32 addr; };
 
 struct ident { char id[ID_LEN]; };
 struct pkey { char id[ID_LEN]; __u32 dport; };
-struct cfg { __u32 lo; __u32 hi; __u32 no_ctx_allow; __u32 lineage; };
+struct cfg { __u32 lo; __u32 hi; __u32 no_ctx_allow; __u32 lineage; __u32 per_send; };
 struct decision {
 	__u64 ts; __u32 pid; __u32 tid; __u32 dport; __u32 daddr;
 	__u8 verdict; __u8 has_ctx; __u8 pad[6]; char id[ID_LEN];
@@ -144,16 +158,10 @@ static __always_inline int id_eq(const char *a, const char *b)
 	return 1;
 }
 
-SEC("cgroup/connect4")
-int on_connect4(struct bpf_sock_addr *sa)
+/* kind: 0 = connect (cgroup/connect4), 1 = unconnected datagram (cgroup/sendmsg4),
+ * 2 = send on an existing socket (LSM socket_sendmsg; only denials are logged) */
+static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 kind)
 {
-	__u32 k0 = 0;
-	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
-	if (!c)
-		return 1;
-	__u32 dport = bpf_ntohs((__u16)sa->user_port);
-	if (dport < c->lo || dport > c->hi)
-		return 1;
 	__u64 pt = bpf_get_current_pid_tgid();
 	__u32 tid = (__u32)pt;
 	struct ident *v = bpf_map_lookup_elem(&ctx_map, &tid);
@@ -184,17 +192,71 @@ int on_connect4(struct bpf_sock_addr *sa)
 	} else {
 		verdict = c->no_ctx_allow ? 1 : 0;
 	}
+	if (kind == 2 && verdict)
+		return verdict;
 	struct decision *d = bpf_ringbuf_reserve(&events, sizeof(*d), 0);
 	if (d) {
 		d->ts = bpf_ktime_get_ns(); d->pid = pt >> 32; d->tid = tid;
-		d->dport = dport; d->daddr = sa->user_ip4; d->verdict = verdict;
+		d->dport = dport; d->daddr = daddr; d->verdict = verdict;
 		d->has_ctx = v ? 1 : 0;
 		__builtin_memset(d->pad, 0, sizeof(d->pad));
-		d->pad[0] = conflict; d->pad[1] = from_lineage;
+		d->pad[0] = conflict; d->pad[1] = from_lineage; d->pad[3] = kind;
 		if (v) __builtin_memcpy(d->id, v->id, ID_LEN); else __builtin_memset(d->id, 0, ID_LEN);
 		bpf_ringbuf_submit(d, 0);
 	}
 	return verdict;
+}
+
+SEC("cgroup/connect4")
+int on_connect4(struct bpf_sock_addr *sa)
+{
+	__u32 k0 = 0;
+	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
+	if (!c)
+		return 1;
+	__u32 dport = bpf_ntohs((__u16)sa->user_port);
+	if (dport < c->lo || dport > c->hi)
+		return 1;
+	return decide(c, dport, sa->user_ip4, 0);
+}
+
+SEC("cgroup/sendmsg4")
+int on_sendmsg4(struct bpf_sock_addr *sa)
+{
+	__u32 k0 = 0;
+	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
+	if (!c)
+		return 1;
+	__u32 dport = bpf_ntohs((__u16)sa->user_port);
+	if (dport < c->lo || dport > c->hi)
+		return 1;
+	return decide(c, dport, sa->user_ip4, 1);
+}
+
+SEC("lsm/socket_sendmsg")
+int BPF_PROG(on_sock_sendmsg, struct socket *sock, struct msghdr *msg, int size, int ret)
+{
+	if (ret)
+		return ret;
+	__u32 k0 = 0;
+	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
+	if (!c || !c->per_send)
+		return 0;
+	struct sock *sk = BPF_CORE_READ(sock, sk);
+	if (!sk || BPF_CORE_READ(sk, __sk_common.skc_family) != 2)   /* AF_INET */
+		return 0;
+	__be16 port = BPF_CORE_READ(sk, __sk_common.skc_dport);
+	__be32 addr = BPF_CORE_READ(sk, __sk_common.skc_daddr);
+	void *name = BPF_CORE_READ(msg, msg_name);
+	if (name) {   /* unconnected datagram: the destination is in the message */
+		struct fact_sin sin = {};
+		bpf_probe_read_kernel(&sin, sizeof(sin), name);
+		if (sin.family == 2) { port = sin.port; addr = sin.addr; }
+	}
+	__u32 dport = bpf_ntohs(port);
+	if (dport < c->lo || dport > c->hi)
+		return 0;
+	return decide(c, dport, addr, 2) ? 0 : -1;   /* -EPERM */
 }
 
 char LICENSE[] SEC("license") = "GPL";

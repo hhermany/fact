@@ -10,7 +10,7 @@ Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 |---|---|
 | `collector/` | bpftrace collectors (`fact.bt` full, `fact-fast.bt` optimized, `fact-count.bt` ablation, `fact-bytes.bt` with per-send/receive byte events) |
 | `fact_rt/` | Runtime binding: execution identity follows the task (Python `contextvars`) and is handed to the kernel right before each `connect`/process creation (optionally also before each `send`, for connections reused by several tasks); FastMCP integration via `_meta` |
-| `policy/` | Per-execution egress policy: `cgroup/connect4` eBPF program (libbpf) + loader + `policyctl.py`; optional trusted-runtime mode (markers accepted only from registered runtime processes) |
+| `policy/` | Per-execution egress policy: `cgroup/connect4` and `cgroup/sendmsg4` eBPF programs, optional per-send authorization (BPF LSM `socket_sendmsg`) (libbpf) + loader + `policyctl.py`; optional trusted-runtime mode (markers accepted only from registered runtime processes) |
 | `factd/` | Live attribution and per-execution accounting daemon |
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper, and `figures.R`, a literate R script (knitr::spin) that draws every figure with ggplot from the summarized CSVs; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
 | `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents (E7, E7m); `remote_farm.py` serves the destinations on a second machine (E3net, E5net, E6net) |
@@ -22,7 +22,7 @@ Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 
 ## Reproducing
 
-Requirements on the host: Linux with BTF, bpftrace ≥ 0.25, bpftool, clang/libbpf, Nix with flakes, root.
+Requirements on the host: Linux with BTF, bpftrace ≥ 0.25, bpftool, clang/libbpf, Nix with flakes, root. E6reuse and E9b also need the BPF LSM enabled (kernel built with `CONFIG_BPF_LSM=y` and `bpf` in the `lsm=` boot parameter, e.g. `/etc/default/grub.d/99-fact-bpf-lsm.cfg` + `update-grub` + reboot; check with `cat /sys/kernel/security/lsm`).
 
 ```sh
 nix --extra-experimental-features 'nix-command flakes' develop
@@ -48,6 +48,7 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | Commercial models (E7c, E7o) and model-free replay (E7r) | `hermes-E7c-confirmatory-*`, `hermes-E7o-confirmatory-*`, `hermes-E7r-confirmatory-*` | `analysis/e7c_tokens.py`, `analysis/replay_compare.py`, `analysis/analysis.R` |
 | Live accounting (`factd`) | all confirmatory campaigns (`analysis/output/factd_equiv.json`) | `tests/test_factd_equiv.py` |
 | AgentProvenance in its own setting (E1ap) | `hermes-E1ap-confirmatory-*` | `analysis/agentprov_table.py --experiment E1ap` |
+| Policy on reused connections, per-send authorization (E6reuse); integrated configuration with the policy on every send (E9b) | `hermes-E6reuse-confirmatory-*`, `hermes-E9b-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_reuse_policy.py` |
 | Integrated configuration, every option on (E9all) | `hermes-E9all-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Session identity (E6sess), failure boundary (E5native), unmodified fetch server (E5fetch), UDP flows (E5udp), IPFIX export (E8ipfix) | `hermes-E6sess-confirmatory-*`, `hermes-E5native-confirmatory-*`, `hermes-E5fetch-confirmatory-*`, `hermes-E5udp-confirmatory-*`, `hermes-E8ipfix-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Second runtime: Node.js MCP server (E5node) | `hermes-E5node-confirmatory-*` | `analysis/presub_tables.py` |

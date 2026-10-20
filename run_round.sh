@@ -35,7 +35,7 @@ EXTRA=()
 if [ "${POLICY:-0}" = 1 ]; then
   [ -x "$HERE/policy/fact_policy" ] && [ -f "$HERE/policy/fact_policy.bpf.o" ] || make -s -C "$HERE/policy"
   "$HERE/policy/fact_policy" /sys/fs/cgroup 61000 64998 "${POLICY_NOCTX_ALLOW:-0}" \
-      "$HERE/policy/fact_policy.bpf.o" "${POLICY_LINEAGE:-0}" > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
+      "$HERE/policy/fact_policy.bpf.o" "${POLICY_LINEAGE:-0}" "${POLICY_PER_SEND:-0}" > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
   PPOL=$!
   for i in $(seq 1 100); do
     grep -q '"ev":"ready"' "$OUT/policy_events.jsonl" 2>/dev/null && break
@@ -116,7 +116,11 @@ if [ -n "$APID" ]; then
 fi
 if [ -n "$PPOL" ]; then
   kill -INT "$PPOL"; wait "$PPOL" || true
-  "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_policy.py" "$OUT" | tee "$OUT/policy_summary.txt"
+  if [ -f "$OUT/requests.jsonl" ]; then   # E6reuse: decisions judged by which requests reached the destination
+    "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_reuse_policy.py" "$OUT" | tee "$OUT/policy_summary.txt"
+  else
+    "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_policy.py" "$OUT" | tee "$OUT/policy_summary.txt"
+  fi
 fi
 
 "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score.py" "$OUT" | tee "$OUT/summary.txt"

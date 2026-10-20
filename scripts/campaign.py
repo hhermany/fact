@@ -165,6 +165,7 @@ def main():
             env["POLICY"] = "1"
             env["POLICY_NOCTX_ALLOW"] = str(p.get("policy_noctx_allow", 0))
             env["POLICY_LINEAGE"] = str(p.get("policy_lineage", 0))
+            env["POLICY_PER_SEND"] = str(p.get("per_send", 0))
         ts = time.time()
         res = subprocess.run(cmd, capture_output=True, text=True, env=env)
         r.update(returncode=res.returncode, seconds=round(time.time() - ts, 3), command=cmd[1:])

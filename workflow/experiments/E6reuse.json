@@ -1,0 +1,11 @@
+{
+  "experiment": "E6reuse",
+  "description": "Egress policy on connections reused across executions: the shared MCP server's sessions share one keep-alive pool (httpx or aiohttp) to two destinations; permissive executions may use both, restricted ones only the first. Send binding on. With per_send=0 the policy decides only at connect (cgroup/connect4) and a restricted execution can send over a connection a permissive one opened; with per_send=1 the BPF LSM program on socket_sendmsg re-authorizes every send by the sending thread's identity. Reference: the destination's per-request log (which operations' requests arrived).",
+  "factors": {
+    "per_send": [0, 1],
+    "tool": ["httpx_shared", "aiohttp_shared"],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E6reuse", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py",
+            "send_binding": 1, "policy": 1, "policy_noctx_allow": 0, "collector": "fact-bytes.bt"}
+}

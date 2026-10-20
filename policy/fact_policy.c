@@ -1,6 +1,8 @@
 // fact_policy: loads the BPF program, pins the maps at /sys/fs/bpf/fact,
 // attaches it to the given cgroup, and prints each decision as one JSON line.
-// Usage: fact_policy <cgroup_path> <port_lo> <port_hi> <no_ctx_allow 0|1> [obj] [lineage 0|1|2]
+// Usage: fact_policy <cgroup_path> <port_lo> <port_hi> <no_ctx_allow 0|1> [obj] [lineage 0|1|2] [per_send 0|1]
+// Attaches cgroup/connect4 and cgroup/sendmsg4 (unconnected UDP); with per_send=1 also the BPF LSM
+// program on socket_sendmsg (needs lsm=...,bpf), which re-authorizes every send.
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -8,13 +10,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <bpf/libbpf.h>
 #include <bpf/bpf.h>
 
 #define ID_LEN 48
-struct cfg { unsigned lo, hi, no_ctx_allow, lineage; };
+struct cfg { unsigned lo, hi, no_ctx_allow, lineage, per_send; };
 struct decision {
 	unsigned long long ts; unsigned pid, tid, dport, daddr;
 	unsigned char verdict, has_ctx, pad[6]; char id[ID_LEN];
@@ -36,10 +39,11 @@ static int on_event(void *ctx, void *data, size_t sz)
 		       d->ts, d->pid, d->tid, id);
 		return 0;
 	}
+	static const char *kinds[] = {"connect", "sendto", "send"};
 	printf("{\"ev\":\"decision\",\"ts\":%llu,\"pid\":%u,\"tid\":%u,\"daddr\":\"%s\",\"dport\":%u,"
-	       "\"verdict\":\"%s\",\"has_ctx\":%u,\"ctx\":\"%s\",\"conflict\":%u,\"from_lineage\":%u}\n",
+	       "\"verdict\":\"%s\",\"has_ctx\":%u,\"ctx\":\"%s\",\"conflict\":%u,\"from_lineage\":%u,\"kind\":\"%s\"}\n",
 	       d->ts, d->pid, d->tid, ip, d->dport, d->verdict ? "allow" : "deny", d->has_ctx, id,
-	       d->pad[0], d->pad[1]);
+	       d->pad[0], d->pad[1], kinds[d->pad[3] < 3 ? d->pad[3] : 0]);
 	return 0;
 }
 
@@ -53,8 +57,11 @@ int main(int argc, char **argv)
 	setvbuf(stdout, NULL, _IOLBF, 0);
 	signal(SIGINT, on_sig); signal(SIGTERM, on_sig);
 
+	unsigned per_send = argc > 7 ? (unsigned)atoi(argv[7]) : 0;
 	struct bpf_object *obj = bpf_object__open_file(obj_path, NULL);
 	if (!obj) { perror("open"); return 1; }
+	/* the LSM program is loaded only when requested (it needs the BPF LSM) */
+	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_sock_sendmsg"), per_send ? true : false);
 	if (bpf_object__load(obj)) { fprintf(stderr, "load failed\n"); return 1; }
 
 	mkdir("/sys/fs/bpf/fact", 0700);
@@ -68,11 +75,11 @@ int main(int argc, char **argv)
 		}
 	}
 	struct cfg c = {(unsigned)atoi(argv[2]), (unsigned)atoi(argv[3]), (unsigned)atoi(argv[4]),
-			argc > 6 ? (unsigned)atoi(argv[6]) : 0};
+			argc > 6 ? (unsigned)atoi(argv[6]) : 0, per_send};
 	int k0 = 0;
 	bpf_map__update_elem(bpf_object__find_map_by_name(obj, "cfg_map"), &k0, sizeof(k0), &c, sizeof(c), BPF_ANY);
 
-	struct bpf_link *links[4] = {0};
+	struct bpf_link *links[8] = {0};
 	int nl = 0;
 	const char *tps[] = {"on_openat", "on_fork", "on_exit"};
 	for (int i = 0; i < 3; i++) {
@@ -85,11 +92,19 @@ int main(int argc, char **argv)
 	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_connect4"), cg);
 	if (!links[nl]) { fprintf(stderr, "attach cgroup failed\n"); return 1; }
 	nl++;
+	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_sendmsg4"), cg);
+	if (!links[nl]) { fprintf(stderr, "attach cgroup/sendmsg4 failed\n"); return 1; }
+	nl++;
+	if (c.per_send) {
+		links[nl] = bpf_program__attach_lsm(bpf_object__find_program_by_name(obj, "on_sock_sendmsg"));
+		if (!links[nl]) { fprintf(stderr, "attach lsm/socket_sendmsg failed (is the BPF LSM enabled?)\n"); return 1; }
+		nl++;
+	}
 
 	struct ring_buffer *rb = ring_buffer__new(bpf_map__fd(bpf_object__find_map_by_name(obj, "events")),
 						  on_event, NULL, NULL);
-	printf("{\"ev\":\"ready\",\"lo\":%u,\"hi\":%u,\"no_ctx_allow\":%u,\"lineage\":%u}\n",
-	       c.lo, c.hi, c.no_ctx_allow, c.lineage);
+	printf("{\"ev\":\"ready\",\"lo\":%u,\"hi\":%u,\"no_ctx_allow\":%u,\"lineage\":%u,\"per_send\":%u}\n",
+	       c.lo, c.hi, c.no_ctx_allow, c.lineage, c.per_send);
 	while (!stop) {
 		int r = ring_buffer__poll(rb, 100);
 		if (r < 0 && r != -EINTR) break;

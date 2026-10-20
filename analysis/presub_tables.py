@@ -146,10 +146,30 @@ def main():
                 ["tool", "binding_mode", "execs"], "E5udp_flows.csv")
     ipfix_table(a)
     fused_table(a, "E9all", lambda p: (int(p["execs"]),), ["execs"], "E9all_integrated.csv")
+    fused_table(a, "E9b", lambda p: (int(p["execs"]),), ["execs"], "E9b_integrated.csv")
+    c = collections.defaultdict(collections.Counter)
+    for p, rd in runs(a.campaigns, "E6reuse", a.label):
+        r = json.load(open(os.path.join(rd, "policy_score.json")))
+        k = c[(int(p["per_send"]), p["tool"], int(p["execs"]))]
+        k["runs"] += 1
+        for x in ("N", "TA", "TD", "FA", "FD"):
+            k[x] += r[x]
+        for kind, n in r.get("denials_by_kind", {}).items():
+            k["deny_" + kind] += n
+        sb = json.load(open(os.path.join(rd, "score_bytes.json")))["bytes"]["sent"]["sender"]
+        k["sent_bytes"] += sb.get("N", 0)
+        k["sent_I"] += sb.get("I", 0)
+    if c:
+        write(os.path.join(a.out, "E6reuse_policy.csv"),
+              ["per_send", "tool", "execs", "runs", "ops", "TA", "TD", "FA", "FD", "deny_connect", "deny_send",
+               "sent_bytes", "sent_bytes_wrong"],
+              [[ps, t, e, v["runs"], v["N"], v["TA"], v["TD"], v["FA"], v["FD"], v["deny_connect"], v["deny_send"],
+                v["sent_bytes"], v["sent_I"]] for (ps, t, e), v in sorted(c.items())])
     c = collections.defaultdict(lambda: collections.defaultdict(int))
-    for p, rd in runs(a.campaigns, "E9all", a.label):
+    for exp in ("E9all", "E9b"):
+      for p, rd in runs(a.campaigns, exp, a.label):
         r = json.load(open(os.path.join(rd, "ipfix_score.json")))
-        k = c[int(p["execs"])]
+        k = c[(exp, int(p["execs"]))]
         k["runs"] += 1
         k["decode_errors"] += r["decode_errors"]
         k["equal_factd"] += int(bool(r["ipfix_equals_factd"]))
@@ -157,9 +177,9 @@ def main():
         k["conn_err"] += r["connections"]["abs_error"]
     if c:
         write(os.path.join(a.out, "E9all_ipfix.csv"),
-              ["execs", "runs", "decode_errors", "runs_ipfix_equal_factd", "flows_ref", "flows_abs_err"],
-              [[e, v["runs"], v["decode_errors"], v["equal_factd"], v["conn_ref"], v["conn_err"]]
-               for e, v in sorted(c.items())])
+              ["experiment", "execs", "runs", "decode_errors", "runs_ipfix_equal_factd", "flows_ref", "flows_abs_err"],
+              [[x, e, v["runs"], v["decode_errors"], v["equal_factd"], v["conn_ref"], v["conn_err"]]
+               for (x, e), v in sorted(c.items())])
 
     # E5reuse: rescored from the raw events with the current score_bytes.score() (the
     # score_bytes.json written during each run keyed connections by source port only, so a

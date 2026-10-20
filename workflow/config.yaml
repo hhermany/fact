@@ -198,5 +198,17 @@ experiments:
     pilot_n: 1
     n: 3   # per boot (2 boots): K=4 has 300 flows and 100 decisions per run
 
+  # egress policy on connections reused across executions (per-send authorization, BPF LSM)
+  E6reuse:
+    spec: workflow/experiments/E6reuse.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=4 has 100 operations per run -> 600 per cell
+
+  # integrated configuration with the policy on every send (UDP sendmsg4 + LSM)
+  E9b:
+    spec: workflow/experiments/E9b.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots)
+
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05

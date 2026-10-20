@@ -217,7 +217,10 @@ def main():
         allow = {}
         for e in execs:
             own = [o["dport"] for o in ops_by_exec[e]]
-            allow[e] = sorted(ports) if classes[e] == "P" else sorted(rng.sample(own, len(own) // 2))
+            if reuse:   # E6reuse: shared destinations; restricted executions may use only the first
+                allow[e] = sorted(ports) if classes[e] == "P" else [ports[0]]
+            else:
+                allow[e] = sorted(ports) if classes[e] == "P" else sorted(rng.sample(own, len(own) // 2))
         plan["policy"] = {"classes": classes, "allow": allow}
     json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
     if a.policy:
