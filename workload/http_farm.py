@@ -162,3 +162,35 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+class UdpDnsListener(threading.Thread):
+    """Answers every DNS-format datagram on every planned UDP port with the same
+    message flagged as a response (QR=1, RCODE=0, no answers) (E5udp)."""
+
+    def __init__(self, ports, addr="127.0.0.1"):
+        super().__init__(daemon=True)
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        want = min(hard, len(ports) + 1024)
+        if soft < want:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (want, hard))
+        self.sel = selectors.DefaultSelector()
+        for p in ports:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.bind((addr, p))
+            s.setblocking(False)
+            self.sel.register(s, selectors.EVENT_READ)
+        self.stop = False
+        self.answered = 0
+
+    def run(self):
+        while not self.stop:
+            for key, _ in self.sel.select(timeout=0.2):
+                try:
+                    data, peer = key.fileobj.recvfrom(4096)
+                except BlockingIOError:
+                    continue
+                if len(data) >= 12:
+                    flags = (int.from_bytes(data[2:4], "big") | 0x8000) & 0xFFF0
+                    key.fileobj.sendto(data[:2] + flags.to_bytes(2, "big") + data[4:], peer)
+                    self.answered += 1

@@ -26,7 +26,8 @@
       # fetched from workload/node/package-lock.json (fixed versions and integrity hashes)
       nodejs = pkgs.nodejs_22;
       nodeModules = pkgs.importNpmLock.buildNodeModules { npmRoot = ./workload/node; inherit nodejs; };
-      pyEnv = pkgs.python3.withPackages (ps: with ps; [ jupyterlab ipykernel mcp anyio httpx aiohttp requests (mcpServerFetch ps) ]);
+      pyEnv = pkgs.python3.withPackages (ps: with ps; [ jupyterlab ipykernel mcp anyio httpx aiohttp requests (mcpServerFetch ps)
+                                                       dnspython uvicorn ]);   # dnspython: E5udp; uvicorn: session-identity SSE host
     in {
       devShells.${system}.default = pkgs.mkShell {
         # Layer 1 (pinned by Nix): user tools, orchestration, and analysis.
@@ -35,6 +36,7 @@
           pyEnv bashInteractive coreutils findutils gawk gnugrep gnused gnutar gzip jq which git
           snakemake pandoc rEnv gcc fontconfig ollama curl   # ollama: local model of E7 (no paid tokens); curl: E5lib
           nodejs                                           # E5node
+          wireshark-cli                                    # tshark: E8ipfix (captures and decodes the IPFIX export)
         ];
         # font of the figures (Times, as in the IEEEtran template): fontconfig pinned by Nix
         FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.gyre-fonts ]; };

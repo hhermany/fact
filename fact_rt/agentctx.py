@@ -32,6 +32,20 @@ asyncio, a transport's write() sends immediately from the calling task, and a
 deferred write runs in the context captured when the writer was registered.
 It is off by default; the experiments before E5reuse ran without it.
 
+Optional clearing (install(clear=True)): the thread's kernel context is cleared
+right after each hooked system call, so code that bypasses the hooks (e.g., a
+native library calling connect(2) directly) finds no identity on the thread
+instead of the identity of the last task that connected on it. The resolver then
+reports such connections as ambiguous or unattributed and the policy applies its
+default action, instead of crediting them to a wrong execution (E5native). The
+cost is one more failed system call per hooked call; off by default before E5native.
+
+UDP (install(udp=True)): the identity is also handed over before each send on an
+AF_INET/AF_INET6 datagram socket (send, sendto, sendmsg, sendall; connected or
+not), where the kernel sees a UDP flow, and asyncio's getaddrinfo runs the
+resolver in the caller's context, so the resolver thread carries the caller's
+identity (E5udp).
+
 Usage:
     from fact_rt import agentctx
     agentctx.install()
@@ -54,6 +68,7 @@ _tls = threading.local()
 _lock = threading.Lock()
 stats = {"marks": 0, "cached": 0}
 _installed = False
+_clear = False          # install(clear=True): clear the thread's kernel context after each hooked call
 enabled = True          # False disables the hooks without uninstalling them (tests)
 _orig = {}
 
@@ -85,6 +100,18 @@ def sync_kernel():
         stats["marks"] += 1
 
 
+def clear_kernel():
+    """Clears the calling thread's kernel context (install(clear=True))."""
+    if not enabled or not _clear:
+        return
+    if getattr(_tls, "last", _UNSET) is None:
+        return
+    _emit(CTX_END)
+    _tls.last = None
+    with _lock:
+        stats["marks"] += 1
+
+
 def invalidate():
     """Forgets the per-thread cache (use if other code emits markers)."""
     _tls.last = _UNSET
@@ -102,10 +129,15 @@ def bind(exec_id):
         current.reset(tok)
 
 
-def install(sends=False):
+def install(sends=False, clear=False, udp=False):
     """Installs the connect and process-creation hooks (idempotent); with
-    sends=True, also the send hooks (see the module docstring)."""
-    global _installed
+    sends=True, also the send hooks; with clear=True, the thread's kernel context
+    is cleared after each hooked call; with udp=True, the datagram hooks (see the
+    module docstring)."""
+    global _installed, _clear
+    _clear = _clear or clear
+    if udp and not _orig.get("dgram"):
+        _install_dgram()
     if sends and not _orig.get("send"):
         _install_sends()
     if _installed:
@@ -115,23 +147,34 @@ def install(sends=False):
     _orig["execute_child"] = subprocess.Popen._execute_child
 
     def connect(self, address):
-        if self.family in (socket.AF_INET, socket.AF_INET6):
-            sync_kernel()
-        return _orig["connect"](self, address)
+        if self.family not in (socket.AF_INET, socket.AF_INET6):
+            return _orig["connect"](self, address)
+        sync_kernel()
+        try:
+            return _orig["connect"](self, address)
+        finally:
+            clear_kernel()
 
     def connect_ex(self, address):
-        if self.family in (socket.AF_INET, socket.AF_INET6):
-            sync_kernel()
-        return _orig["connect_ex"](self, address)
+        if self.family not in (socket.AF_INET, socket.AF_INET6):
+            return _orig["connect_ex"](self, address)
+        sync_kernel()
+        try:
+            return _orig["connect_ex"](self, address)
+        finally:
+            clear_kernel()
 
     def execute_child(self, *args, **kwargs):
         sync_kernel()
-        return _orig["execute_child"](self, *args, **kwargs)
+        try:
+            return _orig["execute_child"](self, *args, **kwargs)
+        finally:
+            clear_kernel()
 
     socket.socket.connect = connect
     socket.socket.connect_ex = connect_ex
     subprocess.Popen._execute_child = execute_child
-    os.register_at_fork(before=sync_kernel)
+    os.register_at_fork(before=sync_kernel, after_in_parent=clear_kernel)
     _installed = True
 
 
@@ -141,9 +184,54 @@ def _install_sends():
         _orig[name] = orig
 
         def hook(self, *args, _orig_fn=orig, **kwargs):
-            if self.family in (socket.AF_INET, socket.AF_INET6):
-                sync_kernel()
-            return _orig_fn(self, *args, **kwargs)
+            if self.family not in (socket.AF_INET, socket.AF_INET6):
+                return _orig_fn(self, *args, **kwargs)
+            sync_kernel()
+            try:
+                return _orig_fn(self, *args, **kwargs)
+            finally:
+                clear_kernel()
 
         hook.__name__ = name
         setattr(socket.socket, name, hook)
+
+
+def _install_dgram():
+    import asyncio.base_events
+    _orig["dgram"] = True
+    for name in ("send", "sendall", "sendto", "sendmsg"):
+        orig = getattr(socket.socket, name)
+
+        def hook(self, *args, _orig_fn=orig, **kwargs):
+            if self.type != socket.SOCK_DGRAM or self.family not in (socket.AF_INET, socket.AF_INET6):
+                return _orig_fn(self, *args, **kwargs)
+            sync_kernel()
+            try:
+                return _orig_fn(self, *args, **kwargs)
+            finally:
+                clear_kernel()
+
+        hook.__name__ = name
+        setattr(socket.socket, name, hook)
+
+    gai = socket.getaddrinfo
+    _orig["getaddrinfo"] = gai
+
+    def getaddrinfo(*args, **kwargs):
+        sync_kernel()
+        try:
+            return gai(*args, **kwargs)
+        finally:
+            clear_kernel()
+
+    socket.getaddrinfo = getaddrinfo
+    loop_gai = asyncio.base_events.BaseEventLoop.getaddrinfo
+
+    async def loop_getaddrinfo(self, host, port, *, family=0, type=0, proto=0, flags=0):
+        # run_in_executor does not copy the caller's context; do it, so that the
+        # resolver thread hands the caller's identity to the kernel
+        ctx = contextvars.copy_context()
+        return await self.run_in_executor(None, ctx.run, getaddrinfo, host, port, family, type, proto, flags)
+
+    _orig["loop_getaddrinfo"] = loop_gai
+    asyncio.base_events.BaseEventLoop.getaddrinfo = loop_getaddrinfo

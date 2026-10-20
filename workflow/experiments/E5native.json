@@ -1,0 +1,9 @@
+{
+  "experiment": "E5native",
+  "description": "Failure boundary of the runtime binding: each tool call opens one connection through Python's socket module (hooked) and, after a pending wait, one through libc's connect() called directly (native code that bypasses the hooks), to the same exclusive port. Without clearing, the native connection inherits whatever identity the last hooked call left on the thread; with clear_after=1 fact_rt clears the thread's kernel context after each hooked call, so the native connection carries no identity. Automatic binding; same reference.",
+  "factors": {
+    "clear_after": [0, 1],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E5native", "tool": "native", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py"}
+}

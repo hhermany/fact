@@ -1,0 +1,11 @@
+{
+  "experiment": "E6sess",
+  "description": "Identity source under a lying client: in the shared MCP server with the egress policy (classes as in E6), the clients of restricted executions claim a permissive execution's identity in _meta. With identity=meta the server binds the claimed identity; with identity=session it derives the identity from the bearer token of the client's MCP session (one token per execution, registered by the operator) and ignores _meta. Automatic binding; same reference (exclusive destination port).",
+  "factors": {
+    "identity": ["meta", "session"],
+    "tool": ["async", "thread"],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E6sess", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py",
+            "client_spoof": 1, "policy": 1, "policy_noctx_allow": 0}
+}

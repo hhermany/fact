@@ -1,0 +1,9 @@
+{
+  "experiment": "E5fetch",
+  "description": "A popular third-party MCP server run whole and unmodified: the official MCP fetch server (mcp-server-fetch 2026.7.10), whose own serve() runs once per SSE session inside ONE process (only its stdio transport is replaced, workload/mcp_fetch_host.py). The identity is derived from each session's bearer token; the server's code neither reads nor forwards it. Each call fetches http://dest:port/ (the server also fetches /robots.txt first). Same reference (exclusive destination port).",
+  "factors": {
+    "execs": [2, 4, 8]
+  },
+  "fixed": {"cond": "E5fetch", "tool": "fetch_server", "identity": "session", "binding_mode": "auto", "ops": 25,
+            "workload": "workload/mcp_e4.py"}
+}

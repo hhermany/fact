@@ -68,6 +68,26 @@ if [ -n "${AGENTPROV:-}" ]; then
   grep -q 'ready probes-attached' "$OUT/agentprov/sensor.log" || { echo "AgentProvenance sensor not ready"; exit 1; }
 fi
 
+# Live accounting exported over IPFIX (optional): IPFIX=1. factd follows the
+# collector's stream while the workload runs and exports IPFIX over UDP to
+# 127.0.0.1:4739, where tshark captures it (analysis/score_ipfix.py decodes the
+# capture with Wireshark's IPFIX dissector and compares it with the reference).
+FPID=""; TPID=""
+if [ "${IPFIX:-0}" = 1 ]; then
+  [ -f "$OUT/registry.json" ] || echo '{"roots":{},"cgroups":{}}' > "$OUT/registry.json"
+  tshark -q -i lo -f "udp port 4739" -w "$OUT/ipfix.pcap" > "$OUT/tshark.log" 2>&1 &
+  TPID=$!
+  for i in $(seq 1 100); do
+    grep -q "Capturing on" "$OUT/tshark.log" 2>/dev/null && break
+    sleep 0.1
+  done
+  grep -q "Capturing on" "$OUT/tshark.log" || { echo "tshark did not start"; cat "$OUT/tshark.log"; exit 1; }
+  "${FACT_PYTHON:-python3}" -I "$HERE/factd/factd.py" --follow "$OUT/events.jsonl" --registry "$OUT/registry.json" \
+      --ipfix 127.0.0.1:4739 --out "$OUT/factd_live.jsonl" 2> "$OUT/factd.err" &
+  FPID=$!
+  trap 'kill -INT "$BPID" $PPOL $APID 2>/dev/null || true; kill $FPID $TPID 2>/dev/null || true; wait "$BPID" $PPOL $APID $FPID $TPID 2>/dev/null || true' EXIT
+fi
+
 # CPU cost under the experiment's own workload (optional): COST=1 (scripts/cost_probe.py)
 if [ "${COST:-0}" = 1 ]; then
   sysctl -q -w kernel.bpf_stats_enabled=1
@@ -81,6 +101,10 @@ if [ "${COST:-0}" = 1 ]; then
 fi
 sleep 1                               # drains the last events from the buffer
 kill -INT "$BPID"; wait "$BPID" || true
+if [ -n "$FPID" ]; then                # factd drains its buffer, exports the last interval, exits
+  kill -TERM "$FPID"; wait "$FPID" || true
+  sleep 1; kill -INT "$TPID"; wait "$TPID" || true
+fi
 if [ -n "$APID" ]; then
   "${FACT_PYTHON:-python3}" -I "$HERE/analysis/agentprov_bind.py" "$OUT" "$AGENTPROV" "$APID"
   wait "$APID" 2>/dev/null || true
@@ -97,4 +121,7 @@ if [ -f "$OUT/requests.jsonl" ]; then   # E5reuse: per-request reference on reus
 fi
 if [ "${COST:-0}" = 1 ]; then
   "${FACT_PYTHON:-python3}" -I "$HERE/scripts/cost_probe.py" factd "$OUT"
+fi
+if [ "${IPFIX:-0}" = 1 ]; then
+  "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_ipfix.py" "$OUT" | tee "$OUT/summary_ipfix.txt"
 fi

@@ -47,6 +47,62 @@ def pct(a, b):
     return round(100 * a / b, 2) if b else ""
 
 
+def fused_table(a, exp, keyf, cols, out_name):
+    c = collections.defaultdict(collections.Counter)
+    for p, rd in runs(a.campaigns, exp, a.label):
+        f = json.load(open(os.path.join(rd, "score.json")))["resolvers"]["fused"]
+        k = c[keyf(p)]
+        k["runs"] += 1
+        for x in ("N", "C", "I", "A", "M"):
+            k[x] += f[x]
+        pol = os.path.join(rd, "policy_score.json")
+        if os.path.exists(pol):
+            ps = json.load(open(pol))
+            for x in ("N", "TA", "TD", "FA", "FD", "ND"):
+                k["pol_" + x] += ps[x]
+    if not c:
+        return
+    pol = any(v["pol_N"] for v in c.values())
+    head = cols + ["runs", "N", "C", "I", "A", "M", "I_pct"] + (
+        ["decisions", "FA", "FD", "policy_errors"] if pol else [])
+    rows = []
+    for key, v in sorted(c.items()):
+        row = list(key) + [v["runs"], v["N"], v["C"], v["I"], v["A"], v["M"], pct(v["I"], v["N"])]
+        if pol:
+            row += [v["pol_N"], v["pol_FA"], v["pol_FD"], v["pol_FA"] + v["pol_FD"]]
+        rows.append(row)
+    write(os.path.join(a.out, out_name), head, rows)
+
+
+def ipfix_table(a):
+    c = collections.defaultdict(lambda: collections.defaultdict(int))
+    for p, rd in runs(a.campaigns, "E8ipfix", a.label):
+        r = json.load(open(os.path.join(rd, "ipfix_score.json")))
+        k = c[(p["tool"], int(p["execs"]))]
+        k["runs"] += 1
+        k["messages"] += r["messages"]
+        k["decode_errors"] += r["decode_errors"]
+        k["equal_factd"] += int(bool(r["ipfix_equals_factd"]))
+        for m in ("connections", "octets_sent", "octets_received"):
+            if m in r:
+                k[m + "_ref"] += r[m]["reference"]
+                k[m + "_err"] += r[m]["abs_error"]
+                k[m + "_unc"] += r[m]["uncredited"]
+    if not c:
+        return
+    rows = []
+    for (t, e), v in sorted(c.items()):
+        rows.append([t, e, v["runs"], v["messages"], v["decode_errors"], v["equal_factd"],
+                     v["connections_ref"], v["connections_err"], pct(v["connections_err"], v["connections_ref"]),
+                     v["octets_sent_ref"], v["octets_sent_err"], pct(v["octets_sent_err"], v["octets_sent_ref"]),
+                     v["octets_received_ref"], v["octets_received_err"],
+                     pct(v["octets_received_err"], v["octets_received_ref"])])
+    write(os.path.join(a.out, "E8ipfix_accounting.csv"),
+          ["tool", "execs", "runs", "ipfix_messages", "decode_errors", "runs_ipfix_equal_factd",
+           "conn_ref", "conn_abs_err", "conn_err_pct", "sent_ref", "sent_abs_err", "sent_err_pct",
+           "recv_ref", "recv_abs_err", "recv_err_pct"], rows)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--label", default="confirmatory")
@@ -79,6 +135,16 @@ def main():
               ["tool", "binding_mode", "execs", "runs", "N", "C", "I", "A", "M", "I_pct"],
               [[t, b, e, v["runs"], v["N"], v["C"], v["I"], v["A"], v["M"], pct(v["I"], v["N"])]
                for (t, b, e), v in sorted(c.items())])
+
+    # new experiments (second pre-submission round)
+    fused_table(a, "E6sess", lambda p: (p["identity"], p["tool"], int(p["execs"])),
+                ["identity", "tool", "execs"], "E6sess_identity.csv")
+    fused_table(a, "E5native", lambda p: (int(p["clear_after"]), int(p["execs"])),
+                ["clear_after", "execs"], "E5native_boundary.csv")
+    fused_table(a, "E5fetch", lambda p: (int(p["execs"]),), ["execs"], "E5fetch_server.csv")
+    fused_table(a, "E5udp", lambda p: (p["tool"], p["binding_mode"], int(p["execs"])),
+                ["tool", "binding_mode", "execs"], "E5udp_flows.csv")
+    ipfix_table(a)
 
     # E5reuse: rescored from the raw events with the current score_bytes.score() (the
     # score_bytes.json written during each run keyed connections by source port only, so a

@@ -28,7 +28,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from workload import Listener, cg_create, cg_move  # noqa: E402
-from http_farm import HttpListener, KeepAliveHttpListener  # noqa: E402
+from http_farm import HttpListener, KeepAliveHttpListener, UdpDnsListener  # noqa: E402
 from fact_rt.mcp import call_tool_with_exec  # noqa: E402
 
 TOOLS = {"sync": "sync_get", "thread": "thread_get", "subproc": "subproc_get", "async": "async_get"}
@@ -47,6 +47,14 @@ TOOLS["spoof"] = "spoof_get"
 # official TypeScript SDK) instrumented by fact_rt_node; manual or automatic binding
 NODE_TOOLS = {"node_async": "async_get", "node_subproc": "subproc_get", "node_http": "http_get"}
 TOOLS.update(NODE_TOOLS)
+# E5native: a hooked connect, then a native connect that bypasses the hooks (mcp_e4_server.py)
+TOOLS["native"] = "native_get"
+# E5fetch: the official MCP fetch server, unmodified, one process for all sessions
+# (workload/mcp_fetch_host.py); identity from the session; the tool is the server's "fetch"
+TOOLS["fetch_server"] = "fetch"
+# E5udp: UDP flows (DNS-format queries) over a connected socket and with dnspython
+UDP_TOOLS = {"udp": "udp_get", "dns": "dns_get"}
+TOOLS.update(UDP_TOOLS)
 REUSE_PORTS = 2      # shared destination ports in E5reuse
 
 
@@ -63,16 +71,19 @@ def wait_port(port, timeout=20.0):
     return False
 
 
-async def session(url, tool, exec_id, ops, log, binding):
+async def session(url, tool, exec_id, ops, log, binding, token=None):
     from mcp import ClientSession
     from mcp.client.sse import sse_client
     lat = []
-    async with sse_client(url) as (read, write):
+    headers = {"Authorization": f"Bearer {token}"} if token else None
+    async with sse_client(url, headers=headers) as (read, write):
         async with ClientSession(read, write) as s:
             await s.initialize()
             for op in ops:
                 t0 = time.time_ns()
                 args = {"exec_id": exec_id, "port": op["dport"]}
+                if tool == "fetch_server":   # the fetch server's own arguments
+                    args = {"url": f"http://{op['dest']}:{op['dport']}/", "raw": True}
                 if tool in REUSE_TOOLS:
                     args["op"] = op["op_id"]
                 if "claim" in op:
@@ -84,13 +95,14 @@ async def session(url, tool, exec_id, ops, log, binding):
                     res = await s.call_tool(TOOLS[tool], args)
                 t1 = time.time_ns()
                 text = "".join(getattr(c, "text", "") for c in res.content)
+                ok = (not res.isError and text.rstrip().endswith("ok")) if tool == "fetch_server" else text == "ok"
                 lat.append((t1 - t0) / 1e6)
-                log.write(json.dumps(dict(op, kind=tool, t_start=t0, t_end=t1, ok=(text == "ok"), label=label)) + "\n")
+                log.write(json.dumps(dict(op, kind=tool, t_start=t0, t_end=t1, ok=ok, label=label)) + "\n")
     return lat
 
 
-async def run_clients(url, tool, ops_by_exec, log, binding):
-    tasks = [session(url, tool, e, ops, log, binding) for e, ops in ops_by_exec.items()]
+async def run_clients(url, tool, ops_by_exec, log, binding, tokens=None):
+    tasks = [session(url, tool, e, ops, log, binding, (tokens or {}).get(e)) for e, ops in ops_by_exec.items()]
     return await asyncio.gather(*tasks)
 
 
@@ -115,6 +127,12 @@ def main():
     ap.add_argument("--threads", type=int, default=0)
     ap.add_argument("--trust", type=int, default=0,
                     help="1: the policy accepts markers only from the MCP server process (E6spoof)")
+    ap.add_argument("--identity", choices=["meta", "session"], default="meta",
+                    help="session: the server derives the identity from the session's bearer token (E6sess, E5fetch)")
+    ap.add_argument("--client-spoof", type=int, default=0,
+                    help="1: the clients of restricted executions claim a permissive identity in _meta (E6sess)")
+    ap.add_argument("--clear-after", type=int, default=0,
+                    help="1: fact_rt clears the thread's kernel context after each hooked call (E5native)")
     ap.add_argument("--send-binding", type=int, default=0,
                     help="1: fact_rt also hands the identity to the kernel before each send (E5reuse)")
     a = ap.parse_args()
@@ -133,6 +151,9 @@ def main():
         it = iter(ports)
         ops_by_exec = {e: [{"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": next(it)}
                            for i in range(a.ops)] for e in execs}
+    for e in execs:
+        for o in ops_by_exec[e]:
+            o["dest"] = a.dest_host
     # binding faults (as in E1): exactly round(p * ops) calls per execution carry
     # another execution's identity in _meta; random positions
     n_wrong = round(a.wrong_label * a.ops)
@@ -140,6 +161,11 @@ def main():
         sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} is not an integer")
     lib = a.tool in LIB_TOOLS
     node = a.tool in NODE_TOOLS
+    fetch = a.tool == "fetch_server"
+    if fetch and a.identity != "session":
+        sys.exit("fetch_server runs only with --identity session (the fetch server's code reads no _meta)")
+    if (a.identity == "session" or a.clear_after) and a.binding_mode != "auto":
+        sys.exit("--identity session and --clear-after apply to the automatic binding")
     if lib and a.binding_mode != "auto":
         sys.exit("the third-party library tools (E5lib) run only with the automatic binding")
     if n_wrong and a.binding_mode != "auto":
@@ -157,6 +183,9 @@ def main():
             "dport_map": {} if reuse else {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
     if lib:
         plan["send_binding"] = a.send_binding
+    plan["identity"] = a.identity
+    plan["clear_after"] = a.clear_after
+    plan["client_spoof"] = a.client_spoof
     if reuse:   # reference per request: operation id (URL path) -> execution
         plan["op_map"] = {o["op_id"]: o["exec_id"] for e in execs for o in ops_by_exec[e]}
         plan["reuse_ports"] = ports
@@ -187,6 +216,28 @@ def main():
                 o["claim"] = e if plan["policy"]["classes"][e] == "P" else perm
         plan["spoof"] = {"claimed_by_restricted": perm, "trust": a.trust}
         json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
+    if a.client_spoof:
+        # the CLIENTS of restricted executions claim the first permissive execution's
+        # identity in _meta (the tool itself is honest)
+        if not a.policy or a.binding_mode != "auto":
+            sys.exit("--client-spoof requires --policy 1 and --binding-mode auto")
+        perm = next(e for e in execs if plan["policy"]["classes"][e] == "P")
+        for e in execs:
+            if plan["policy"]["classes"][e] == "R":
+                for o in ops_by_exec[e]:
+                    o["label"] = perm
+        plan["client_spoof"] = {"claimed_by_restricted": perm}
+        json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
+    tokens = None
+    if a.identity == "session":
+        # the operator registers one bearer token per execution; only the server and
+        # each execution's own client know it (the file is not part of the plan)
+        import secrets
+        tokens = {e: secrets.token_hex(16) for e in execs}
+        tok_path = os.path.join(a.out, "tokens.json")
+        fd = os.open(tok_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            json.dump({t: e for e, t in tokens.items()}, f)
 
     remote = a.dest_host != "127.0.0.1"
     if remote:   # services on the other machine: check that the planned range answers before measuring
@@ -202,8 +253,8 @@ def main():
                 s.close()
         listener = None
     else:
-        listener = (KeepAliveHttpListener(ports) if reuse else
-                    HttpListener(ports) if lib or a.tool == "node_http" else Listener(ports))
+        listener = (KeepAliveHttpListener(ports) if reuse else UdpDnsListener(ports) if a.tool in UDP_TOOLS else
+                    HttpListener(ports) if lib or fetch or a.tool == "node_http" else Listener(ports))
         listener.start()
     cg_path, cg_id = cg_create("E4-server")
     here = os.path.dirname(os.path.abspath(__file__))
@@ -214,10 +265,20 @@ def main():
         plan["mcp_ts_sdk_version"] = json.load(open(os.path.join(
             here, "node", "node_modules", "@modelcontextprotocol", "sdk", "package.json")))["version"]
         json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
+    elif fetch:
+        cmd = [sys.executable, "-I", os.path.join(here, "mcp_fetch_host.py")]
     else:
         cmd = [sys.executable, "-I", os.path.join(here, "mcp_lib_server.py" if lib else "mcp_e4_server.py")]
-    srv = subprocess.Popen(cmd + ["--port", str(a.server_port), "--binding", a.binding_mode]
-                           + (["--send-binding"] if lib and a.send_binding else []),
+    extra = []
+    if lib and a.send_binding:
+        extra.append("--send-binding")
+    if tokens:
+        extra += ["--tokens", tok_path] + (["--identity", "session"] if not fetch else [])
+    if a.clear_after:
+        extra.append("--clear-after")
+    if a.tool in UDP_TOOLS and a.binding_mode == "auto":
+        extra.append("--udp")
+    srv = subprocess.Popen(cmd + ["--port", str(a.server_port), "--binding", a.binding_mode] + extra,
                            env=dict(os.environ, FACT_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)
     cg_move(cg_path, srv.pid)
@@ -231,7 +292,8 @@ def main():
         if not wait_port(a.server_port):
             sys.exit("MCP server did not start (see server.log)")
         with open(os.path.join(a.out, "ops.jsonl"), "w") as log:
-            lats = asyncio.run(run_clients(f"http://127.0.0.1:{a.server_port}/sse", a.tool, ops_by_exec, log, a.binding_mode))
+            lats = asyncio.run(run_clients(f"http://127.0.0.1:{a.server_port}/sse", a.tool, ops_by_exec, log,
+                                           a.binding_mode, tokens))
     finally:
         srv.terminate()
         try:

@@ -1,0 +1,10 @@
+{
+  "experiment": "E8ipfix",
+  "description": "Live per-execution accounting over IPFIX: factd follows the collector's stream during the run and exports per-execution records (connections, established, failed, destinations, bytes sent and received; executionId information element) as IPFIX over UDP; tshark captures them, and the capture is decoded with Wireshark's IPFIX dissector and compared with factd's records and with the independent reference (connections per execution by destination port; bytes per execution from the destination's per-request log). Tools: async (new connection per call) and httpx_shared (keep-alive pool shared by sessions, send binding on). Collector fact-bytes.bt.",
+  "factors": {
+    "tool": ["async", "httpx_shared"],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E8ipfix", "binding_mode": "auto", "ops": 25, "workload": "workload/mcp_e4.py",
+            "collector": "fact-bytes.bt", "send_binding": 1, "ipfix": 1}
+}

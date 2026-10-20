@@ -1,0 +1,10 @@
+{
+  "experiment": "E5udp",
+  "description": "UDP flows: the shared MCP server's asynchronous tools send a DNS-format query over a connected UDP socket (udp) or a DNS query with dnspython's asynchronous client (dns) to an exclusive port answered by a DNS-format responder. Manual binding (markers at start and end) versus automatic binding with fact_rt's datagram hooks. Collector fact-udp.bt (fact.bt plus the first datagram per socket and destination as a flow).",
+  "factors": {
+    "tool": ["udp", "dns"],
+    "binding_mode": ["manual", "auto"],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E5udp", "ops": 25, "workload": "workload/mcp_e4.py", "collector": "fact-udp.bt"}
+}

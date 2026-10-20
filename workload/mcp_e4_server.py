@@ -20,10 +20,30 @@ Binding modes (--binding):
           fact_rt (per-task identity via contextvars, handed to the kernel
           at connect/fork); the identity comes from the request's _meta.
 
-Usage: python3 mcp_e4_server.py --port 64999 [--binding manual|auto]
+Identity source (--identity, automatic binding only):
+  meta     from the request's _meta (chosen by the client);
+  session  from the bearer token of the client's MCP session, registered by the
+           operator in --tokens ({token: exec_id}); _meta is ignored (E6sess).
+
+  native_get   asynchronous: one connect through Python's socket module (hooked),
+               a pending wait, then one connect through libc's connect() called
+               directly with ctypes (native code that bypasses the hooks), to the
+               same port (E5native; --clear-after clears the thread's kernel
+               context after each hooked call)
+
+  udp_get      asynchronous: a pending wait, then a DNS-format query over a
+               connected UDP socket to the requested port, waiting for the answer
+  dns_get      asynchronous: a pending wait, then a DNS query with dnspython's
+               asynchronous UDP client (third-party library, unconnected socket)
+               (E5udp; --udp installs fact_rt's datagram hooks)
+
+Usage: python3 mcp_e4_server.py --port 64999 [--binding manual|auto] [--identity meta|session --tokens F]
 """
 import argparse
 import asyncio
+import ctypes
+import ctypes.util
+import json
 import os
 import random
 import socket
@@ -67,10 +87,35 @@ def blocking_connect(port):
     return ok
 
 
+_libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+
+
+class _SockaddrIn(ctypes.Structure):
+    _fields_ = [("sin_family", ctypes.c_ushort), ("sin_port", ctypes.c_uint16),
+                ("sin_addr", ctypes.c_uint32), ("sin_zero", ctypes.c_char * 8)]
+
+
+def native_connect(port):
+    """socket(2) + connect(2) + close(2) through libc, bypassing Python's socket module."""
+    fd = _libc.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+    if fd < 0:
+        return False
+    try:
+        sa = _SockaddrIn(socket.AF_INET, socket.htons(port),
+                         int.from_bytes(socket.inet_aton(TARGET), "little"), b"\0" * 8)
+        return _libc.connect(fd, ctypes.byref(sa), ctypes.sizeof(sa)) == 0
+    finally:
+        _libc.close(fd)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=64999)
     ap.add_argument("--binding", choices=["manual", "auto"], default="manual")
+    ap.add_argument("--identity", choices=["meta", "session"], default="meta")
+    ap.add_argument("--tokens", help="session identity: JSON file {token: exec_id}")
+    ap.add_argument("--clear-after", action="store_true")
+    ap.add_argument("--udp", action="store_true")
     a = ap.parse_args()
     global MANUAL
     MANUAL = a.binding == "manual"
@@ -123,10 +168,65 @@ def main():
         p = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", SPOOF, TARGET, str(port), claim)
         return "ok" if await p.wait() == 0 else "fail"
 
+    @mcp.tool()
+    async def native_get(exec_id: str, port: int) -> str:
+        """E5native: a hooked connect, a wait, then a native connect that bypasses the hooks."""
+        r, w = await asyncio.open_connection(TARGET, port)
+        w.close()
+        await w.wait_closed()
+        await asyncio.sleep(random.uniform(0, 0.005))
+        return "ok" if native_connect(port) else "fail"
+
+    def dns_query(qid):
+        name = b"".join(bytes([len(p)]) + p for p in (b"op%d" % qid, b"fact", b"test")) + b"\0"
+        return qid.to_bytes(2, "big") + b"\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00" + name + b"\x00\x01\x00\x01"
+
+    @mcp.tool()
+    async def udp_get(exec_id: str, port: int) -> str:
+        """E5udp: DNS-format query over a connected UDP socket."""
+        mark(CTX_BEGIN + exec_id)
+        try:
+            await asyncio.sleep(random.uniform(0, 0.005))
+            loop = asyncio.get_running_loop()
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.setblocking(False)
+            try:
+                s.connect((TARGET, port))
+                s.send(dns_query(port & 0xffff))
+                data = await asyncio.wait_for(loop.sock_recv(s, 512), 2)
+                return "ok" if data[:2] == (port & 0xffff).to_bytes(2, "big") else "fail"
+            finally:
+                s.close()
+        finally:
+            mark(CTX_END)
+
+    @mcp.tool()
+    async def dns_get(exec_id: str, port: int) -> str:
+        """E5udp: DNS query with dnspython (asynchronous UDP client, unconnected socket)."""
+        import dns.asyncquery
+        import dns.message
+        mark(CTX_BEGIN + exec_id)
+        try:
+            await asyncio.sleep(random.uniform(0, 0.005))
+            q = dns.message.make_query(f"op{port}.fact.test", "A")
+            r = await dns.asyncquery.udp(q, TARGET, port=port, timeout=2)
+            return "ok" if r.id == q.id else "fail"
+        finally:
+            mark(CTX_END)
+
     if not MANUAL:
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         from fact_rt import mcp as fact_mcp
-        fact_mcp.instrument(mcp)
+        if a.udp:
+            from fact_rt import agentctx
+            agentctx.install(udp=True)
+        if a.identity == "session":
+            fact_mcp.instrument_session(mcp, json.load(open(a.tokens)), clear=a.clear_after)
+        else:
+            fact_mcp.instrument(mcp)
+            if a.clear_after:
+                from fact_rt import agentctx
+                agentctx.install(clear=True)
     mcp.run(transport="sse")
 
 

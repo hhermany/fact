@@ -32,7 +32,8 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": "--execs",
        "jitter": "--jitter", "ops": "--ops", "threads": "--threads", "tool": "--tool",
        "binding_mode": "--binding-mode", "model": "--model", "ollama": "--ollama", "dest_host": "--dest-host", "num_predict": "--num-predict",
-       "replay_from": "--replay-from", "src": "--replay-src", "send_binding": "--send-binding", "trust": "--trust"}
+       "replay_from": "--replay-from", "src": "--replay-src", "send_binding": "--send-binding", "trust": "--trust",
+       "identity": "--identity", "client_spoof": "--client-spoof", "clear_after": "--clear-after"}
 
 
 def sh(cmd, cwd=None):
@@ -158,6 +159,8 @@ def main():
             env["AGENTPROV"] = str(p["agentprov"])
         if p.get("cost"):              # CPU cost under the experiment's own workload
             env["COST"] = "1"
+        if p.get("ipfix"):             # live factd exporting IPFIX to a capture (E8ipfix)
+            env["IPFIX"] = "1"
         if p.get("policy"):
             env["POLICY"] = "1"
             env["POLICY_NOCTX_ALLOW"] = str(p.get("policy_noctx_allow", 0))

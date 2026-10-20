@@ -162,5 +162,35 @@ experiments:
     pilot_n: 1
     n: 3   # per boot (2 boots), as E6: K=2 has 50 decisions per run -> 300 >= 299
 
+  # identity derived from the MCP session vs. client-chosen _meta, under a lying client
+  E6sess:
+    spec: workflow/experiments/E6sess.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=4 has 100 decisions per run -> 600 >= 299 per cell
+
+  # failure boundary: native connect bypassing the hooks, with and without clearing
+  E5native:
+    spec: workflow/experiments/E5native.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=4 has 200 connections per run
+
+  # the official MCP fetch server, whole and unmodified, one process for all sessions
+  E5fetch:
+    spec: workflow/experiments/E5fetch.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=2 has 100 connections per run (page + robots.txt)
+
+  # UDP flows (DNS-format queries; dnspython)
+  E5udp:
+    spec: workflow/experiments/E5udp.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=4 has 100 flows per run
+
+  # live accounting exported over IPFIX and decoded by Wireshark
+  E8ipfix:
+    spec: workflow/experiments/E8ipfix.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots)
+
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05
