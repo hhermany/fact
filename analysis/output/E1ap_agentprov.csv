@@ -1,0 +1,13 @@
+cond,mode,execs,runs,system,N,C,I,A,M,C_N,I_N,same_op
+N0,inproc,4,6,AgentProvenance,1200,1200,0,0,0,1.0,0.0,1200
+N0,inproc,4,6,FACT,1200,1200,0,0,0,1.0,0.0,
+N0,subproc,4,6,AgentProvenance,1200,1200,0,0,0,1.0,0.0,1200
+N0,subproc,4,6,FACT,1200,1200,0,0,0,1.0,0.0,
+N1,inproc,4,6,AgentProvenance,1200,1148,51,0,1,0.9567,0.0425,1148
+N1,inproc,4,6,FACT,1200,1200,0,0,0,1.0,0.0,
+N1,subproc,4,6,AgentProvenance,1200,369,825,0,6,0.3075,0.6875,369
+N1,subproc,4,6,FACT,1200,1200,0,0,0,1.0,0.0,
+N3,inproc,4,6,AgentProvenance,1200,789,411,0,0,0.6575,0.3425,672
+N3,inproc,4,6,FACT,1200,1200,0,0,0,1.0,0.0,
+N3,subproc,4,6,AgentProvenance,1200,816,384,0,0,0.68,0.32,679
+N3,subproc,4,6,FACT,1200,1200,0,0,0,1.0,0.0,

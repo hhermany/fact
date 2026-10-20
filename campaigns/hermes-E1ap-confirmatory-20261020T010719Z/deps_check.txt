@@ -1,0 +1,1 @@
+  AgentProvenance /opt/agentprov/agentprov: OK (agentprov version v0.9.0 (fb83e6413178db3bde9803c8b4201811d5b0dde8; 2026-10-08T18:11:30+00:00; linux/amd64))

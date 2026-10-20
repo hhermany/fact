@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E7rc.json --n 1 --seed 51193 --label confirmatory --preflight preflight/last
