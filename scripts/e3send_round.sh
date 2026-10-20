@@ -40,9 +40,11 @@ cat /proc/loadavg > "$OUT/loadavg-start.txt"
 cat /sys/kernel/security/lsm > "$OUT/lsm.txt"
 
 PPID_POL=""
+# bpf_stats in every configuration (also 'none'), so its own cost does not bias the deltas
+sysctl -q -w kernel.bpf_stats_enabled=1
+trap 'sysctl -q -w kernel.bpf_stats_enabled=0' EXIT
 if [ "$POL" != none ]; then
   [ -x "$HERE/policy/fact_policy" ] && [ -f "$HERE/policy/fact_policy.bpf.o" ] || make -s -C "$HERE/policy"
-  sysctl -q -w kernel.bpf_stats_enabled=1
   "$HERE/policy/fact_policy" /sys/fs/cgroup "$LO" "$HI" 1 "$HERE/policy/fact_policy.bpf.o" 0 "$PER_SEND" \
       > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
   PPID_POL=$!
