@@ -134,7 +134,11 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--base-port", type=int, default=61000)
     ap.add_argument("--server-port", type=int, default=64999)
-    ap.add_argument("--binding-mode", choices=["manual", "auto"], default="manual")
+    ap.add_argument("--binding-mode", choices=["manual", "auto", "none"], default="manual")
+    ap.add_argument("--server-windows", type=int, default=0,
+                    help="1: the server records each call's window inside the server (server_calls.jsonl, E5aps)")
+    ap.add_argument("--allow-all", type=int, default=0,
+                    help="1 with --policy 1: every execution may reach all its destinations (E9cost)")
     ap.add_argument("--dest-host", default="127.0.0.1",
                     help="destination of the tools; outside loopback, the services run on another machine (workload/remote_farm.py)")
     ap.add_argument("--policy", type=int, default=0,
@@ -213,7 +217,7 @@ def main():
         # a random half of its own destinations). A wrong label R->P wrongly allows;
         # P->R or between R wrongly denies.
         rng = random.Random(a.seed + 7919)
-        classes = {e: ("P" if i % 2 == 0 else "R") for i, e in enumerate(execs)}
+        classes = {e: ("P" if i % 2 == 0 or a.allow_all else "R") for i, e in enumerate(execs)}
         allow = {}
         for e in execs:
             own = [o["dport"] for o in ops_by_exec[e]]
@@ -303,6 +307,8 @@ def main():
         extra.append("--udp")
     if a.tool == "mixed" and a.send_binding:
         extra.append("--send-binding")
+    if a.server_windows:
+        extra += ["--call-log", os.path.join(a.out, "server_calls.jsonl")]
     srv = subprocess.Popen(cmd + ["--port", str(a.server_port), "--binding", a.binding_mode] + extra,
                            env=dict(os.environ, FACT_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)
@@ -331,7 +337,8 @@ def main():
                 listener.dump(os.path.join(a.out, "requests.jsonl"))
     allv = [x for l in lats for x in l]
     json.dump({"tool": a.tool, "calls": len(allv), "tool_ms_p50": st.median(allv),
-               "tool_ms_mean": st.mean(allv), "tool_ms_p90": sorted(allv)[int(0.9 * (len(allv) - 1))]},
+               "tool_ms_mean": st.mean(allv), "tool_ms_p90": sorted(allv)[int(0.9 * (len(allv) - 1))],
+               "tool_ms_p99": sorted(allv)[int(0.99 * (len(allv) - 1))], "ok": sum(json.loads(x)["ok"] for x in open(os.path.join(a.out, "ops.jsonl")))},
               open(os.path.join(a.out, "e4_summary.json"), "w"), indent=1)
 
 

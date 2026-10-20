@@ -1,0 +1,10 @@
+{
+  "experiment": "E9cost",
+  "runner": "fullcost",
+  "description": "Cost of the full recommended configuration (E9b: session-derived identity, clearing, send binding, datagram hooks, trusted runtime, policy with per-send authorization, live IPFIX, collector fact-all.bt) against no FACT at all, under the same workload: the shared MCP server, K sessions, 25 calls each, every call a DNS query over UDP, an HTTP GET, and a subprocess connect, all permitted. Client-side call latency (p50/p90/p99), host CPU during the workload, and CPU of FACT's components (COST=1).",
+  "factors": {
+    "fact": ["off", "all"],
+    "execs": [4, 8]
+  },
+  "fixed": {"ops": 25}
+}

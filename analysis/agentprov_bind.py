@@ -8,7 +8,9 @@ call id, execution scope (the session), the identity of the process that served
 the call (pid, root pid, cgroup: the shared MCP server in E5ap, or the execution's
 own process tree and cgroup when each execution has one, as in AgentProvenance's
 per-execution sandboxes, E1ap) and the exact call window [t_start, t_end]
-measured by the client. The sensor holds uncorrelated
+measured by the client or, with AGENTPROV_WINDOW=server (E5aps), the window
+measured inside the server (handler entry to exit, server_calls.jsonl), which
+excludes the client's queueing. The sensor holds uncorrelated
 events for late bindings (--pending-ttl), so the bindings registered here are
 matched by AgentProvenance's own correlation engine. Then it stops the sensor
 and exports AgentProvenance's events and correlations as JSON.
@@ -41,6 +43,12 @@ def main():
     cg_of = {e: cg for cg, es in reg["cgroups"].items() for e in es}
     run_id = "fact-" + os.path.basename(os.path.normpath(rdir))
     ops = [json.loads(l) for l in open(os.path.join(rdir, "ops.jsonl"))]
+    window = os.environ.get("AGENTPROV_WINDOW", "client")
+    if window == "server":   # each (execution, port) is one call in E5 (one port per operation)
+        srv = {(c["exec_id"], c["port"]): c for c in map(json.loads, open(os.path.join(rdir, "server_calls.jsonl")))}
+        for op in ops:
+            c = srv[(op["exec_id"], op["dport"])]
+            op["t_start"], op["t_end"] = c["t_start"], c["t_end"]
     with open(os.path.join(dd, "binds.log"), "w") as log:
         for op in ops:
             cmd = [ap, "--data-dir", data, "telemetry", "bind", "--run", run_id,
@@ -49,7 +57,7 @@ def main():
                    "--cgroup-id", str(cg_of[op["exec_id"]]),
                    "--started-at", rfc3339(op["t_start"]), "--ended-at", rfc3339(op["t_end"])]
             r = subprocess.run(cmd, capture_output=True, text=True)
-            log.write(json.dumps({"op_id": op["op_id"], "rc": r.returncode,
+            log.write(json.dumps({"op_id": op["op_id"], "rc": r.returncode, "window": window,
                                   "out": r.stdout[-300:], "err": r.stderr[-300:]}) + "\n")
             if r.returncode != 0:
                 sys.exit(f"bind failed ({op['op_id']}): {r.stderr.strip()[-300:]}")
@@ -71,7 +79,7 @@ def main():
     dump(["telemetry", "list", "--json", "--limit", "100000"], "events.json")
     dump(["telemetry", "correlations", "--json"], "correlations.json")
     dump(["sensor", "status"], "sensor_status.txt")
-    print(json.dumps({"agentprov_binds": len(ops), "run": run_id}))
+    print(json.dumps({"agentprov_binds": len(ops), "run": run_id, "window": window}))
 
 
 if __name__ == "__main__":

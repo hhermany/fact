@@ -33,7 +33,8 @@ ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": 
        "jitter": "--jitter", "ops": "--ops", "threads": "--threads", "tool": "--tool",
        "binding_mode": "--binding-mode", "model": "--model", "ollama": "--ollama", "dest_host": "--dest-host", "num_predict": "--num-predict",
        "replay_from": "--replay-from", "src": "--replay-src", "send_binding": "--send-binding", "trust": "--trust",
-       "identity": "--identity", "client_spoof": "--client-spoof", "clear_after": "--clear-after"}
+       "identity": "--identity", "client_spoof": "--client-spoof", "clear_after": "--clear-after",
+       "server_windows": "--server-windows", "allow_all": "--allow-all"}
 
 
 def sh(cmd, cwd=None):
@@ -129,7 +130,7 @@ def main():
         f.write(" ".join(sys.argv) + "\n")
 
     runner = spec.get("runner", "attribution")
-    expected = {"overhead": "overhead.json", "sendcost": "overhead.json",
+    expected = {"overhead": "overhead.json", "sendcost": "overhead.json", "fullcost": "e4_summary.json",
                 "capacity": "capacity.json"}.get(runner, "score.json")
     t0 = time.time()
     for r in runs:
@@ -145,6 +146,9 @@ def main():
             cmd = [os.path.join(HERE, "scripts", "e3send_round.sh"), rdir, "--policy", str(p["policy"]),
                    "--proto", str(p["proto"]), "--n", str(p.get("n", 200000)),
                    "--warmup", str(p.get("warmup", 10000)), "--seed", str(r["seed"])]
+        elif runner == "fullcost":     # E9cost: full recommended configuration vs no FACT
+            cmd = [os.path.join(HERE, "scripts", "e9cost_round.sh"), rdir, "--fact", str(p["fact"]),
+                   "--execs", str(p["execs"]), "--ops", str(p.get("ops", 25)), "--seed", str(r["seed"])]
         elif runner == "capacity":     # E2b: collector capacity
             cmd = [os.path.join(HERE, "scripts", "e2b_round.sh"), rdir, "--par", str(p["par"]),
                    "--n", str(p.get("n", 50000)), "--collector", str(p["collector"]), "--seed", str(r["seed"])]
@@ -162,6 +166,7 @@ def main():
             env["WORKLOAD"] = str(p["workload"])
         if p.get("agentprov"):         # related system actually run, next to FACT
             env["AGENTPROV"] = str(p["agentprov"])
+            env["AGENTPROV_WINDOW"] = str(p.get("ap_window", "client"))
         if p.get("cost"):              # CPU cost under the experiment's own workload
             env["COST"] = "1"
         if p.get("ipfix"):             # live factd exporting IPFIX to a capture (E8ipfix)

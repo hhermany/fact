@@ -251,6 +251,36 @@ def main():
               ["proto", "policy", "runs", "p50_ns", "p50_delta_ns", "p99_ns", "k_sends_per_s",
                "lsm_ns_per_run", "sendmsg4_ns_per_run", "failures", "denials"], rows)
 
+    # E9cost: full recommended configuration vs no FACT (medians over runs)
+    c = collections.defaultdict(list)
+    for p, rd in runs(a.campaigns, "E9cost", a.label):
+        r = {"s": json.load(open(os.path.join(rd, "e4_summary.json"))),
+             "h": json.load(open(os.path.join(rd, "host_cpu.json")))}
+        if p["fact"] == "all":
+            r["cost"] = json.load(open(os.path.join(rd, "cost.json")))
+            r["I"] = json.load(open(os.path.join(rd, "score.json")))["resolvers"]["fused"]["I"]
+            ps = json.load(open(os.path.join(rd, "policy_score.json")))
+            r["perr"] = ps["FA"] + ps["FD"]
+            ip = json.load(open(os.path.join(rd, "ipfix_score.json")))
+            r["ipfix_ok"] = int(bool(ip["ipfix_equals_factd"]) and not ip["decode_errors"])
+        c[(int(p["execs"]), p["fact"])].append(r)
+    if c:
+        rows = []
+        for (k, fact), rs in sorted(c.items()):
+            med = lambda f: st.median(f(r) for r in rs)
+            al = [r for r in rs if "cost" in r]
+            rows.append([k, fact, len(rs), sum(r["s"]["calls"] for r in rs),
+                         round(med(lambda r: r["s"]["tool_ms_p50"]), 2), round(med(lambda r: r["s"]["tool_ms_p90"]), 2),
+                         round(med(lambda r: r["s"]["tool_ms_p99"]), 2),
+                         round(med(lambda r: 1000 * r["h"]["host_cpu_s"] / r["h"]["calls"]), 2),
+                         round(100 * st.median(r["cost"]["fact_share_of_host"] for r in al), 2) if al else "",
+                         round(st.median(r["cost"].get("factd_cpu_s", 0) / r["cost"]["wall_s"] for r in al) * 100, 2) if al else "",
+                         sum(r.get("I", 0) for r in rs), sum(r.get("perr", 0) for r in rs),
+                         sum(r.get("ipfix_ok", 0) for r in al) if al else ""])
+        write(os.path.join(a.out, "E9cost.csv"),
+              ["execs", "fact", "runs", "calls", "call_ms_p50", "call_ms_p90", "call_ms_p99", "host_cpu_ms_per_call",
+               "fact_pct_of_host", "factd_pct_of_core", "misattributed", "policy_errors", "runs_ipfix_ok"], rows)
+
     # E7rc
     c = collections.defaultdict(list)
     for p, rd in runs(a.campaigns, "E7rc", a.label):

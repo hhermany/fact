@@ -40,10 +40,18 @@ Identity source (--identity, automatic binding only):
                asynchronous UDP client (third-party library, unconnected socket)
                (E5udp; --udp installs fact_rt's datagram hooks)
 
-Usage: python3 mcp_e4_server.py --port 64999 [--binding manual|auto] [--identity meta|session --tokens F]
+  none    no binding at all: no markers and no fact_rt (E9cost baseline).
+
+--call-log F   records, per tool call, the window measured INSIDE the server
+               (handler entry and exit, CLOCK_REALTIME ns; E5aps): one JSON line
+               {exec_id, port, t_start, t_end}.
+
+Usage: python3 mcp_e4_server.py --port 64999 [--binding manual|auto|none] [--identity meta|session --tokens F]
 """
 import argparse
 import asyncio
+import functools
+import inspect
 import ctypes
 import ctypes.util
 import json
@@ -51,6 +59,8 @@ import os
 import random
 import socket
 import sys
+import threading
+import time
 
 import anyio
 from mcp.server.fastmcp import FastMCP
@@ -114,16 +124,45 @@ def native_connect(port):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=64999)
-    ap.add_argument("--binding", choices=["manual", "auto"], default="manual")
+    ap.add_argument("--binding", choices=["manual", "auto", "none"], default="manual")
     ap.add_argument("--identity", choices=["meta", "session"], default="meta")
     ap.add_argument("--tokens", help="session identity: JSON file {token: exec_id}")
     ap.add_argument("--clear-after", action="store_true")
     ap.add_argument("--udp", action="store_true")
     ap.add_argument("--send-binding", action="store_true")
+    ap.add_argument("--call-log", help="server-side call windows (E5aps)")
     a = ap.parse_args()
     global MANUAL
     MANUAL = a.binding == "manual"
     mcp = FastMCP("fact-e4", host=LISTEN, port=a.port, log_level="WARNING")
+    if a.call_log:   # wraps every tool to record its window inside the server
+        clog, lk = open(a.call_log, "w", buffering=1), threading.Lock()
+
+        def record(exec_id, port, t0):
+            line = json.dumps({"exec_id": exec_id, "port": port, "t_start": t0, "t_end": time.time_ns()})
+            with lk:
+                clog.write(line + "\n")
+
+        def windowed(fn):
+            if inspect.iscoroutinefunction(fn):
+                @functools.wraps(fn)
+                async def w(*args, **kw):
+                    t0 = time.time_ns()
+                    try:
+                        return await fn(*args, **kw)
+                    finally:
+                        record(kw.get("exec_id"), kw.get("port"), t0)
+            else:
+                @functools.wraps(fn)
+                def w(*args, **kw):
+                    t0 = time.time_ns()
+                    try:
+                        return fn(*args, **kw)
+                    finally:
+                        record(kw.get("exec_id"), kw.get("port"), t0)
+            return w
+        _tool = mcp.tool
+        mcp.tool = lambda *ta, **tk: (lambda fn: _tool(*ta, **tk)(windowed(fn)))
 
     @mcp.tool()
     def sync_get(exec_id: str, port: int) -> str:
@@ -240,7 +279,7 @@ def main():
         ok += await p.wait() == 0
         return "ok" if ok == 3 else "fail"
 
-    if not MANUAL:
+    if a.binding == "auto":
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         from fact_rt import mcp as fact_mcp
         if a.udp or a.send_binding:

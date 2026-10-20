@@ -131,6 +131,14 @@ experiments:
     n: 3   # per boot (2 boots): K=2 has 50 connections per run -> 300 >= 299; 95% CI of AgentProvenance's error rate <= 5.7 points
 
   # AgentProvenance in the setting it targets (own process tree and cgroup per execution)
+  E5aps:
+    spec: workflow/experiments/E5aps.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots), as E5ap: same cells, server-side windows
+  E9cost:
+    spec: workflow/experiments/E9cost.json
+    pilot_n: 1
+    n: 5   # per boot (2 boots = 10 per cell)
   E1ap:
     spec: workflow/experiments/E1ap.json
     pilot_n: 1

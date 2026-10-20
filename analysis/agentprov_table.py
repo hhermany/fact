@@ -21,7 +21,7 @@ import os
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--experiment", default="E5ap", choices=["E5ap", "E1ap"])
+    ap.add_argument("--experiment", default="E5ap", choices=["E5ap", "E5aps", "E1ap"])
     ap.add_argument("--label", default="confirmatory")
     ap.add_argument("--campaigns", default="campaigns")
     ap.add_argument("--out", default="analysis/output")
@@ -36,7 +36,7 @@ def main():
                 continue
             rdir = os.path.join(cdir, "runs", r["run_id"])
             p = r["params"]
-            key = ((p["tool"],) if a.experiment == "E5ap" else (p["cond"], p["mode"])) + (int(p["execs"]),)
+            key = ((p["tool"],) if a.experiment in ("E5ap", "E5aps") else (p["cond"], p["mode"])) + (int(p["execs"]),)
             aps = json.load(open(os.path.join(rdir, "agentprov", "score.json")))["summary"]
             fused = json.load(open(os.path.join(rdir, "score.json")))["resolvers"]["fused"]
             c = cells[key]
@@ -49,7 +49,7 @@ def main():
             nruns[key] += 1
     os.makedirs(a.out, exist_ok=True)
     path = os.path.join(a.out, f"{a.experiment}_agentprov.csv")
-    keycols = ["tool", "execs"] if a.experiment == "E5ap" else ["cond", "mode", "execs"]
+    keycols = ["tool", "execs"] if a.experiment in ("E5ap", "E5aps") else ["cond", "mode", "execs"]
     order = {"sync": 0, "thread": 1, "subproc": 2, "async": 3, "N0": 0, "N1": 1, "N2": 2, "N3": 3, "inproc": 0}
     cols = keycols + ["runs", "system", "N", "C", "I", "A", "M", "C_N", "I_N", "same_op"]
     with open(path, "w", newline="") as f:
