@@ -123,9 +123,27 @@ def check_agentprov(spec):
     return out
 
 
+def check_node(spec):
+    """E5node: the Node.js runtime and the pinned TypeScript SDK of the Node MCP server."""
+    if not any(str(t).startswith("node_") for t in values(spec, "tool")):
+        return []
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    node = os.environ.get("FACT_NODE", "node")
+    try:
+        v = subprocess.run([node, "--version"], capture_output=True, text=True, timeout=10).stdout.strip()
+        pkg = os.path.join(here, "workload", "node", "node_modules", "@modelcontextprotocol", "sdk", "package.json")
+        want = json.load(open(os.path.join(here, "workload", "node", "package.json")))["dependencies"]
+        sdk = json.load(open(pkg))["version"]
+        ok = bool(v) and sdk == want["@modelcontextprotocol/sdk"]
+        return [(ok, f"Node.js {v or '?'} with @modelcontextprotocol/sdk {sdk}: {'OK' if ok else 'FAILED'}")]
+    except Exception as e:  # noqa: BLE001
+        return [(False, f"Node.js MCP server: FAILED ({e}; run inside nix develop)")]
+
+
 def main():
     spec = json.load(open(sys.argv[1]))
-    res = check_models(spec) + check_replay(spec) + check_dest_hosts(spec) + check_agentprov(spec)
+    res = (check_models(spec) + check_replay(spec) + check_dest_hosts(spec) + check_agentprov(spec)
+           + check_node(spec))
     if not res:
         print(f"external dependencies ({spec['experiment']}): none")
     for ok, msg in res:

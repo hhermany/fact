@@ -1,0 +1,10 @@
+{
+  "experiment": "E5node",
+  "description": "Second runtime: the shared MCP server is written in Node.js with the official TypeScript SDK (@modelcontextprotocol/sdk 1.32.1); one process and one JavaScript thread serve every session. Tools: async_get (timer, then net.connect), subproc_get (spawns node -e connect), http_get (node:http client, no keep-alive). Manual binding (the tools emit markers at start and end, thread-keyed) versus automatic binding (fact_rt_node: identity in AsyncLocalStorage from _meta, handed to the kernel at the libuv connect and at spawn; the tools emit nothing). Same reference (destination port -> execution).",
+  "factors": {
+    "tool": ["node_async", "node_subproc", "node_http"],
+    "binding_mode": ["manual", "auto"],
+    "execs": [4, 8]
+  },
+  "fixed": {"cond": "E5node", "ops": 25, "workload": "workload/mcp_e4.py"}
+}

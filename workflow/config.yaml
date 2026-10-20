@@ -138,6 +138,12 @@ experiments:
     pilot_n: 1
     n: 3   # per boot (2 boots): K=4 has 100 connections per run -> 600 >= 299 per cell
 
+  # second runtime (Node.js MCP server, fact_rt_node); same criterion as E5lib
+  E5node:
+    spec: workflow/experiments/E5node.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots): K=4 has 100 connections per run -> 600 >= 299 per cell
+
   # CPU cost under the E7r agent workload (one replay of each recording per boot)
   E7rc:
     spec: workflow/experiments/E7rc.json

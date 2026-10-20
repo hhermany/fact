@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Summary tables of the pre-submission experiments (E5lib, E5reuse, E6spoof, E7rc).
+"""Summary tables of the pre-submission experiments (E5lib, E5node, E5reuse, E6spoof, E7rc).
 
 Pools every OK run of the campaigns with the given label (default confirmatory)
 and writes, under analysis/output/:
   E5lib_libs.csv     per (tool, K): connections and the fused resolver's C, I, A, M
+  E5node_runtime.csv per (tool, binding_mode, K) of the Node.js MCP server: C, I, A, M
   E5reuse_bytes.csv  per (tool, send_binding, K): requests, connections, shared
                      connections, and the bytes (sent and received) credited to a wrong
                      execution under the opener rule and the sender rule
@@ -64,6 +65,20 @@ def main():
             k[x] += f[x]
     write(os.path.join(a.out, "E5lib_libs.csv"), ["tool", "execs", "runs", "N", "C", "I", "A", "M"],
           [[t, e, v["runs"], v["N"], v["C"], v["I"], v["A"], v["M"]] for (t, e), v in sorted(c.items())])
+
+    # E5node (second runtime): per (tool, binding_mode, K)
+    c = collections.defaultdict(collections.Counter)
+    for p, rd in runs(a.campaigns, "E5node", a.label):
+        f = json.load(open(os.path.join(rd, "score.json")))["resolvers"]["fused"]
+        k = c[(p["tool"], p["binding_mode"], int(p["execs"]))]
+        k["runs"] += 1
+        for x in ("N", "C", "I", "A", "M"):
+            k[x] += f[x]
+    if c:
+        write(os.path.join(a.out, "E5node_runtime.csv"),
+              ["tool", "binding_mode", "execs", "runs", "N", "C", "I", "A", "M", "I_pct"],
+              [[t, b, e, v["runs"], v["N"], v["C"], v["I"], v["A"], v["M"], pct(v["I"], v["N"])]
+               for (t, b, e), v in sorted(c.items())])
 
     # E5reuse: rescored from the raw events with the current score_bytes.score() (the
     # score_bytes.json written during each run keyed connections by source port only, so a

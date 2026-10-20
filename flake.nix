@@ -22,6 +22,10 @@
         doCheck = false;
       };
       # mcp: E4; httpx, aiohttp, requests and the fetch server: third-party client libraries (E5lib)
+      # E5node: Node.js runtime and the MCP server's npm dependencies (official TypeScript SDK),
+      # fetched from workload/node/package-lock.json (fixed versions and integrity hashes)
+      nodejs = pkgs.nodejs_22;
+      nodeModules = pkgs.importNpmLock.buildNodeModules { npmRoot = ./workload/node; inherit nodejs; };
       pyEnv = pkgs.python3.withPackages (ps: with ps; [ jupyterlab ipykernel mcp anyio httpx aiohttp requests (mcpServerFetch ps) ]);
     in {
       devShells.${system}.default = pkgs.mkShell {
@@ -30,16 +34,20 @@
         packages = with pkgs; [
           pyEnv bashInteractive coreutils findutils gawk gnugrep gnused gnutar gzip jq which git
           snakemake pandoc rEnv gcc fontconfig ollama curl   # ollama: local model of E7 (no paid tokens); curl: E5lib
+          nodejs                                           # E5node
         ];
         # font of the figures (Times, as in the IEEEtran template): fontconfig pinned by Nix
         FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.gyre-fonts ]; };
         shellHook = ''
           # exact interpreter of the workloads (the snakemake wrapper reorders PATH)
           export FACT_PYTHON=${pyEnv}/bin/python3
+          # E5node: exact Node.js and the pinned node_modules of the Node MCP server
+          export FACT_NODE=${nodejs}/bin/node
+          if [ -d workload/node ]; then ln -sfn ${nodeModules}/node_modules workload/node/node_modules; fi
           echo "FACT reproducible shell"
           echo "Nix: $(nix --version 2>/dev/null)"
           echo "Python: $(python3 --version)  R: $(R --version | head -1)"
-          echo "Snakemake: $(snakemake --version)"
+          echo "Snakemake: $(snakemake --version)  Node.js: $(node --version)"
           echo "bpftrace (host): $(command -v bpftrace >/dev/null && bpftrace --version || echo unavailable)"
           echo "kernel (host): $(uname -r)"
         '';

@@ -43,6 +43,10 @@ LIB_TOOLS.update(REUSE_TOOLS)
 TOOLS.update(LIB_TOOLS)
 # E6spoof: the tool's child process claims another execution's identity (mcp_e4_server.py)
 TOOLS["spoof"] = "spoof_get"
+# E5node: the second runtime: tools of the Node.js MCP server (workload/node/mcp_node_server.mjs,
+# official TypeScript SDK) instrumented by fact_rt_node; manual or automatic binding
+NODE_TOOLS = {"node_async": "async_get", "node_subproc": "subproc_get", "node_http": "http_get"}
+TOOLS.update(NODE_TOOLS)
 REUSE_PORTS = 2      # shared destination ports in E5reuse
 
 
@@ -135,6 +139,7 @@ def main():
     if abs(n_wrong - a.wrong_label * a.ops) > 1e-9:
         sys.exit(f"wrong_label*ops = {a.wrong_label * a.ops} is not an integer")
     lib = a.tool in LIB_TOOLS
+    node = a.tool in NODE_TOOLS
     if lib and a.binding_mode != "auto":
         sys.exit("the third-party library tools (E5lib) run only with the automatic binding")
     if n_wrong and a.binding_mode != "auto":
@@ -148,7 +153,7 @@ def main():
     plan = {"cond": a.cond, "mode": "mcp", "tool": a.tool, "binding": True, "binding_mode": a.binding_mode, "seed": a.seed,
             "ops_per_exec": a.ops, "execs": len(execs), "exec_ids": execs, "wrong_label": a.wrong_label,
             "wrong_per_exec": n_wrong,
-            "listen_addr": a.dest_host, "mcp_version": version("mcp"),
+            "listen_addr": a.dest_host, "mcp_version": version("mcp"), "runtime": "node" if node else "python",
             "dport_map": {} if reuse else {str(o["dport"]): [o["exec_id"], o["op_id"]] for e in execs for o in ops_by_exec[e]}}
     if lib:
         plan["send_binding"] = a.send_binding
@@ -197,12 +202,21 @@ def main():
                 s.close()
         listener = None
     else:
-        listener = KeepAliveHttpListener(ports) if reuse else HttpListener(ports) if lib else Listener(ports)
+        listener = (KeepAliveHttpListener(ports) if reuse else
+                    HttpListener(ports) if lib or a.tool == "node_http" else Listener(ports))
         listener.start()
     cg_path, cg_id = cg_create("E4-server")
     here = os.path.dirname(os.path.abspath(__file__))
-    srv = subprocess.Popen([sys.executable, "-I", os.path.join(here, "mcp_lib_server.py" if lib else "mcp_e4_server.py"),
-                            "--port", str(a.server_port), "--binding", a.binding_mode]
+    if node:
+        cmd = [os.environ.get("FACT_NODE", "node"), os.path.join(here, "node", "mcp_node_server.mjs")]
+        nv = subprocess.run(cmd[:1] + ["--version"], capture_output=True, text=True).stdout.strip()
+        plan["node_version"] = nv
+        plan["mcp_ts_sdk_version"] = json.load(open(os.path.join(
+            here, "node", "node_modules", "@modelcontextprotocol", "sdk", "package.json")))["version"]
+        json.dump(plan, open(os.path.join(a.out, "plan.json"), "w"), indent=1)
+    else:
+        cmd = [sys.executable, "-I", os.path.join(here, "mcp_lib_server.py" if lib else "mcp_e4_server.py")]
+    srv = subprocess.Popen(cmd + ["--port", str(a.server_port), "--binding", a.binding_mode]
                            + (["--send-binding"] if lib and a.send_binding else []),
                            env=dict(os.environ, FACT_DEST=a.dest_host),
                            stdout=open(os.path.join(a.out, "server.log"), "w"), stderr=subprocess.STDOUT)
