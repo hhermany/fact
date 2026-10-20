@@ -8,9 +8,9 @@ Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 
 | Path | Content |
 |---|---|
-| `collector/` | bpftrace collectors (`fact.bt` full, `fact-fast.bt` optimized, `fact-count.bt` ablation) |
-| `fact_rt/` | Runtime binding: execution identity follows the task (Python `contextvars`) and is handed to the kernel right before each `connect`/process creation; FastMCP integration via `_meta` |
-| `policy/` | Per-execution egress policy: `cgroup/connect4` eBPF program (libbpf) + loader + `policyctl.py` |
+| `collector/` | bpftrace collectors (`fact.bt` full, `fact-fast.bt` optimized, `fact-count.bt` ablation, `fact-bytes.bt` with per-send/receive byte events) |
+| `fact_rt/` | Runtime binding: execution identity follows the task (Python `contextvars`) and is handed to the kernel right before each `connect`/process creation (optionally also before each `send`, for connections reused by several tasks); FastMCP integration via `_meta` |
+| `policy/` | Per-execution egress policy: `cgroup/connect4` eBPF program (libbpf) + loader + `policyctl.py`; optional trusted-runtime mode (markers accepted only from registered runtime processes) |
 | `factd/` | Live attribution and per-execution accounting daemon |
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper, and `figures.R`, a literate R script (knitr::spin) that draws every figure with ggplot from the summarized CSVs; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
 | `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents (E7, E7m); `remote_farm.py` serves the destinations on a second machine (E3net, E5net, E6net) |
@@ -47,6 +47,9 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | AgentProvenance executed (E5ap); larger models (E7m) | `hermes-E5ap-confirmatory-*`, `hermes-E7m-confirmatory-*` | `analysis/agentprov_table.py`, `analysis/analysis.R`, `analysis/figures.R` |
 | Commercial models (E7c, E7o) and model-free replay (E7r) | `hermes-E7c-confirmatory-*`, `hermes-E7o-confirmatory-*`, `hermes-E7r-confirmatory-*` | `analysis/e7c_tokens.py`, `analysis/replay_compare.py`, `analysis/analysis.R` |
 | Live accounting (`factd`) | all confirmatory campaigns (`analysis/output/factd_equiv.json`) | `tests/test_factd_equiv.py` |
+| AgentProvenance in its own setting (E1ap) | `hermes-E1ap-confirmatory-*` | `analysis/agentprov_table.py --experiment E1ap` |
+| Third-party clients (E5lib), connection reuse and bytes (E5reuse), spoofed markers (E6spoof), CPU cost under agents (E7rc) | `hermes-E5lib-confirmatory-*`, `hermes-E5reuse-confirmatory-*`, `hermes-E6spoof-confirmatory-*`, `hermes-E7rc-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_bytes.py` |
+| Send-binding cost | `analysis/output/send_bind/` | `bench/send_bind_round.sh` |
 
 ## Re-running the confirmatory campaigns
 
@@ -83,7 +86,7 @@ to use FACT or to run E1-E7. The items below exist only for the comparison and v
 
 | Experiment | Needs | Role |
 |---|---|---|
-| E5ap | AgentProvenance v0.9.0 on the measured host | **comparison only**: a related system run next to FACT on the same rounds, to measure its attribution against the same reference |
+| E5ap, E1ap | AgentProvenance v0.9.0 on the measured host | **comparison only**: a related system run next to FACT on the same rounds, to measure its attribution against the same reference |
 | E3net, E5net, E6net | second machine running `workload/remote_farm.py` | destinations outside loopback |
 | E7m | second machine with Ollama and GPU | larger local models |
 | E7c | Anthropic API key in `/etc/fact/anthropic.key` (root, mode 600) | commercial models (Claude Opus 5.5, Haiku 5.5); cost and tokens are recorded per run |

@@ -60,6 +60,11 @@ Smoke and pilot numbers quoted in internal documents are always labeled as such.
 | E7c | 5 | model ∈ {claude-opus-5-5, claude-haiku-5-5} × K ∈ {4,8} | Anthropic API; automatic binding + policy; max_tokens=512; tokens and cost recorded |
 | E7o | 5 | model ∈ {gpt-6.1-sol, gpt-6-luna} × K ∈ {4,8} | OpenAI Responses API; reasoning effort low; automatic binding + policy; tokens (including reasoning) and cost recorded |
 | E7r | 5 | model (the 4 of E7c/E7o) × K ∈ {4,8} × recording ∈ {boot 1, boot 2} | model-free replay of the recorded runs; automatic binding + policy |
+| E1ap | 5 | S ∈ {N0, N1, N3} × mode ∈ {inproc, subproc} | K=4, 100 ops/execution; AgentProvenance v0.9.0 with each execution's own process and cgroup in its bindings |
+| E5lib | 5 | client ∈ {httpx, aiohttp, requests, urllib, curl, MCP fetch server's `fetch_url`} × K ∈ {4,8} | automatic binding; tools only call unmodified third-party code; HTTP destinations |
+| E5reuse | 5 | client ∈ {httpx fresh (control), httpx shared, aiohttp shared, requests shared} × send binding ∈ {off, on} × K ∈ {4,8} | keep-alive pool shared by the sessions; collector `fact-bytes.bt`; per-request byte reference at the destination |
+| E6spoof | 5 | trusted-runtime mode ∈ {off, on} × K ∈ {2,4,8} | E6 classes; every call of a restricted execution runs a tool whose child claims a permissive identity |
+| E7rc | 4 | model (the 4 of E7c/E7o) × K ∈ {4,8} × recording | E7r replays with CPU accounting (`COST=1`: process CPU, `bpf_stats`, factd replay) |
 
 E1, E5, and E6 are full factorials, which allows estimating effects and interactions without confounding [Montgomery 2017, chs. 5–6; Jain 1991, part IV].
 
@@ -93,6 +98,13 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
 - **E7c:** same design and N as E7m (26 runs per cell over two boots; 312 decisions with K=4). The two models are a high-end one (Opus 5.5) and the entry-level one (Haiku 5.5) of Anthropic's current tool-calling line; Fable 5.1, above Opus, was left out for cost; the cost measured in the pilot (≈ US$ 4.80 for the whole campaign) was the criterion for not including a third model.
 - **E7o:** same design and N as E7c, with a high-end model (gpt-6.1-sol) and the entry-level one (gpt-6-luna) of OpenAI's current tool-calling line. gpt-6-astra was left out for cost (≈ US$ 11 estimated for the campaign). Reasoning effort `low`: the lowest level accepted by both models (gpt-6.1-sol rejects `none` and `minimal`; tested on 2026-10-18).
 - **E7r:** each of the 208 recorded E7c and E7o runs is repeated once in each boot (13 runs per cell and boot × 16 cells), without calling a model. The criterion is equality: the replayed calls and the outcome (attribution and policy decisions) must be identical to the recording. Reason: the commercial models have no dated version in the APIs (checked on 2026-10-18: only `claude-opus-5-5`, `claude-haiku-5-5`, `gpt-6.1-sol`, `gpt-6-luna`), so they may change; the recording allows reproducing the measurement without them.
+- **Pre-submission experiments (2026-10-20), each with the criterion of the experiment it extends:**
+  - **E1ap:** 6 runs per cell (3 per boot), 400 connections per run, hence 2400 per cell; the 95% CI half-width of AgentProvenance's error rate is ≤ 2 points.
+  - **E5lib:** 6 runs per cell, as E5 (K=4 gives 100 connections per run, 600 ≥ 299 per cell).
+  - **E5reuse:** 6 runs per cell; the criterion is applied to bytes, with a per-request reference logged by the destination (byte ranges of each request and response on each connection). Connections are matched by (client source port, epoch), because the kernel can give a closed connection's port to a later one (the first scoring keyed by port only and merged such connections; the campaigns are rescored from the raw events by `analysis/presub_tables.py`).
+  - **E6spoof:** 6 runs per cell, as E6 (K=2 gives 50 decisions per run).
+  - **E7rc:** one replay of each recorded E7c/E7o run per boot (16 runs per boot); reported as medians and maxima.
+  - **Send-binding cost** (`bench/send_bind_round.sh`): 10 repetitions per mode (off, same identity, rebind, alternating identity) and collector (none, `fact.bt`, `fact-bytes.bt`), 5 batches of 20,000 sends of 256 bytes each; median ns per send. A first execution overlapped with a manual test and was discarded.
 - **E7m:** the same criterion as E7, applied to the policy decisions: with K=4 there are 12 decisions per run (pilot), hence 26 runs = 312 ≥ 299; with K=8, 624. The attributed connections per cell vary with the model (260–912), because the model decides how many tools to call; the criterion is applied to decisions, as in E7. K=4 repeats E7; K=8 is the largest K of E5 and the parallelism configured in Ollama (`OLLAMA_NUM_PARALLEL=8`). The two models are the tool-calling models of up to 8B parameters that fit in the 12 GB GPU (Q4_K_M quantization).
 
 ### 3.4 Metrics
@@ -140,13 +152,15 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
   - residual state between runs (mitigated by a fresh collector and new cgroups);
   - interference between the bpftrace collector and the policy program, which coexist in E6/E7.
 - **Construct:**
-  - "connection" means a `connect` attempt;
+  - "connection" means a `connect` attempt; bytes are attributed only in E5reuse, and only for HTTP/1.1 keep-alive (protocols that multiplex several sessions' requests on one connection, such as HTTP/2, are not evaluated);
   - a synthetic execution is not a real task (mitigated in E4–E7 with a real MCP server and LLM agents);
   - in E7, the model's behavior is part of the workload, not a controlled variable.
 - **External:**
   - one host, one kernel, and one MCP SDK version;
   - open models of up to 8B parameters and four commercial models from two providers;
   - binding implemented only for Python;
+  - the trusted-runtime mode (E6spoof) stops a tool's child process from claiming another identity, not code running inside the runtime process;
+  - E5lib runs the official MCP fetch server's `fetch_url` inside the shared server, not that server as a whole;
   - IPv4 only; the second machine is reached through a virtual switch.
 - **Conclusion:**
   - dependence among events of a run (handled with the run as the unit);
@@ -165,6 +179,7 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
 8. **E7m, boot 2:** opening an agent's MCP session hung with no error and no client timeout, before the model's first step. The campaign (152437Z) was discarded; fixed with a 60 s deadline and up to 3 attempts only before the first step (commit 40ca786).
 9. **Probe connections in E5net:** before each run, the driver checks whether the remote destination answers, connecting to the first and last planned ports. These 2 connections per run (144 in total) have no identity and appear as unattributed (M) for the fused resolver; they are not errors (I = 0).
 10. **E7c, first pilot (203816Z):** the 4 runs failed because the Anthropic API rejects the `temperature` parameter for Opus 5.5 and Haiku 5.5. Fixed in commit 2c98973 (parameter removed); the next pilot (204028Z) passed. So that no campaign starts with a broken dependency, `scripts/check_deps.py` now runs before every campaign (models, second machine, AgentProvenance), and `run_confirmatory.sh` propagates campaign failures (`pipefail`).
+11. **E5reuse, first scoring:** connections were keyed by the client source port only; a port reused by a later connection merged two connections and produced false errors (up to 1.5% of the bytes in the control). Fixed in commit 54fc45e (key: source port and epoch); the campaigns were rescored from the raw events, unchanged.
 
 ## 8. Methodological references
 
