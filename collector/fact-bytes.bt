@@ -113,7 +113,7 @@ kretprobe:tcp_sendmsg
 	$sk = (struct sock *)@snd_sk[tid];
 	$dp = $sk->__sk_common.skc_dport;
 	$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
-	$n = (int64)retval;
+	$n = (int32)retval;   /* int return value: negative errno on failure */
 	printf("{\"ev\":\"send\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"sk\":%llu,\"ctx\":\"%s\",\"bytes\":%lld,\"req\":%llu,\"sport\":%d,\"dport\":%d}\n",
 	       nsecs, pid, tid, cgroup, (uint64)$sk, @ctx[tid], $n > 0 ? $n : 0, @snd_req[tid], $sk->__sk_common.skc_num, $dport);
 	delete(@snd_sk[tid]);
