@@ -21,7 +21,8 @@
  * pass (so as not to affect SSH, DNS, etc. on the test host).
  * Every decision is logged to a ring buffer (auditing and evaluation).
  * Datagrams (cgroup/sendmsg4): an unconnected UDP send (sendto with an address)
- * is decided like a connect, by the identity of the sending thread.
+ * is decided like a connect, by the identity of the sending thread (only denials
+ * are logged).
  * Per-send authorization (cfg.per_send, BPF LSM socket_sendmsg): every send on an
  * IPv4 TCP or UDP socket to a policed port is decided again by the identity of the
  * SENDING thread, so a connection opened by one execution and reused by another
@@ -159,7 +160,9 @@ static __always_inline int id_eq(const char *a, const char *b)
 }
 
 /* kind: 0 = connect (cgroup/connect4), 1 = unconnected datagram (cgroup/sendmsg4),
- * 2 = send on an existing socket (LSM socket_sendmsg; only denials are logged) */
+ * 2 = send on an existing socket (LSM socket_sendmsg). Per-datagram and per-send
+ * decisions log only denials: logging every allowed datagram costs microseconds per
+ * send (E3send pilot), while a connect is logged whatever the verdict. */
 static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 kind)
 {
 	__u64 pt = bpf_get_current_pid_tgid();
@@ -192,7 +195,7 @@ static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 
 	} else {
 		verdict = c->no_ctx_allow ? 1 : 0;
 	}
-	if (kind == 2 && verdict)
+	if (kind != 0 && verdict)
 		return verdict;
 	struct decision *d = bpf_ringbuf_reserve(&events, sizeof(*d), 0);
 	if (d) {
