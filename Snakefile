@@ -117,6 +117,15 @@ rule agentprov_native:
         "python3 -I analysis/agentprov_table.py --experiment E1ap --label confirmatory --out analysis/output > /dev/null"
 
 
+rule presub:
+    # third-party clients (E5lib), connection reuse and bytes (E5reuse), spoofed markers (E6spoof), CPU cost (E7rc)
+    output:
+        "analysis/output/E5lib_libs.csv", "analysis/output/E5reuse_bytes.csv",
+        "analysis/output/E6spoof_policy.csv", "analysis/output/E7rc_cost.csv"
+    shell:
+        "python3 -I analysis/presub_tables.py --label confirmatory --out analysis/output > /dev/null"
+
+
 rule e7c_tokens:
     # tokens reported by the Anthropic API in each E7c call, and the cost
     output:
