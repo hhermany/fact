@@ -251,6 +251,27 @@ def main():
               ["proto", "policy", "runs", "p50_ns", "p50_delta_ns", "p99_ns", "k_sends_per_s",
                "lsm_ns_per_run", "sendmsg4_ns_per_run", "failures", "denials"], rows)
 
+    # E10budget: per-execution budgets in the kernel
+    c = collections.defaultdict(lambda: collections.defaultdict(int))
+    for p, rd in runs(a.campaigns, "E10budget", a.label):
+        r = json.load(open(os.path.join(rd, "budget_score.json")))
+        k = c[(int(p["budget"]), p["tool"], int(p["execs"]))]
+        k["runs"] += 1
+        for x in ("N", "TA", "TD", "FA", "FD"):
+            k[x] += r[x]
+        k["budget_denials"] += r["denials"].get("budget", 0)
+        k["exact_runs"] += int(bool(r["accounting_exact"]))
+        k["max_overshoot"] = max(k["max_overshoot"], r["max_overshoot_bytes"])
+        k["kernel_bytes"] += sum(v["kernel_bytes"] for v in r["kernel_vs_destination"].values())
+        k["dest_bytes"] += sum(v["destination_bytes"] for v in r["kernel_vs_destination"].values())
+    if c:
+        write(os.path.join(a.out, "E10budget.csv"),
+              ["budget_mode", "tool", "execs", "runs", "calls", "TA", "TD", "FA", "FD", "budget_denials",
+               "runs_kernel_bytes_exact", "kernel_bytes", "destination_bytes", "max_overshoot_bytes"],
+              [[m, t, e, v["runs"], v["N"], v["TA"], v["TD"], v["FA"], v["FD"], v["budget_denials"],
+                v["exact_runs"], v["kernel_bytes"], v["dest_bytes"], v["max_overshoot"]]
+               for (m, t, e), v in sorted(c.items())])
+
     # E5partial: byte accounting under backpressure
     rows = []
     for p, rd in runs(a.campaigns, "E5partial", a.label):
