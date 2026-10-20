@@ -317,8 +317,9 @@ def main():
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "policy"))
         import policyctl
         policyctl.trust(srv.pid)
-    json.dump({"roots": {str(srv.pid): execs}, "cgroups": {str(cg_id): execs}},
-              open(os.path.join(a.out, "registry.json"), "w"), indent=1)
+    tmp = os.path.join(a.out, "registry.json.tmp")   # atomic: factd may read it while it is written
+    json.dump({"roots": {str(srv.pid): execs}, "cgroups": {str(cg_id): execs}}, open(tmp, "w"), indent=1)
+    os.replace(tmp, os.path.join(a.out, "registry.json"))
     try:
         if not wait_port(a.server_port):
             sys.exit("MCP server did not start (see server.log)")

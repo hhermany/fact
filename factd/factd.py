@@ -231,8 +231,12 @@ def main():
             if stopping and not a.follow:
                 break
             if not a.replay and os.path.getmtime(a.registry) != reg_mtime:   # registry updated
-                reg_mtime = os.path.getmtime(a.registry)
-                d.load_registry(json.load(open(a.registry)))
+                m = os.path.getmtime(a.registry)
+                try:   # the writer may not have finished: keep the old registry and retry
+                    d.load_registry(json.load(open(a.registry)))
+                    reg_mtime = m
+                except (json.JSONDecodeError, ValueError):
+                    pass
             d.push(ev)
     except KeyboardInterrupt:
         pass
