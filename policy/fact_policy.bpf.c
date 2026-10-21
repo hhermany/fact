@@ -185,9 +185,22 @@ int on_fork(__u64 *ctx)
 SEC("tp_btf/sched_process_exit")
 int on_exit(__u64 *ctx)
 {
-	__u32 tid = (__u32)bpf_get_current_pid_tgid();
+	__u64 pt = bpf_get_current_pid_tgid();
+	__u32 tid = (__u32)pt, tgid = pt >> 32;
 	bpf_map_delete_elem(&ctx_map, &tid);
 	bpf_map_delete_elem(&dom_map, &tid);
+	if (tid == tgid)   /* the right to switch dies with the registered process (no PID reuse) */
+		bpf_map_delete_elem(&trust_map, &tgid);
+	return 0;
+}
+
+/* The right to switch credentials belongs to the registered program, not to its PID:
+ * exec revokes it (the credential itself is kept, like any other task state). */
+SEC("tp_btf/sched_process_exec")
+int on_exec(__u64 *ctx)
+{
+	__u32 tgid = bpf_get_current_pid_tgid() >> 32;
+	bpf_map_delete_elem(&trust_map, &tgid);
 	return 0;
 }
 

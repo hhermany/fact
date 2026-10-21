@@ -100,8 +100,8 @@ int main(int argc, char **argv)
 
 	struct bpf_link *links[16] = {0};
 	int nl = 0;
-	const char *tps[] = {"on_fork", "on_exit", "on_openat"};
-	for (int i = 0; i < (cred ? 2 : 3); i++) {   /* with the credential, openat markers are not accepted */
+	const char *tps[] = {"on_fork", "on_exit", "on_exec", "on_openat"};
+	for (int i = 0; i < (cred ? 3 : 4); i++) {   /* with the credential, openat markers are not accepted */
 		links[nl] = bpf_program__attach(bpf_object__find_program_by_name(obj, tps[i]));
 		if (!links[nl]) { fprintf(stderr, "attach %s failed\n", tps[i]); return 1; }
 		nl++;
