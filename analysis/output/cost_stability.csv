@@ -1,0 +1,19 @@
+effect,unit,pairs,boots,median_per_boot,median,ci95_lo,ci95_hi,min,max
+"E9cost tool call p50, K=4",%,10,2,2.32 / 2.16,2.24,-0.0321,3.52,-1.71,4.45
+"E9cost tool call p99, K=4",%,10,2,5.73 / 1.98,2.45,1.5,7.13,-1.24,9.4
+"E9cost host CPU per call, K=4",%,10,2,4.82 / 5.05,4.95,4.34,5.44,3.82,5.59
+"E9cost tool call p50, K=8",%,10,2,3.59 / 2.99,3.12,1.85,3.85,1.73,5.04
+"E9cost tool call p99, K=8",%,10,2,6.32 / 4.62,5.47,0.745,7.86,-2.76,10.1
+"E9cost host CPU per call, K=8",%,10,2,4.78 / 5.15,4.93,4.64,5.2,4.44,5.75
+E3send tcp: send_in - none,ns,10,2,342 / 239,268,120,355,-35,432
+E3send tcp: budget - none,ns,10,2,482 / 520,508,458,626,303,679
+E3send tcp: budget - send_in,ns,10,2,261 / 323,292,170,382,50,531
+E3send tcp: conn - none,ns,10,2,80 / -78,-23.5,-109,90,-237,131
+E3send udp: send_in - none,ns,10,2,1.13e+03 / 1.05e+03,1.06e+03,877,1.15e+03,415,1.21e+03
+E3send udp: budget - none,ns,10,2,1.54e+03 / 1.52e+03,1.54e+03,1.49e+03,1.66e+03,1.45e+03,1.71e+03
+E3send udp: budget - send_in,ns,10,2,498 / 607,552,389,746,358,1.06e+03
+E3send udp: conn - none,ns,10,2,112 / 80,96,1,126,-64,482
+E3send udpu: send_in - none,ns,10,2,745 / 785,748,697,1.02e+03,607,2.46e+03
+E3send udpu: budget - none,ns,10,2,2.65e+03 / 2.58e+03,2.59e+03,2.56e+03,2.78e+03,2.5e+03,3.1e+03
+E3send udpu: budget - send_in,ns,10,2,1.84e+03 / 1.81e+03,1.83e+03,1.79e+03,1.95e+03,146,2.14e+03
+E3send udpu: conn - none,ns,10,2,401 / 407,404,379,440,354,1.1e+03
