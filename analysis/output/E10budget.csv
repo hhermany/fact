@@ -1,0 +1,9 @@
+budget_mode,tool,execs,runs,calls,TA,TD,FA,FD,budget_denials,runs_kernel_bytes_exact,kernel_bytes,destination_bytes,max_overshoot_bytes
+1,async,4,6,600,420,180,0,0,180,6,0,0,0
+1,async,8,6,1200,840,360,0,0,360,6,0,0,0
+1,httpx_shared,4,6,600,420,180,0,0,180,6,18600,18600,50
+1,httpx_shared,8,6,1200,840,360,0,0,360,6,37200,37200,50
+2,async,4,6,600,420,0,180,0,0,6,0,0,0
+2,async,8,6,1200,840,0,360,0,0,6,0,0,0
+2,httpx_shared,4,6,600,420,0,180,0,0,6,46500,46500,2375
+2,httpx_shared,8,6,1200,840,0,360,0,0,6,93000,93000,2375
