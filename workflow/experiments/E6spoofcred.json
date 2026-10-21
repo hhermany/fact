@@ -1,0 +1,26 @@
+{
+  "experiment": "E6spoofcred",
+  "description": "E6spoof with the execution credential: every call of a restricted execution runs a tool whose child process tries to switch its credential to a permissive execution's (prctl(PR_FACT, set, id)) before connecting. Without trust, the BPF LSM program on task_prctl accepts the switch; with trust (only the MCP server process may switch), the kernel refuses it (EPERM) and the child keeps the credential it inherited at clone. Automatic binding; same reference (exclusive destination port).",
+  "factors": {
+    "trust": [
+      0,
+      1
+    ],
+    "execs": [
+      2,
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E6spoof",
+    "tool": "spoof",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "cred": 1,
+    "collector": "fact-cred.bt"
+  }
+}

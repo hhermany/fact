@@ -51,21 +51,15 @@ BEGIN
  * so fact_policy acknowledges an applied switch with -EALREADY (-114); a switch
  * refused by the BPF LSM (caller outside the trusted runtime) does not change the
  * context here. */
-tracepoint:syscalls:sys_enter_prctl
-/ args->option == 0x46414354 /
+fexit:vmlinux:security_task_prctl
+/ args.option == 0x46414354 /
 {
-	@pend_op[tid] = args->arg2;
-	if (args->arg2 == 1) {
-		@pend_id[tid] = str(args->arg3);
-	}
-}
-
-tracepoint:syscalls:sys_exit_prctl
-/ @pend_op[tid] /
-{
-	if (args->ret == -114) {
-		if (@pend_op[tid] == 1) {
-			@ctx[tid] = @pend_id[tid];
+	/* fexit on the LSM entry point fires only for prctl, unlike the syscall
+	 * tracepoints, whose activation puts every system call of every process on the
+	 * tracing path; the arguments and the verdict are read in one place. */
+	if (retval == -114) {
+		if (args.arg2 == 1) {
+			@ctx[tid] = str(uptr(args.arg3));
 			printf("{\"ev\":\"ctx_begin\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",
 			       nsecs, pid, tid, cgroup, @ctx[tid]);
 		} else {
@@ -75,10 +69,8 @@ tracepoint:syscalls:sys_exit_prctl
 		}
 	} else {
 		printf("{\"ev\":\"switch_refused\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"ret\":%d}\n",
-		       nsecs, pid, tid, args->ret);
+		       nsecs, pid, tid, retval);
 	}
-	delete(@pend_op[tid]);
-	delete(@pend_id[tid]);
 }
 
 tracepoint:sched:sched_process_fork
@@ -204,6 +196,4 @@ END
 	clear(@skctx);
 	clear(@snd_sk);
 	clear(@snd_req);
-	clear(@pend_op);
-	clear(@pend_id);
 }

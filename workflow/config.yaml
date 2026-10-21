@@ -234,5 +234,27 @@ experiments:
     pilot_n: 1
     n: 3   # per boot (2 boots)
 
+# execution credential held in the kernel (prctl switch authorized by the BPF LSM)
+  E3cred:
+    spec: workflow/experiments/E3cred.json
+    pilot_n: 3
+    n: 5   # per boot (2 boots = 10 per cell)
+  E6cred:
+    spec: workflow/experiments/E6cred.json
+    pilot_n: 2
+    n: 3   # per boot (2 boots), as E6: K=2 has 50 decisions per run -> 300 >= 299
+  E6reusecred:
+    spec: workflow/experiments/E6reusecred.json
+    pilot_n: 2
+    n: 3   # per boot (2 boots), as E6reuse
+  E6spoofcred:
+    spec: workflow/experiments/E6spoofcred.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots), as E6spoof
+  E11file:
+    spec: workflow/experiments/E11file.json
+    pilot_n: 3
+    n: 3   # per boot (2 boots): 25 writes per execution per run
+
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05
