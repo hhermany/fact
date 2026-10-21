@@ -60,6 +60,8 @@ struct sock_common { unsigned short skc_family; __be16 skc_dport; __be32 skc_dad
 struct sock { struct sock_common __sk_common; } __attribute__((preserve_access_index));
 struct socket { struct sock *sk; } __attribute__((preserve_access_index));
 struct msghdr { void *msg_name; } __attribute__((preserve_access_index));
+struct inode { unsigned short i_mode; } __attribute__((preserve_access_index));
+struct file { struct inode *f_inode; } __attribute__((preserve_access_index));
 #define PR_FACT 0x46414354   /* "FACT" */
 #define FACT_SET 1
 #define FACT_CLEAR 2
@@ -102,6 +104,8 @@ struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
 	 __type(key, struct ident); __type(value, struct budget); } budget_map SEC(".maps");
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
 	 __type(key, struct ident); __type(value, struct usage); } usage_map SEC(".maps");
+struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
+	 __type(key, struct ident); __type(value, __u64); } file_usage SEC(".maps");   /* bytes written to files, per credential */
 
 /* syscalls:sys_enter_openat (format: __syscall_nr at 8, dfd at 16, filename at 24) */
 struct openat_args { __u64 common; int nr; int pad; long dfd; const char *filename; long flags; long mode; };
@@ -467,6 +471,31 @@ SEC("fexit/udp_sendmsg")
 int BPF_PROG(on_udp_sent, struct sock *sk, struct msghdr *msg, __u64 size, int ret)
 {
 	charge(sk, msg, ret);
+	return 0;
+}
+
+/* Generality (the same credential on another kernel-mediated resource): bytes that
+ * vfs_write accepted for regular files (its return value), charged to the writing
+ * task's credential. Loaded only with files=1 (10th loader argument). */
+SEC("fexit/vfs_write")
+int BPF_PROG(on_vfs_write, struct file *file, const char *buf, __u64 count, void *pos, long ret)
+{
+	if (ret <= 0 || !file)
+		return 0;
+	unsigned short mode = BPF_CORE_READ(file, f_inode, i_mode);
+	if ((mode & 0170000) != 0100000)   /* S_IFREG */
+		return 0;
+	struct ident *who = bpf_task_storage_get(&cred_store, bpf_get_current_task_btf(), 0, 0);
+	if (!who || !who->id[0])
+		return 0;
+	__u64 *v = bpf_map_lookup_elem(&file_usage, who);
+	if (!v) {
+		__u64 z = 0;
+		bpf_map_update_elem(&file_usage, who, &z, BPF_NOEXIST);
+		v = bpf_map_lookup_elem(&file_usage, who);
+	}
+	if (v)
+		__sync_fetch_and_add(v, (__u64)ret);
 	return 0;
 }
 

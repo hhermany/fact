@@ -1,0 +1,18 @@
+{
+  "experiment": "E11file",
+  "runner": "fileacct",
+  "description": "Generality: the same execution credential charges another kernel-mediated resource. K executions in one Python process write files (async: K asyncio tasks interleaved on one thread; pool: two worker threads serve every execution's calls in turn); the runtime hands the task's credential to the kernel before each write, and fact_policy (cred=1, files=1) charges the bytes vfs_write accepted for regular files to the writing task's credential (fexit/vfs_write). Reference: what each write returned, per execution. All executions share one PID, and in async mode one thread, so per-process or per-thread counters cannot separate them.",
+  "factors": {
+    "mode": [
+      "async",
+      "pool"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "ops": 25
+  }
+}

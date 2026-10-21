@@ -5,6 +5,8 @@ __pycache__/
 campaigns/*.tar.gz
 .snakemake/
 bench/connect_bench
+bench/open_bench
+bench/send_bench
 policy/fact_policy
 policy/fact_policy.bpf.o
 

@@ -59,7 +59,7 @@ static int on_event(void *ctx, void *data, size_t sz)
 int main(int argc, char **argv)
 {
 	if (argc < 5) {
-		fprintf(stderr, "usage: %s <cgroup> <lo> <hi> <no_ctx_allow> [obj] [lineage]\n", argv[0]);
+		fprintf(stderr, "usage: %s <cgroup> <lo> <hi> <no_ctx_allow> [obj] [lineage] [per_send] [budget] [cred] [files]\n", argv[0]);
 		return 2;
 	}
 	const char *obj_path = argc > 5 ? argv[5] : "fact_policy.bpf.o";
@@ -69,6 +69,7 @@ int main(int argc, char **argv)
 	unsigned per_send = argc > 7 ? (unsigned)atoi(argv[7]) : 0;
 	unsigned budget = argc > 8 ? (unsigned)atoi(argv[8]) : 0;
 	unsigned cred = argc > 9 ? (unsigned)atoi(argv[9]) : 0;
+	unsigned files = argc > 10 ? (unsigned)atoi(argv[10]) : 0;   /* file-write accounting by credential */
 	struct bpf_object *obj = bpf_object__open_file(obj_path, NULL);
 	if (!obj) { perror("open"); return 1; }
 	/* the LSM program is loaded only when requested (it needs the BPF LSM) */
@@ -78,12 +79,13 @@ int main(int argc, char **argv)
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_tcp_recv"), cred ? true : false);
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_prctl"), cred ? true : false);
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_openat"), cred ? false : true);
+	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_vfs_write"), (cred && files) ? true : false);
 	if (bpf_object__load(obj)) { fprintf(stderr, "load failed\n"); return 1; }
 
 	mkdir("/sys/fs/bpf/fact", 0700);
 	const char *pins[] = {"ctx_map", "allow_map", "cfg_map", "dom_map", "owner_map", "trust_map",
-			      "budget_map", "usage_map"};
-	for (int i = 0; i < 8; i++) {
+			      "budget_map", "usage_map", "file_usage"};
+	for (int i = 0; i < 9; i++) {
 		char p[128];
 		snprintf(p, sizeof(p), "/sys/fs/bpf/fact/%s", pins[i]);
 		unlink(p);
@@ -124,6 +126,11 @@ int main(int argc, char **argv)
 			if (!links[nl]) { fprintf(stderr, "attach %s failed\n", fx[i]); return 1; }
 			nl++;
 		}
+	}
+	if (c.cred && files) {   /* bytes written to regular files, per credential */
+		links[nl] = bpf_program__attach(bpf_object__find_program_by_name(obj, "on_vfs_write"));
+		if (!links[nl]) { fprintf(stderr, "attach fexit/vfs_write failed\n"); return 1; }
+		nl++;
 	}
 	if (c.per_send) {
 		links[nl] = bpf_program__attach_lsm(bpf_object__find_program_by_name(obj, "on_sock_sendmsg"));

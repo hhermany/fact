@@ -131,7 +131,7 @@ def main():
         f.write(" ".join(sys.argv) + "\n")
 
     runner = spec.get("runner", "attribution")
-    expected = {"overhead": "overhead.json", "sendcost": "overhead.json", "credcost": "overhead.json", "fullcost": "e4_summary.json",
+    expected = {"overhead": "overhead.json", "sendcost": "overhead.json", "credcost": "overhead.json", "fileacct": "file_score.json", "fullcost": "e4_summary.json",
                 "partial": "partial_score.json",
                 "capacity": "capacity.json"}.get(runner, "score.json")
     t0 = time.time()
@@ -154,6 +154,9 @@ def main():
         elif runner == "credcost":     # E3cred: cost of the context interface (markers vs. credential)
             cmd = [os.path.join(HERE, "scripts", "e3cred_round.sh"), rdir, "--iface", str(p["iface"]),
                    "--n", str(p.get("n", 20000)), "--warmup", str(p.get("warmup", 1000)), "--seed", str(r["seed"])]
+        elif runner == "fileacct":     # E11file: the credential on file writes
+            cmd = [os.path.join(HERE, "scripts", "e11file_round.sh"), rdir, "--mode", str(p["mode"]),
+                   "--execs", str(p["execs"]), "--ops", str(p.get("ops", 25)), "--seed", str(r["seed"])]
         elif runner == "partial":      # E5partial: byte accounting under backpressure
             cmd = [os.path.join(HERE, "scripts", "partial_round.sh"), rdir, "--seed", str(r["seed"])]
         elif runner == "capacity":     # E2b: collector capacity

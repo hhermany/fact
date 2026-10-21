@@ -5,6 +5,7 @@
   policyctl.py load  <file.json>                       {"exec": [ports, ...], ...}
   policyctl.py clear                                   removes every permission
   policyctl.py usage                                   prints the per-execution budget usage (JSON)
+  policyctl.py fusage                                  prints the bytes written to files per credential (JSON)
 
 Uses bpftool (key = id[48] + port u32, value = u8 1).
 """
@@ -99,6 +100,18 @@ def usage():
     return res
 
 
+def file_usage():
+    """{exec: bytes written to regular files} read from the pinned file_usage map (E11file)."""
+    base = PIN.rsplit("/", 1)[0]
+    out = subprocess.run(["bpftool", "-j", "map", "dump", "pinned", f"{base}/file_usage"], check=True,
+                         capture_output=True, text=True).stdout
+    res = {}
+    for e in json.loads(out or "[]"):
+        key = bytes(int(x, 16) for x in e["key"]).split(b"\0")[0].decode()
+        res[key] = int.from_bytes(bytes(int(x, 16) for x in e["value"]), "little")
+    return res
+
+
 def load(path):
     return load_dict(json.load(open(path)))
 
@@ -121,5 +134,7 @@ if __name__ == "__main__":
         clear()
     elif cmd == "usage":
         print(json.dumps(usage()))
+    elif cmd == "fusage":
+        print(json.dumps(file_usage()))
     else:
         sys.exit(__doc__)
