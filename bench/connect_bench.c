@@ -6,7 +6,9 @@
 // exactly as the FACT workload does, to measure the runtime-side cost of the
 // context binding.
 //
-// Usage: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1 --out lat.csv [--host IP]
+// --markers 2 switches the execution credential instead (prctl(PR_FACT, set/clear); needs fact_policy
+// with cred=1, otherwise prctl fails with EINVAL and the benchmark stops).
+// Usage: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1|2 --out lat.csv [--host IP]
 // With --host there is no local acceptor: it connects to the given IP (real network
 // interface; the remote acceptor is workload/remote_farm.py).
 // The client closes with SO_LINGER=0 (RST), so that TIME_WAIT does not accumulate.
@@ -21,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -35,6 +38,14 @@ static uint64_t now_ns(void) {
 static void marker(const char *path) {
     int fd = open(path, O_RDONLY);
     if (fd >= 0) close(fd);
+}
+
+#define PR_FACT 0x46414354
+static void cred(int set) {
+    if (prctl(PR_FACT, set ? 1 : 2, set ? (unsigned long)"BENCH" : 0, 0, 0) != 0) {
+        perror("prctl(PR_FACT)");
+        exit(1);
+    }
 }
 
 static int cmp_u64(const void *a, const void *b) {
@@ -89,7 +100,8 @@ measure:;
     for (long i = -warmup; i < n; i++) {
         if (i == 0) t_start = now_ns();
         uint64_t t0 = now_ns();
-        if (markers) marker("/run/agentctx/begin/BENCH");
+        if (markers == 1) marker("/run/agentctx/begin/BENCH");
+        else if (markers == 2) cred(1);
         int s = socket(AF_INET, SOCK_STREAM, 0);
         // abortive close (RST): avoids accumulating TIME_WAIT and exhausting
         // ephemeral ports between runs; recorded as a measurement decision.
@@ -97,7 +109,8 @@ measure:;
         setsockopt(s, SOL_SOCKET, SO_LINGER, &lg, sizeof lg);
         int r = connect(s, (struct sockaddr *)&addr, sizeof addr);
         close(s);
-        if (markers) marker("/run/agentctx/end");
+        if (markers == 1) marker("/run/agentctx/end");
+        else if (markers == 2) cred(0);
         uint64_t t1 = now_ns();
         if (r != 0) failures++;
         if (i >= 0) lat[i] = t1 - t0;

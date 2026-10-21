@@ -35,7 +35,7 @@ EXTRA=()
 if [ "${POLICY:-0}" = 1 ]; then
   [ -x "$HERE/policy/fact_policy" ] && [ -f "$HERE/policy/fact_policy.bpf.o" ] || make -s -C "$HERE/policy"
   "$HERE/policy/fact_policy" /sys/fs/cgroup 61000 64998 "${POLICY_NOCTX_ALLOW:-0}" \
-      "$HERE/policy/fact_policy.bpf.o" "${POLICY_LINEAGE:-0}" "${POLICY_PER_SEND:-0}" "${POLICY_BUDGET:-0}" > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
+      "$HERE/policy/fact_policy.bpf.o" "${POLICY_LINEAGE:-0}" "${POLICY_PER_SEND:-0}" "${POLICY_BUDGET:-0}" "${POLICY_CRED:-0}" > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
   PPOL=$!
   for i in $(seq 1 100); do
     grep -q '"ev":"ready"' "$OUT/policy_events.jsonl" 2>/dev/null && break
@@ -118,6 +118,9 @@ if [ -n "$PPOL" ]; then
   if [ "${POLICY_BUDGET_PLAN:-0}" = 1 ]; then   # E10budget: the kernel's per-execution usage, before the maps go
     "${FACT_PYTHON:-python3}" -I "$HERE/policy/policyctl.py" usage > "$OUT/budget_usage.json"
   fi
+  if [ "${POLICY_CRED:-0}" = 1 ]; then          # execution credential: per-credential usage kept in the kernel
+    "${FACT_PYTHON:-python3}" -I "$HERE/policy/policyctl.py" usage > "$OUT/cred_usage.json"
+  fi
   kill -INT "$PPOL"; wait "$PPOL" || true
   if [ "${POLICY_BUDGET_PLAN:-0}" = 1 ]; then   # E10budget: budgets judged by what reached the destination
     "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_budget.py" "$OUT" | tee "$OUT/policy_summary.txt"
@@ -131,6 +134,9 @@ fi
 "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score.py" "$OUT" | tee "$OUT/summary.txt"
 if [ -f "$OUT/requests.jsonl" ]; then   # E5reuse: per-request reference on reused connections
   "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_bytes.py" "$OUT" | tee "$OUT/summary_bytes.txt"
+fi
+if [ -f "$OUT/cred_usage.json" ] && [ -f "$OUT/requests.jsonl" ]; then   # in-kernel accounting vs. the destination
+  "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_kacct.py" "$OUT" | tee "$OUT/summary_kacct.txt"
 fi
 if [ "${COST:-0}" = 1 ]; then
   "${FACT_PYTHON:-python3}" -I "$HERE/scripts/cost_probe.py" factd "$OUT"

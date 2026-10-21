@@ -181,6 +181,9 @@ def main():
             env["POLICY_LINEAGE"] = str(p.get("policy_lineage", 0))
             env["POLICY_PER_SEND"] = str(p.get("per_send", 0))
             env["POLICY_BUDGET"] = str(p.get("budget", 0))
+            env["POLICY_CRED"] = str(p.get("cred", 0))
+            if p.get("cred"):          # execution credential: the runtime switches it with prctl
+                env["FACT_IFACE"] = "prctl"
             if p.get("budget_conns") or p.get("budget_bytes"):
                 env["POLICY_BUDGET_PLAN"] = "1"
         ts = time.time()

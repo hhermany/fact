@@ -73,9 +73,13 @@ SUB = ("import socket,sys;s=socket.socket();s.settimeout(2);"
        "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)")
 # E6spoof: a misbehaving tool whose child process emits a marker claiming another
 # execution's identity before connecting (argv[3] = claimed identity)
-SPOOF = ("import os,socket,sys\n"
+# It tries both interfaces: the openat marker and the credential switch (prctl).
+SPOOF = ("import os,socket,sys,ctypes\n"
          "try:\n os.close(os.open('/run/agentctx/begin/'+sys.argv[3],os.O_RDONLY))\n"
          "except FileNotFoundError:\n pass\n"
+         "l=ctypes.CDLL('libc.so.6',use_errno=True)\n"
+         "l.prctl.argtypes=[ctypes.c_int,ctypes.c_ulong,ctypes.c_char_p,ctypes.c_ulong,ctypes.c_ulong]\n"
+         "l.prctl(0x46414354,1,sys.argv[3].encode(),0,0)\n"
          "s=socket.socket();s.settimeout(2);r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close()\n"
          "sys.exit(0 if r==0 else 1)")
 
