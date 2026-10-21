@@ -7,7 +7,7 @@
 // context binding.
 //
 // --markers 2 switches the execution credential instead (prctl(PR_FACT, set/clear); needs fact_policy
-// with cred=1, otherwise prctl fails with EINVAL and the benchmark stops).
+// with cred=1, otherwise prctl fails with EINVAL; an applied switch returns EALREADY and the benchmark stops).
 // Usage: connect_bench --n 20000 --warmup 1000 --port 40999 --markers 0|1|2 --out lat.csv [--host IP]
 // With --host there is no local acceptor: it connects to the given IP (real network
 // interface; the remote acceptor is workload/remote_farm.py).
@@ -42,7 +42,7 @@ static void marker(const char *path) {
 
 #define PR_FACT 0x46414354
 static void cred(int set) {
-    if (prctl(PR_FACT, set ? 1 : 2, set ? (unsigned long)"BENCH" : 0, 0, 0) != 0) {
+    if (prctl(PR_FACT, set ? 1 : 2, set ? (unsigned long)"BENCH" : 0, 0, 0) != -1 || errno != EALREADY) {
         perror("prctl(PR_FACT)");
         exit(1);
     }

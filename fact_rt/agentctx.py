@@ -70,7 +70,8 @@ from contextlib import contextmanager
 
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
-_UNSET = object()
+_UNSET = object()   # this thread never synchronized: it keeps what it inherited
+_STALE = object()   # invalidate(): the kernel state is unknown and must be set again
 
 current = contextvars.ContextVar("fact_exec", default=None)
 _tls = threading.local()
@@ -93,13 +94,20 @@ def _emit(path):
         pass
 
 
+FACT_ACK = 114   # EALREADY: the kernel side acknowledges an applied switch
+
+
+def _acked(r):
+    return r == -1 and ctypes.get_errno() == FACT_ACK
+
+
 def _prctl_init():
     global _prctl
     libc = ctypes.CDLL("libc.so.6", use_errno=True)
     f = libc.prctl
     f.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_char_p, ctypes.c_ulong, ctypes.c_ulong]
     f.restype = ctypes.c_int
-    if f(PR_FACT, FACT_CLEAR, None, 0, 0) != 0 and ctypes.get_errno() == 22:
+    if not _acked(f(PR_FACT, FACT_CLEAR, None, 0, 0)):
         raise RuntimeError("execution credential unavailable: load fact_policy with cred=1 (BPF LSM)")
     _prctl = f
 
@@ -114,7 +122,7 @@ def _switch(want):
             if b is None:
                 b = _ids[want] = want.encode()
             r = _prctl(PR_FACT, FACT_SET, b, 0, 0)
-        if r != 0:
+        if not _acked(r):
             with _lock:
                 stats["refused"] += 1
         return
@@ -131,9 +139,18 @@ def sync_kernel():
     if not enabled:
         return
     want = current.get()
-    if getattr(_tls, "last", _UNSET) == want:
+    last = getattr(_tls, "last", _UNSET)
+    if last == want:
         with _lock:
             stats["cached"] += 1
+        return
+    if IFACE == "prctl" and want is None and last is _UNSET:
+        # Rule R2: a new thread starts with the credential its creator held (the kernel
+        # copies it at clone). Python threads do not inherit context variables, so an
+        # empty context here means "not set by this thread", not "no execution".
+        _tls.last = None
+        with _lock:
+            stats["inherited"] = stats.get("inherited", 0) + 1
         return
     _switch(want)
     _tls.last = want
@@ -155,7 +172,7 @@ def clear_kernel():
 
 def invalidate():
     """Forgets the per-thread cache (use if other code emits markers)."""
-    _tls.last = _UNSET
+    _tls.last = _STALE
 
 
 @contextmanager

@@ -65,6 +65,7 @@ struct msghdr { void *msg_name; } __attribute__((preserve_access_index));
 #define FACT_CLEAR 2
 #define E_PERM 1
 #define E_INVAL 22
+#define E_ALREADY 114
 struct fact_sin { unsigned short family; __be16 port; __be32 addr; };
 
 struct ident { char id[ID_LEN]; };
@@ -187,10 +188,13 @@ int on_exit(__u64 *ctx)
 }
 
 /* The credential switch: prctl(PR_FACT, FACT_SET, (unsigned long)id) or
- * prctl(PR_FACT, FACT_CLEAR). Returns 0 (done), -EPERM (caller not a trusted
- * runtime) or -EINVAL; any other prctl option is left to the kernel (ret). Without
- * this program loaded, prctl(PR_FACT, ...) fails with EINVAL, so the runtime can
- * tell that the credential is unavailable instead of running without it. */
+ * prctl(PR_FACT, FACT_CLEAR). A BPF LSM program can only deny or abstain: returning
+ * 0 abstains, the hook default (-ENOSYS) then lets prctl reach its option switch,
+ * and an unknown option fails with EINVAL. The switch is therefore acknowledged
+ * with a reserved errno: -EALREADY (switch applied), -EPERM (caller not a trusted
+ * runtime) or -EINVAL (no storage). Any other prctl option is left to the kernel.
+ * Without this program loaded, prctl(PR_FACT, ...) fails with EINVAL, so the
+ * runtime can tell that the credential is unavailable. */
 SEC("lsm/task_prctl")
 int BPF_PROG(on_prctl, int option, unsigned long arg2, unsigned long arg3, unsigned long arg4,
 	     unsigned long arg5, int ret)
@@ -227,7 +231,7 @@ int BPF_PROG(on_prctl, int option, unsigned long arg2, unsigned long arg3, unsig
 		bpf_task_storage_delete(&cred_store, t);
 		bpf_map_delete_elem(&ctx_map, &tid);
 	}
-	return 0;
+	return -E_ALREADY;
 }
 
 static __always_inline int id_eq(const char *a, const char *b)
