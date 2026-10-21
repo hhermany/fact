@@ -1,0 +1,30 @@
+{
+  "experiment": "E10conc",
+  "description": "E10budget with four calls in flight per session (concurrency 4): the order of the calls no longer decides which fall within a budget, so each budgeted execution is judged as a whole (connection budgets admit exactly max_conns connections; byte budgets deliver at least the budget and overshoot it by less than four requests). Budgets enforced.",
+  "factors": {
+    "tool": [
+      "async",
+      "httpx_shared"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E10budget",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "send_binding": 1,
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "per_send": 1,
+    "allow_all": 1,
+    "budget_conns": 10,
+    "budget_bytes": 1500,
+    "collector": "fact-bytes.bt",
+    "budget": 1,
+    "concurrency": 4
+  }
+}

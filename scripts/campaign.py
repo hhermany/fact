@@ -35,7 +35,7 @@ ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": 
        "replay_from": "--replay-from", "src": "--replay-src", "send_binding": "--send-binding", "trust": "--trust",
        "identity": "--identity", "client_spoof": "--client-spoof", "clear_after": "--clear-after",
        "server_windows": "--server-windows", "allow_all": "--allow-all",
-       "budget_conns": "--budget-conns", "budget_bytes": "--budget-bytes"}
+       "budget_conns": "--budget-conns", "budget_bytes": "--budget-bytes", "concurrency": "--concurrency"}
 
 
 def sh(cmd, cwd=None):

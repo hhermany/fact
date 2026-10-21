@@ -18,6 +18,13 @@ budgets. Per call: TA, TD, FA (allowed beyond the budget), FD (denied within it)
 Also compares the kernel's byte usage (budget_usage.json) with the destination's
 count, per budgeted execution.
 
+With several calls in flight per session (plan "concurrency" C > 1, E10conc), the
+order of the calls no longer determines which ones fall within the budget, so each
+budgeted execution is judged as a whole: a connection budget must admit exactly
+min(max_conns, calls) connections (the kernel counts attempts atomically); a byte
+budget must deliver at least min(max_bytes, demand) bytes and overshoot it by less than
+C requests (the sends in flight when it is crossed). Unbudgeted executions: every call.
+
 Usage: score_budget.py RUN_DIR      -> RUN_DIR/budget_score.json (and policy_score.json)
 """
 import json
@@ -39,7 +46,28 @@ def main(rd):
                 r = json.loads(l)
                 size[r["path"].strip("/")] = size.get(r["path"].strip("/"), 0) + r["req"][1] - r["req"][0]
     out, per_exec = Counter(), defaultdict(Counter)
-    for e in sorted({o["exec_id"] for o in ops}):
+    conc = int(plan.get("concurrency") or 1)
+    for e in sorted({o["exec_id"] for o in ops}) if conc > 1 else []:
+        b = budget.get(e, {})
+        mine = [o for o in ops if o["exec_id"] == e]
+        if size:
+            got = [o for o in mine if o["op_id"] in size]
+            d = sum(size[o["op_id"]] for o in got)
+            demand = sum(size.get(o["op_id"], 0) for o in mine)
+            if b.get("bytes"):
+                maxreq = max((size[o["op_id"]] for o in got), default=0)
+                ok = d >= min(b["bytes"], demand) and d - b["bytes"] < conc * max(maxreq, 1)
+                per_exec[e]["delivered_bytes"] = d
+                per_exec[e]["overshoot_bytes"] = max(0, d - b["bytes"])
+            else:
+                ok = len(got) == len(mine)
+        else:
+            n_ok = sum(1 for o in mine if o["ok"])
+            ok = n_ok == (min(b["conns"], len(mine)) if b.get("conns") else len(mine))
+            per_exec[e]["allowed"] = n_ok
+        out["exec_ok" if ok else "exec_wrong"] += 1
+        per_exec[e]["within_budget_rule"] = int(ok)
+    for e in sorted({o["exec_id"] for o in ops}) if conc == 1 else []:
         b = budget.get(e, {})
         cum = n = 0
         for o in (x for x in ops if x["exec_id"] == e):
@@ -75,13 +103,15 @@ def main(rd):
                 if d["verdict"] == "deny":
                     denials["budget" if d.get("budget") else "allow_list"] += 1
     res = {"N": len(ops), **{k: out.get(k, 0) for k in ("TA", "TD", "FA", "FD")}, "ND": 0, "label": {},
+           "concurrency": conc, "execs_within_rule": out.get("exec_ok", 0), "execs_outside_rule": out.get("exec_wrong", 0),
            "budget_enforced": plan.get("budget_enforced"), "denials": dict(denials),
            "per_exec": {e: dict(v) for e, v in per_exec.items()}, "kernel_vs_destination": acct,
            "accounting_exact": all(v["kernel_bytes"] == v["destination_bytes"] for v in acct.values()),
            "max_overshoot_bytes": max((v.get("overshoot_bytes", 0) for v in per_exec.values()), default=0)}
     json.dump(res, open(os.path.join(rd, "budget_score.json"), "w"), indent=1)
     json.dump(res, open(os.path.join(rd, "policy_score.json"), "w"), indent=1)
-    print(f"budget: N={res['N']} TA={res['TA']} TD={res['TD']} FA={res['FA']} FD={res['FD']} "
+    print(f"budget: conc={conc} execs_ok={res['execs_within_rule']} execs_wrong={res['execs_outside_rule']} "
+          f"N={res['N']} TA={res['TA']} TD={res['TD']} FA={res['FA']} FD={res['FD']} "
           f"denials={dict(denials)} accounting_exact={res['accounting_exact']} "
           f"max_overshoot={res['max_overshoot_bytes']}")
 

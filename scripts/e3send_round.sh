@@ -6,6 +6,8 @@
 # - conn:     policy loaded without per-send authorization (cgroup/connect4 + cgroup/sendmsg4);
 #             the benchmark port is inside the policed range and its identity is allowed.
 # - send_in:  per-send authorization on (BPF LSM socket_sendmsg); port inside the range, allowed.
+# - budget:   send_in plus a per-execution budget (never spent): every accepted send is
+#             charged at the return of tcp_sendmsg/udp_sendmsg (fexit) and checked (E10budget).
 # - send_out: per-send authorization on; port OUTSIDE the policed range: the cost every
 #             other send on the host pays (the program runs for every send and returns early).
 # The policed range is 61000-64998 and no_ctx_allow=1, so no traffic outside the benchmark
@@ -31,11 +33,12 @@ BIN="$HERE/bench/send_bench"
 [ -x "$BIN" ] && [ "$BIN" -nt "$HERE/bench/send_bench.c" ] || gcc -O2 -Wall -pthread -o "$BIN" "$HERE/bench/send_bench.c"
 LO=61000; HI=64998
 case "$POL" in
-  none|conn|send_in) PORT=$(( 63000 + SEED % 1000 ));;
+  none|conn|send_in|budget) PORT=$(( 63000 + SEED % 1000 ));;
   send_out) PORT=$(( 65000 + SEED % 500 ));;
   *) echo "unknown policy: $POL"; exit 2;;
 esac
 PER_SEND=0; [ "${POL#send_}" != "$POL" ] && PER_SEND=1
+BUDGET=0; [ "$POL" = budget ] && PER_SEND=1 && BUDGET=1   # per-send authorization plus a budget (never spent)
 cat /proc/loadavg > "$OUT/loadavg-start.txt"
 cat /sys/kernel/security/lsm > "$OUT/lsm.txt"
 
@@ -45,7 +48,7 @@ sysctl -q -w kernel.bpf_stats_enabled=1
 trap 'sysctl -q -w kernel.bpf_stats_enabled=0' EXIT
 if [ "$POL" != none ]; then
   [ -x "$HERE/policy/fact_policy" ] && [ -f "$HERE/policy/fact_policy.bpf.o" ] || make -s -C "$HERE/policy"
-  "$HERE/policy/fact_policy" /sys/fs/cgroup "$LO" "$HI" 1 "$HERE/policy/fact_policy.bpf.o" 0 "$PER_SEND" \
+  "$HERE/policy/fact_policy" /sys/fs/cgroup "$LO" "$HI" 1 "$HERE/policy/fact_policy.bpf.o" 0 "$PER_SEND" "$BUDGET" \
       > "$OUT/policy_events.jsonl" 2> "$OUT/policy.err" &
   PPID_POL=$!
   trap 'kill -INT "$PPID_POL" 2>/dev/null || true; wait "$PPID_POL" 2>/dev/null || true; sysctl -q -w kernel.bpf_stats_enabled=0' EXIT
@@ -56,6 +59,9 @@ if [ "$POL" != none ]; then
   done
   grep -q '"ev":"ready"' "$OUT/policy_events.jsonl" || { echo "policy not ready"; exit 1; }
   python3 -I "$HERE/policy/policyctl.py" allow BENCH "$PORT"
+  if [ "$BUDGET" = 1 ]; then   # a budget far above what the run sends: every send is charged and checked
+    python3 -I -c "import sys; sys.path.insert(0, '$HERE/policy'); import policyctl; policyctl.load_budgets({'BENCH': {'bytes': 10**15, 'conns': 10**9}})"
+  fi
   bpftool prog show --json > "$OUT/bpf_prog_before.json"
 fi
 

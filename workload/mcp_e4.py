@@ -90,6 +90,9 @@ def wait_port(port, timeout=20.0):
     return False
 
 
+CONCURRENCY = 1   # calls in flight per session (E10conc); 1 = sequential
+
+
 async def session(url, tool, exec_id, ops, log, binding, token=None):
     from mcp import ClientSession
     from mcp.client.sse import sse_client
@@ -98,7 +101,8 @@ async def session(url, tool, exec_id, ops, log, binding, token=None):
     async with sse_client(url, headers=headers) as (read, write):
         async with ClientSession(read, write) as s:
             await s.initialize()
-            for op in ops:
+
+            async def one(op):
                 t0 = time.time_ns()
                 args = {"exec_id": exec_id, "port": op["dport"]}
                 if tool == "fetch_server":   # the fetch server's own arguments
@@ -117,6 +121,9 @@ async def session(url, tool, exec_id, ops, log, binding, token=None):
                 ok = (not res.isError and text.rstrip().endswith("ok")) if tool == "fetch_server" else text == "ok"
                 lat.append((t1 - t0) / 1e6)
                 log.write(json.dumps(dict(op, kind=tool, t_start=t0, t_end=t1, ok=ok, label=label)) + "\n")
+
+            for i in range(0, len(ops), CONCURRENCY):   # batches of CONCURRENCY calls in flight
+                await asyncio.gather(*(one(op) for op in ops[i:i + CONCURRENCY]))
     return lat
 
 
@@ -137,6 +144,8 @@ def main():
     ap.add_argument("--binding-mode", choices=["manual", "auto", "none"], default="manual")
     ap.add_argument("--server-windows", type=int, default=0,
                     help="1: the server records each call's window inside the server (server_calls.jsonl, E5aps)")
+    ap.add_argument("--concurrency", type=int, default=1,
+                    help="E10conc: calls in flight per session (default 1: sequential)")
     ap.add_argument("--budget-conns", type=int, default=0,
                     help="E10budget: connection budget of every second execution (0 = none)")
     ap.add_argument("--budget-bytes", type=int, default=0,
@@ -211,6 +220,9 @@ def main():
     if lib or a.tool == "mixed":
         plan["send_binding"] = a.send_binding
     plan["identity"] = a.identity
+    plan["concurrency"] = a.concurrency
+    global CONCURRENCY
+    CONCURRENCY = a.concurrency
     plan["clear_after"] = a.clear_after
     plan["client_spoof"] = a.client_spoof
     if reuse:   # reference per request: operation id (URL path) -> execution

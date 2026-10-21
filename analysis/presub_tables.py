@@ -242,20 +242,24 @@ def main():
             p50 = st.median(r["p50_ns"] for r in rs)
             lsm = [g["ns_per_run"] for r in rs for g in r.get("bpf_progs", []) if g["name"] == "on_sock_sendmsg"]
             sm4 = [g["ns_per_run"] for r in rs for g in r.get("bpf_progs", []) if g["name"] == "on_sendmsg4"]
+            fx = [g["ns_per_run"] for r in rs for g in r.get("bpf_progs", []) if g["name"] in ("on_tcp_sent", "on_udp_sent")]
             rows.append([proto, pol, len(rs), round(p50), round(p50 - b50) if b50 is not None else "",
                          round(st.median(r["p99_ns"] for r in rs)),
                          round(st.median(r["throughput_sps"] for r in rs) / 1000, 1),
-                         round(st.median(lsm), 1) if lsm else "", round(st.median(sm4), 1) if sm4 else "",
+                         round(st.median(lsm), 1) if lsm else "", round(st.median(sm4), 1) if sm4 else "", round(st.median(fx), 1) if fx else "",
                          sum(r.get("failures", 0) for r in rs), sum(r.get("policy_denials", 0) for r in rs)])
         write(os.path.join(a.out, "E3send_cost.csv"),
               ["proto", "policy", "runs", "p50_ns", "p50_delta_ns", "p99_ns", "k_sends_per_s",
-               "lsm_ns_per_run", "sendmsg4_ns_per_run", "failures", "denials"], rows)
+               "lsm_ns_per_run", "sendmsg4_ns_per_run", "fexit_ns_per_run", "failures", "denials"], rows)
 
     # E10budget: per-execution budgets in the kernel
     c = collections.defaultdict(lambda: collections.defaultdict(int))
-    for p, rd in runs(a.campaigns, "E10budget", a.label):
+    for exp in ("E10budget", "E10conc"):
+      for p, rd in runs(a.campaigns, exp, a.label):
         r = json.load(open(os.path.join(rd, "budget_score.json")))
-        k = c[(int(p["budget"]), p["tool"], int(p["execs"]))]
+        k = c[(exp, int(p["budget"]), p["tool"], int(p["execs"]))]
+        k["execs_ok"] += r.get("execs_within_rule", 0)
+        k["execs_wrong"] += r.get("execs_outside_rule", 0)
         k["runs"] += 1
         for x in ("N", "TA", "TD", "FA", "FD"):
             k[x] += r[x]
@@ -266,11 +270,12 @@ def main():
         k["dest_bytes"] += sum(v["destination_bytes"] for v in r["kernel_vs_destination"].values())
     if c:
         write(os.path.join(a.out, "E10budget.csv"),
-              ["budget_mode", "tool", "execs", "runs", "calls", "TA", "TD", "FA", "FD", "budget_denials",
-               "runs_kernel_bytes_exact", "kernel_bytes", "destination_bytes", "max_overshoot_bytes"],
-              [[m, t, e, v["runs"], v["N"], v["TA"], v["TD"], v["FA"], v["FD"], v["budget_denials"],
-                v["exact_runs"], v["kernel_bytes"], v["dest_bytes"], v["max_overshoot"]]
-               for (m, t, e), v in sorted(c.items())])
+              ["experiment", "budget_mode", "tool", "execs", "runs", "calls", "TA", "TD", "FA", "FD", "budget_denials",
+               "execs_within_rule", "execs_outside_rule", "runs_kernel_bytes_exact", "kernel_bytes",
+               "destination_bytes", "max_overshoot_bytes"],
+              [[x, m, t, e, v["runs"], v["N"], v["TA"], v["TD"], v["FA"], v["FD"], v["budget_denials"],
+                v["execs_ok"], v["execs_wrong"], v["exact_runs"], v["kernel_bytes"], v["dest_bytes"], v["max_overshoot"]]
+               for (x, m, t, e), v in sorted(c.items())])
 
     # E5partial: byte accounting under backpressure
     rows = []
