@@ -1,0 +1,26 @@
+{
+  "experiment": "E6reusecred",
+  "description": "E6reuse with the execution credential: the shared MCP server's sessions share one keep-alive pool (httpx or aiohttp) to two destinations; permissive executions may use both, restricted ones only the first. The runtime switches the credential with prctl(PR_FACT) before each send; the BPF LSM program on socket_sendmsg re-authorizes every send by the sending task's credential, and the kernel charges the bytes each send accepted and each receive returned to the credential (cred_usage.json). Reference: the destination's per-request log (which operations' requests arrived, and their byte ranges).",
+  "factors": {
+    "tool": [
+      "httpx_shared",
+      "aiohttp_shared"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E6reuse",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "send_binding": 1,
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "per_send": 1,
+    "cred": 1,
+    "collector": "fact-cred.bt"
+  }
+}

@@ -4,7 +4,8 @@ no_ctx_allow=1). Run as root from the repository root while the policy runs:
     policy/fact_policy /sys/fs/cgroup 61000 64998 1 policy/fact_policy.bpf.o 0 0 0 1 > /tmp/p.log &
     python3 tests/cred_smoke.py /tmp/p.log
 Checks: (1) other prctl options are unaffected; (2) the switch sets the credential of the
-calling thread; (3) new threads and child processes inherit it; (4) clearing removes it;
+calling thread; (3) new threads running unmediated code and child processes inherit it, while
+mediated code without the task's context carries none; (4) clearing removes it;
 (5) the kernel charges sent and received bytes to the credential; (6) openat markers are not
 accepted in this mode. Prints one line per check and exits non-zero on any failure.
 """
@@ -42,10 +43,13 @@ def decisions(port):
     return out
 
 
-def try_connect(port):
+def try_connect(port, native=False):
     s = socket.socket()
     s.settimeout(1)
-    r = s.connect_ex(("127.0.0.1", port))
+    if native:   # bypasses the runtime's hook, as code in a native library would
+        r = agentctx._orig["connect_ex"](s, ("127.0.0.1", port))
+    else:
+        r = s.connect_ex(("127.0.0.1", port))
     s.close()
     return r
 
@@ -61,7 +65,13 @@ agentctx.install(iface="prctl")
 with agentctx.bind("exA"):
     agentctx.sync_kernel()
     try_connect(61010)
-    t = threading.Thread(target=try_connect, args=(61011,))
+    # a thread running code the runtime does not mediate (native connect): the
+    # credential it inherited at clone (rule R2)
+    t = threading.Thread(target=try_connect, args=(61011, True))
+    t.start(); t.join()
+    # a thread running mediated code without the task's context (e.g., a pool worker
+    # serving another task): the runtime clears the inherited credential
+    t = threading.Thread(target=try_connect, args=(61019,))
     t.start(); t.join()
     subprocess.run([sys.executable, "-I", "-c",
                     "import socket;s=socket.socket();s.settimeout(1);s.connect_ex(('127.0.0.1',61012));s.close()"])
@@ -69,6 +79,9 @@ time.sleep(0.5)
 for port, what in ((61010, "calling thread"), (61011, "new thread"), (61012, "child process")):
     d = decisions(port)
     check(f"credential of the {what}", len(d) == 1 and d[0]["ctx"] == "exA", [x["ctx"] for x in d])
+d = decisions(61019)
+check("mediated call without task context carries none", len(d) == 1 and d[0]["has_ctx"] == 0,
+      [x["has_ctx"] for x in d])
 
 agentctx.invalidate()
 agentctx.sync_kernel()          # no binding: clears the credential

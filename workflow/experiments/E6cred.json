@@ -1,0 +1,27 @@
+{
+  "experiment": "E6cred",
+  "description": "E5+E6 with the execution credential: the shared MCP server, K sessions, automatic binding; the runtime switches the identity with prctl(PR_FACT), the BPF LSM authorizes the switch and keeps the credential per task (inherited at clone), and the egress policy (cgroup/connect4) decides by the credential. Executions alternate a permissive (P) and a restricted (R) class; independent reference via the exclusive port. Attribution is scored from the accepted switches (collector fact-cred.bt) and the decisions from the kernel's own records.",
+  "factors": {
+    "tool": [
+      "sync",
+      "thread",
+      "subproc",
+      "async"
+    ],
+    "execs": [
+      2,
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E6",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "cred": 1,
+    "collector": "fact-cred.bt"
+  }
+}

@@ -47,8 +47,10 @@ BEGIN
 
 /* Execution credential (fact_policy with cred=1): the runtime switches the identity
  * with prctl(PR_FACT=0x46414354, 1=set, id) or prctl(PR_FACT, 2=clear); the switch
- * counts only if the kernel accepted it (return value 0), so a switch refused by the
- * BPF LSM (caller outside the trusted runtime) does not change the context here. */
+ * counts only if the kernel accepted it: a BPF LSM program can only deny or abstain,
+ * so fact_policy acknowledges an applied switch with -EALREADY (-114); a switch
+ * refused by the BPF LSM (caller outside the trusted runtime) does not change the
+ * context here. */
 tracepoint:syscalls:sys_enter_prctl
 / args->option == 0x46414354 /
 {
@@ -61,7 +63,7 @@ tracepoint:syscalls:sys_enter_prctl
 tracepoint:syscalls:sys_exit_prctl
 / @pend_op[tid] /
 {
-	if (args->ret == 0) {
+	if (args->ret == -114) {
 		if (@pend_op[tid] == 1) {
 			@ctx[tid] = @pend_id[tid];
 			printf("{\"ev\":\"ctx_begin\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"ctx\":\"%s\"}\n",

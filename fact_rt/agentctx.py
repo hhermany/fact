@@ -70,8 +70,7 @@ from contextlib import contextmanager
 
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
-_UNSET = object()   # this thread never synchronized: it keeps what it inherited
-_STALE = object()   # invalidate(): the kernel state is unknown and must be set again
+_UNSET = object()
 
 current = contextvars.ContextVar("fact_exec", default=None)
 _tls = threading.local()
@@ -139,19 +138,15 @@ def sync_kernel():
     if not enabled:
         return
     want = current.get()
-    last = getattr(_tls, "last", _UNSET)
-    if last == want:
+    if getattr(_tls, "last", _UNSET) == want:
         with _lock:
             stats["cached"] += 1
         return
-    if IFACE == "prctl" and want is None and last is _UNSET:
-        # Rule R2: a new thread starts with the credential its creator held (the kernel
-        # copies it at clone). Python threads do not inherit context variables, so an
-        # empty context here means "not set by this thread", not "no execution".
-        _tls.last = None
-        with _lock:
-            stats["inherited"] = stats.get("inherited", 0) + 1
-        return
+    # Code the runtime mediates carries the identity of the task that runs it, even in
+    # a thread that inherited another credential at clone (a pool worker created during
+    # one execution may later run another's task): an empty context clears it. The
+    # kernel's inheritance (rule R2) covers what the runtime does not mediate: child
+    # processes and native threads.
     _switch(want)
     _tls.last = want
     with _lock:
@@ -172,7 +167,7 @@ def clear_kernel():
 
 def invalidate():
     """Forgets the per-thread cache (use if other code emits markers)."""
-    _tls.last = _STALE
+    _tls.last = _UNSET
 
 
 @contextmanager
