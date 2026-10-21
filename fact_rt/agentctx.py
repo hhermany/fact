@@ -46,6 +46,14 @@ not), where the kernel sees a UDP flow, and asyncio's getaddrinfo runs the
 resolver in the caller's context, so the resolver thread carries the caller's
 identity (E5udp).
 
+Execution credential (FACT_IFACE=prctl, or install(iface="prctl")): instead of
+openat markers, the identity is switched with prctl(PR_FACT, FACT_SET, id) or
+prctl(PR_FACT, FACT_CLEAR), which the kernel side (fact_policy with cred=1)
+authorizes in the BPF LSM hook task_prctl and stores as a credential of the task.
+A refused switch (EPERM: the caller is not a trusted runtime process) is counted
+in stats["refused"]. install() fails if the kernel side is not loaded (EINVAL),
+so the runtime never runs believing it is bound when it is not.
+
 Usage:
     from fact_rt import agentctx
     agentctx.install()
@@ -53,6 +61,7 @@ Usage:
         ...   # connections and subprocesses of this task carry exec-42
 """
 import contextvars
+import ctypes
 import os
 import socket
 import subprocess
@@ -66,7 +75,11 @@ _UNSET = object()
 current = contextvars.ContextVar("fact_exec", default=None)
 _tls = threading.local()
 _lock = threading.Lock()
-stats = {"marks": 0, "cached": 0}
+stats = {"marks": 0, "cached": 0, "refused": 0}
+IFACE = os.environ.get("FACT_IFACE", "openat")   # "openat" (markers) or "prctl" (execution credential)
+PR_FACT, FACT_SET, FACT_CLEAR = 0x46414354, 1, 2
+_prctl = None
+_ids = {}
 _installed = False
 _clear = False          # install(clear=True): clear the thread's kernel context after each hooked call
 enabled = True          # False disables the hooks without uninstalling them (tests)
@@ -78,6 +91,34 @@ def _emit(path):
         os.close(os.open(path, os.O_RDONLY))
     except FileNotFoundError:
         pass
+
+
+def _prctl_init():
+    global _prctl
+    libc = ctypes.CDLL("libc.so.6", use_errno=True)
+    f = libc.prctl
+    f.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_char_p, ctypes.c_ulong, ctypes.c_ulong]
+    f.restype = ctypes.c_int
+    if f(PR_FACT, FACT_CLEAR, None, 0, 0) != 0 and ctypes.get_errno() == 22:
+        raise RuntimeError("execution credential unavailable: load fact_policy with cred=1 (BPF LSM)")
+    _prctl = f
+
+
+def _switch(want):
+    """Hands the identity `want` (None = clear) to the kernel."""
+    if IFACE == "prctl":
+        if want is None:
+            r = _prctl(PR_FACT, FACT_CLEAR, None, 0, 0)
+        else:
+            b = _ids.get(want)
+            if b is None:
+                b = _ids[want] = want.encode()
+            r = _prctl(PR_FACT, FACT_SET, b, 0, 0)
+        if r != 0:
+            with _lock:
+                stats["refused"] += 1
+        return
+    _emit(CTX_BEGIN + want if want is not None else CTX_END)
 
 
 def _valid(exec_id):
@@ -94,7 +135,7 @@ def sync_kernel():
         with _lock:
             stats["cached"] += 1
         return
-    _emit(CTX_BEGIN + want if want is not None else CTX_END)
+    _switch(want)
     _tls.last = want
     with _lock:
         stats["marks"] += 1
@@ -106,7 +147,7 @@ def clear_kernel():
         return
     if getattr(_tls, "last", _UNSET) is None:
         return
-    _emit(CTX_END)
+    _switch(None)
     _tls.last = None
     with _lock:
         stats["marks"] += 1
@@ -129,12 +170,16 @@ def bind(exec_id):
         current.reset(tok)
 
 
-def install(sends=False, clear=False, udp=False):
+def install(sends=False, clear=False, udp=False, iface=None):
     """Installs the connect and process-creation hooks (idempotent); with
     sends=True, also the send hooks; with clear=True, the thread's kernel context
     is cleared after each hooked call; with udp=True, the datagram hooks (see the
     module docstring)."""
-    global _installed, _clear
+    global _installed, _clear, IFACE
+    if (iface or IFACE) == "prctl" and _prctl is None:
+        _prctl_init()   # before switching the interface: fails if the kernel side is missing
+    if iface:
+        IFACE = iface
     _clear = _clear or clear
     if udp and not _orig.get("dgram"):
         _install_dgram()

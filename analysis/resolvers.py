@@ -62,8 +62,10 @@ def resolve_lineage(x: ResolverInput, w: World):
 
 
 def resolve_context(x: ResolverInput, w: World):
-    if x.ctx.startswith(CTX_PREFIX):
+    if x.ctx.startswith(CTX_PREFIX):          # openat marker: the path carries the identity
         return frozenset([x.ctx[len(CTX_PREFIX):]])
+    if x.ctx:                                  # execution credential (prctl): the identity itself
+        return frozenset([x.ctx])
     return frozenset()
 
 

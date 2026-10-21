@@ -76,7 +76,7 @@ def load_budgets(d):
         k = " ".join(key_bytes(e, 0)[:ID_LEN])
         bv = " ".join(str(x) for x in int(b.get("bytes", 0)).to_bytes(8, "little") + int(b.get("conns", 0)).to_bytes(8, "little"))
         lines.append(f"map update pinned {base}/budget_map key {k} value {bv}")
-        lines.append(f"map update pinned {base}/usage_map key {k} value {' '.join(['0'] * 24)}")
+        lines.append(f"map update pinned {base}/usage_map key {k} value {' '.join(['0'] * 32)}")
     if not lines:
         return 0
     with tempfile.NamedTemporaryFile("w", suffix=".bpftool", delete=False) as f:
@@ -86,7 +86,7 @@ def load_budgets(d):
 
 
 def usage():
-    """{exec: {"bytes", "conns", "denied"}} read from the pinned usage map."""
+    """{exec: {"bytes", "conns", "denied", "rx_bytes"}} read from the pinned usage map."""
     base = PIN.rsplit("/", 1)[0]
     out = subprocess.run(["bpftool", "-j", "map", "dump", "pinned", f"{base}/usage_map"], check=True,
                          capture_output=True, text=True).stdout
@@ -95,7 +95,7 @@ def usage():
         key = bytes(int(x, 16) for x in e["key"]).split(b"\0")[0].decode()
         v = bytes(int(x, 16) for x in e["value"])
         res[key] = {"bytes": int.from_bytes(v[0:8], "little"), "conns": int.from_bytes(v[8:16], "little"),
-                    "denied": int.from_bytes(v[16:24], "little")}
+                    "denied": int.from_bytes(v[16:24], "little"), "rx_bytes": int.from_bytes(v[24:32], "little")}
     return res
 
 
