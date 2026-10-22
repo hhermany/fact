@@ -1,0 +1,68 @@
+{
+ "exec-K4": {
+  "runs": 6,
+  "normal_completed": 450,
+  "normal_calls": 450,
+  "normal_p50_ms_median": 10.518842500000002,
+  "normal_p99_ms_median": 83.2292655,
+  "runaway_bytes_median": 131788.0,
+  "runaway_completed_median": 4.0,
+  "accounting_exact_runs": 6,
+  "max_overshoot_bytes": 716
+ },
+ "exec-K8": {
+  "runs": 6,
+  "normal_completed": 1050,
+  "normal_calls": 1050,
+  "normal_p50_ms_median": 14.909193,
+  "normal_p99_ms_median": 162.771971,
+  "runaway_bytes_median": 131788.0,
+  "runaway_completed_median": 4.0,
+  "accounting_exact_runs": 6,
+  "max_overshoot_bytes": 716
+ },
+ "none-K4": {
+  "runs": 6,
+  "normal_completed": 450,
+  "normal_calls": 450,
+  "normal_p50_ms_median": 117.2586655,
+  "normal_p99_ms_median": 119.23379249999999,
+  "runaway_bytes_median": 9884100.0,
+  "runaway_completed_median": 300.0,
+  "accounting_exact_runs": 6,
+  "max_overshoot_bytes": null
+ },
+ "none-K8": {
+  "runs": 6,
+  "normal_completed": 1050,
+  "normal_calls": 1050,
+  "normal_p50_ms_median": 122.3531205,
+  "normal_p99_ms_median": 163.6908035,
+  "runaway_bytes_median": 9884100.0,
+  "runaway_completed_median": 300.0,
+  "accounting_exact_runs": 6,
+  "max_overshoot_bytes": null
+ },
+ "process-K4": {
+  "runs": 6,
+  "normal_completed": 36,
+  "normal_calls": 450,
+  "normal_p50_ms_median": 77.360113,
+  "normal_p99_ms_median": 83.2396185,
+  "runaway_bytes_median": 197682.0,
+  "runaway_completed_median": 6.0,
+  "accounting_exact_runs": 6,
+  "max_overshoot_bytes": 29140
+ },
+ "process-K8": {
+  "runs": 6,
+  "normal_completed": 71,
+  "normal_calls": 1050,
+  "normal_p50_ms_median": 94.24657425,
+  "normal_p99_ms_median": 198.572455,
+  "runaway_bytes_median": 230629.0,
+  "runaway_completed_median": 7.0,
+  "accounting_exact_runs": 6,
+  "max_overshoot_bytes": 11817
+ }
+}
