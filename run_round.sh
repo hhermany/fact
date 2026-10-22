@@ -124,6 +124,9 @@ if [ -n "$PPOL" ]; then
   kill -INT "$PPOL"; wait "$PPOL" || true
   if [ "${POLICY_BUDGET_PLAN:-0}" = 1 ]; then   # E10budget: budgets judged by what reached the destination
     "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_budget.py" "$OUT" | tee "$OUT/policy_summary.txt"
+    if grep -q '"contain"' "$OUT/plan.json"; then   # E12contain: service seen by the other executions
+      "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_contain.py" "$OUT" | tee "$OUT/contain_summary.txt"
+    fi
   elif [ -f "$OUT/requests.jsonl" ]; then   # E6reuse: decisions judged by which requests reached the destination
     "${FACT_PYTHON:-python3}" -I "$HERE/analysis/score_reuse_policy.py" "$OUT" | tee "$OUT/policy_summary.txt"
   else

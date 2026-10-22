@@ -19,6 +19,7 @@ import signal
 import socket
 import sys
 import threading
+import time
 
 RESPONSE = (b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n"
             b"Connection: close\r\n\r\nok")
@@ -72,6 +73,11 @@ class HttpListener(threading.Thread):
                     threading.Thread(target=_serve, args=(c,), daemon=True).start()
 
 
+# E12contain: a destination of limited capacity serves requests one at a time,
+# taking len(request) / rate seconds each (a stand-in for a rate-limited external service)
+SERVICE = {"rate": 0, "lock": threading.Lock()}
+
+
 def _serve_keepalive(conn, port, log, lock):
     """Serves several requests on one connection (HTTP/1.1 keep-alive) and logs,
     for each request, the byte ranges it occupied on the connection in each
@@ -103,6 +109,9 @@ def _serve_keepalive(conn, port, log, lock):
             buf = buf[length:]
             req_len += length
             path = head.split(b"\r\n", 1)[0].split(b" ")[1].decode()
+            if SERVICE["rate"]:
+                with SERVICE["lock"]:
+                    time.sleep(req_len / SERVICE["rate"])
             resp = (b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n"
                     b"Connection: keep-alive\r\n\r\nok")
             with lock:   # logged before answering, so the log is complete when the client sees the response
@@ -121,9 +130,10 @@ class KeepAliveHttpListener(HttpListener):
     """Like HttpListener, but keeps connections open across requests (so a client
     pool can reuse them) and records every request's byte ranges (E5reuse)."""
 
-    def __init__(self, ports, addr="127.0.0.1"):
+    def __init__(self, ports, addr="127.0.0.1", rate=0):
         super().__init__(ports, addr)
         self.log, self.lock = [], threading.Lock()
+        SERVICE["rate"] = rate
 
     def run(self):
         while not self.stop:

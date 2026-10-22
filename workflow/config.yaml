@@ -258,3 +258,10 @@ experiments:
 
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05
+  E12contain:
+    spec: workflow/experiments/E12contain.json
+    pilot_n: 3
+    n: 3   # per boot (2 boots): containment of a runaway execution
+
+# target relative precision (half-width of the 95% CI / mean) for sizing N
+precision_target: 0.05

@@ -112,12 +112,15 @@ def main():
         return "ok" if r.status_code == 200 else "fail"
 
     @mcp.tool()
-    async def httpx_shared(exec_id: str, port: int, op: str) -> str:
+    async def httpx_shared(exec_id: str, port: int, op: str, size: int = 0) -> str:
         import httpx
         if "httpx" not in shared:
             shared["httpx"] = httpx.AsyncClient(timeout=TIMEOUT, limits=httpx.Limits(
                 max_connections=POOL, max_keepalive_connections=POOL))
-        r = await shared["httpx"].get(url_of(port, op))
+        if size:   # E12contain: an upload of `size` bytes
+            r = await shared["httpx"].post(url_of(port, op), content=b"x" * size)
+        else:
+            r = await shared["httpx"].get(url_of(port, op))
         return "ok" if r.status_code == 200 else "fail"
 
     @mcp.tool()

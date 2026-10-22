@@ -35,7 +35,9 @@ ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": 
        "replay_from": "--replay-from", "src": "--replay-src", "send_binding": "--send-binding", "trust": "--trust",
        "identity": "--identity", "client_spoof": "--client-spoof", "clear_after": "--clear-after",
        "server_windows": "--server-windows", "allow_all": "--allow-all",
-       "budget_conns": "--budget-conns", "budget_bytes": "--budget-bytes", "concurrency": "--concurrency"}
+       "budget_conns": "--budget-conns", "budget_bytes": "--budget-bytes", "concurrency": "--concurrency",
+       "contain": "--contain", "runaway_ops": "--runaway-ops", "runaway_size": "--runaway-size",
+       "runaway_conc": "--runaway-conc", "think_ms": "--think-ms", "service_rate": "--service-rate"}
 
 
 def sh(cmd, cwd=None):
@@ -187,6 +189,8 @@ def main():
             env["POLICY_LINEAGE"] = str(p.get("policy_lineage", 0))
             env["POLICY_PER_SEND"] = str(p.get("per_send", 0))
             env["POLICY_BUDGET"] = str(p.get("budget", 0))
+            if p.get("contain"):     # E12contain: none = usage counted in the kernel, nothing denied
+                env["POLICY_BUDGET"] = "2" if p["contain"] == "none" else "1"
             env["POLICY_CRED"] = str(p.get("cred", 0))
             if p.get("cred"):          # execution credential: the runtime switches it with prctl
                 env["FACT_IFACE"] = "prctl"

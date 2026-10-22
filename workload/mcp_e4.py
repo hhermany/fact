@@ -93,6 +93,10 @@ def wait_port(port, timeout=20.0):
 CONCURRENCY = 1   # calls in flight per session (E10conc); 1 = sequential
 
 
+THINK = 0.0      # E12contain: pause after each call of the normal executions (s)
+RUNAWAY = {}     # E12contain: exec_id -> calls in flight of the runaway execution
+
+
 async def session(url, tool, exec_id, ops, log, binding, token=None):
     from mcp import ClientSession
     from mcp.client.sse import sse_client
@@ -109,6 +113,8 @@ async def session(url, tool, exec_id, ops, log, binding, token=None):
                     args = {"url": f"http://{op['dest']}:{op['dport']}/", "raw": True}
                 if tool in REUSE_TOOLS:
                     args["op"] = op["op_id"]
+                if "size" in op:
+                    args["size"] = op["size"]
                 if "claim" in op:
                     args["claim"] = op["claim"]
                 label = op.get("label", exec_id)
@@ -122,8 +128,11 @@ async def session(url, tool, exec_id, ops, log, binding, token=None):
                 lat.append((t1 - t0) / 1e6)
                 log.write(json.dumps(dict(op, kind=tool, t_start=t0, t_end=t1, ok=ok, label=label)) + "\n")
 
-            for i in range(0, len(ops), CONCURRENCY):   # batches of CONCURRENCY calls in flight
-                await asyncio.gather(*(one(op) for op in ops[i:i + CONCURRENCY]))
+            conc = RUNAWAY.get(exec_id, CONCURRENCY)
+            for i in range(0, len(ops), conc):   # batches of conc calls in flight
+                await asyncio.gather(*(one(op) for op in ops[i:i + conc]))
+                if THINK and exec_id not in RUNAWAY:
+                    await asyncio.sleep(THINK)
     return lat
 
 
@@ -150,6 +159,15 @@ def main():
                     help="E10budget: connection budget of every second execution (0 = none)")
     ap.add_argument("--budget-bytes", type=int, default=0,
                     help="E10budget: sent-byte budget of every second execution (0 = none)")
+    ap.add_argument("--contain", choices=["none", "process", "exec"], default=None,
+                    help="E12contain: the first execution runs away; byte budget on nobody (counted only), "
+                         "on the whole worker (one identity for every call), or on the runaway execution")
+    ap.add_argument("--runaway-ops", type=int, default=600)
+    ap.add_argument("--runaway-size", type=int, default=16384)
+    ap.add_argument("--runaway-conc", type=int, default=4)
+    ap.add_argument("--think-ms", type=float, default=20.0)
+    ap.add_argument("--service-rate", type=float, default=4e6,
+                    help="E12contain: bytes per second the destination serves, one request at a time")
     ap.add_argument("--allow-all", type=int, default=0,
                     help="1 with --policy 1: every execution may reach all its destinations (E9cost)")
     ap.add_argument("--dest-host", default="127.0.0.1",
@@ -187,6 +205,19 @@ def main():
         it = iter(ports)
         ops_by_exec = {e: [{"exec_id": e, "op_id": f"{e}-{i:04d}", "op_idx": i, "dport": next(it)}
                            for i in range(a.ops)] for e in execs}
+    if a.contain:   # E12contain: the first execution loops on uploads; the others make normal calls
+        if not reuse:
+            sys.exit("--contain applies to the shared-pool tools")
+        r = execs[0]
+        ops_by_exec[r] = [{"exec_id": r, "op_id": f"{r}-{i:04d}", "op_idx": i, "dport": ports[i % REUSE_PORTS],
+                           "size": a.runaway_size} for i in range(a.runaway_ops)]
+        RUNAWAY[r] = a.runaway_conc
+        global THINK
+        THINK = a.think_ms / 1000
+        if a.contain == "process":   # one identity for the whole worker: what a process-level limit sees
+            for e in execs:
+                for o in ops_by_exec[e]:
+                    o["label"] = "W"
     for e in execs:
         for o in ops_by_exec[e]:
             o["dest"] = a.dest_host
@@ -228,6 +259,10 @@ def main():
     if reuse:   # reference per request: operation id (URL path) -> execution
         plan["op_map"] = {o["op_id"]: o["exec_id"] for e in execs for o in ops_by_exec[e]}
         plan["reuse_ports"] = ports
+    if a.contain:
+        plan["contain"] = {"mode": a.contain, "runaway": execs[0], "runaway_ops": a.runaway_ops,
+                           "runaway_size": a.runaway_size, "runaway_conc": a.runaway_conc,
+                           "think_ms": a.think_ms, "service_rate": a.service_rate}
     if a.policy:
         # alternating classes: P (permissive: every planned destination) and R (restricted:
         # a random half of its own destinations). A wrong label R->P wrongly allows;
@@ -242,7 +277,14 @@ def main():
             else:
                 allow[e] = sorted(ports) if classes[e] == "P" else sorted(rng.sample(own, len(own) // 2))
         plan["policy"] = {"classes": classes, "allow": allow}
-        if a.budget_conns or a.budget_bytes:   # E10budget: every second execution gets a budget
+        if a.contain:   # E12contain: same byte allowance for the runaway; the worker's adds the others' demand
+            normal = (len(execs) - 1) * a.ops * 512
+            plan["budget"] = ({"W": {"bytes": a.budget_bytes + normal}} if a.contain == "process"
+                              else {execs[0]: {"bytes": a.budget_bytes}})
+            plan["contain"]["budget"] = plan["budget"]
+            if a.contain == "process":   # the worker's identity may reach every destination
+                allow["W"] = sorted(ports)
+        elif a.budget_conns or a.budget_bytes:   # E10budget: every second execution gets a budget
             # byte budgets for the shared pools (few connections), connection budgets otherwise
             kind = {"bytes": a.budget_bytes} if reuse else {"conns": a.budget_conns}
             plan["budget"] = {e: dict(kind) for i, e in enumerate(execs) if i % 2 == 1}
@@ -301,7 +343,7 @@ def main():
                 s.close()
         listener = None
     else:
-        listener = (KeepAliveHttpListener(ports) if reuse else UdpDnsListener(ports) if a.tool in UDP_TOOLS else
+        listener = (KeepAliveHttpListener(ports, rate=a.service_rate if a.contain else 0) if reuse else UdpDnsListener(ports) if a.tool in UDP_TOOLS else
                     _Both(ports) if a.tool == "mixed" else
                     HttpListener(ports) if lib or fetch or a.tool == "node_http" else Listener(ports))
         listener.start()
