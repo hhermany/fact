@@ -255,9 +255,6 @@ experiments:
     spec: workflow/experiments/E11file.json
     pilot_n: 3
     n: 3   # per boot (2 boots): 25 writes per execution per run
-
-# target relative precision (half-width of the 95% CI / mean) for sizing N
-precision_target: 0.05
   E12contain:
     spec: workflow/experiments/E12contain.json
     pilot_n: 3
