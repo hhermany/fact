@@ -1,45 +1,45 @@
     PID COMMAND         %CPU %MEM
-   2086 systemd-timedat 60.0  0.0
-   1995 bash            43.2  0.0
-      1 systemd          2.3  0.1
-    752 systemd-udevd    0.4  0.0
-     12 kworker/u32:0-a  0.4  0.0
-   1386 tailscaled       0.3  0.2
-   1375 networkd-dispat  0.3  0.1
-   1462 unattended-upgr  0.2  0.2
-    695 systemd-journal  0.2  0.1
-   1783 systemd          0.2  0.0
-   1535 ModemManager     0.1  0.0
-    127 kworker/7:2-eve  0.1  0.0
-    747 systemd-resolve  0.1  0.0
-   1541 rsyslogd         0.0  0.0
-   1389 udisksd          0.0  0.0
-   1377 polkitd          0.0  0.0
-   1365 dbus-daemon      0.0  0.0
-   1219 systemd-network  0.0  0.0
-   1910 bash             0.0  0.0
-    292 kworker/4:2-eve  0.0  0.0
-    109 kworker/1:1-eve  0.0  0.0
-   1383 systemd-logind   0.0  0.0
-    105 kworker/0:2-eve  0.0  0.0
-    111 kworker/7:1-rcu  0.0  0.0
-     91 kworker/6:1-eve  0.0  0.0
-     82 kworker/2:1-eve  0.0  0.0
-   1363 chronyd-starter  0.0  0.0
+   2105 systemd-timedat 60.0  0.0
+   2015 bash            48.6  0.0
+      1 systemd          0.1  0.1
+   1955 kworker/6:0-eve  0.0  0.0
+   1978 bash             0.0  0.0
+    180 kworker/1:2-eve  0.0  0.0
+      9 kworker/0:0-eve  0.0  0.0
+   1382 tailscaled       0.0  0.2
    1253 vmtoolsd         0.0  0.0
-   1093 kworker/5:3-eve  0.0  0.0
-    729 multipathd       0.0  0.0
-     99 scsi_eh_1        0.0  0.0
-   1936 bash             0.0  0.0
-   1777 sshd-session     0.0  0.0
-    456 kworker/u32:29-  0.0  0.0
-    286 kworker/6:2-mm_  0.0  0.0
-    110 kworker/3:1-eve  0.0  0.0
-     97 scsi_eh_0        0.0  0.0
-    101 kworker/u32:3-a  0.0  0.0
-    104 kworker/5:1-mm_  0.0  0.0
-     81 kworker/4:1-mem  0.0  0.0
-     71 kworker/u32:1-a  0.0  0.0
+     92 kworker/4:1-eve  0.0  0.0
+    108 kworker/7:1-mm_  0.0  0.0
+     82 kworker/2:1-eve  0.0  0.0
+    753 systemd-udevd    0.0  0.0
+    109 kworker/5:1-eve  0.0  0.0
+     81 kworker/3:1-mm_  0.0  0.0
+    696 systemd-journal  0.0  0.2
+   1370 networkd-dispat  0.0  0.1
+   1469 unattended-upgr  0.0  0.2
+   1809 systemd          0.0  0.0
+   1521 ModemManager     0.0  0.0
+   1373 polkitd          0.0  0.0
+   1385 udisksd          0.0  0.0
+   1206 systemd-network  0.0  0.0
+    749 systemd-resolve  0.0  0.0
+   1361 dbus-daemon      0.0  0.0
+    730 multipathd       0.0  0.0
+    456 kworker/u32:28-  0.0  0.0
+    457 kworker/u32:29-  0.0  0.0
+   1924 bash             0.0  0.0
+   1493 rsyslogd         0.0  0.0
+   1379 systemd-logind   0.0  0.0
+   1358 chronyd-starter  0.0  0.0
+    453 kworker/u32:25-  0.0  0.0
+    114 kworker/5:2-eve  0.0  0.0
+    100 scsi_eh_1        0.0  0.0
+   1487 chronyd          0.0  0.0
+   1252 VGAuthService    0.0  0.0
+    465 kworker/4:2-eve  0.0  0.0
+     98 scsi_eh_0        0.0  0.0
+     73 kcompactd0       0.0  0.0
+     15 rcu_preempt      0.0  0.0
       2 kthreadd         0.0  0.0
       3 pool_workqueue_  0.0  0.0
       4 kworker/R-rcu_g  0.0  0.0
@@ -47,12 +47,9 @@
       6 kworker/R-kvfre  0.0  0.0
       7 kworker/R-slub_  0.0  0.0
       8 kworker/R-netns  0.0  0.0
-      9 kworker/0:0-eve  0.0  0.0
      10 kworker/0:0H-kb  0.0  0.0
-     11 kworker/0:1-eve  0.0  0.0
      13 kworker/R-mm_pe  0.0  0.0
      14 ksoftirqd/0      0.0  0.0
-     15 rcu_preempt      0.0  0.0
      16 rcu_exp_par_gp_  0.0  0.0
      17 rcu_exp_gp_kthr  0.0  0.0
      18 migration/0      0.0  0.0
@@ -63,43 +60,36 @@
      23 idle_inject/1    0.0  0.0
      24 migration/1      0.0  0.0
      25 ksoftirqd/1      0.0  0.0
-     26 kworker/1:0-cgr  0.0  0.0
      27 kworker/1:0H-kb  0.0  0.0
      28 cpuhp/2          0.0  0.0
      29 idle_inject/2    0.0  0.0
      30 migration/2      0.0  0.0
      31 ksoftirqd/2      0.0  0.0
-     32 kworker/2:0-cgr  0.0  0.0
      33 kworker/2:0H-kb  0.0  0.0
      34 cpuhp/3          0.0  0.0
      35 idle_inject/3    0.0  0.0
      36 migration/3      0.0  0.0
      37 ksoftirqd/3      0.0  0.0
-     38 kworker/3:0-eve  0.0  0.0
      39 kworker/3:0H-kb  0.0  0.0
      40 cpuhp/4          0.0  0.0
      41 idle_inject/4    0.0  0.0
      42 migration/4      0.0  0.0
      43 ksoftirqd/4      0.0  0.0
-     44 kworker/4:0-eve  0.0  0.0
      45 kworker/4:0H-kb  0.0  0.0
      46 cpuhp/5          0.0  0.0
      47 idle_inject/5    0.0  0.0
      48 migration/5      0.0  0.0
      49 ksoftirqd/5      0.0  0.0
-     50 kworker/5:0-eve  0.0  0.0
-     51 kworker/5:0H     0.0  0.0
+     51 kworker/5:0H-kb  0.0  0.0
      52 cpuhp/6          0.0  0.0
      53 idle_inject/6    0.0  0.0
      54 migration/6      0.0  0.0
      55 ksoftirqd/6      0.0  0.0
-     56 kworker/6:0-eve  0.0  0.0
      57 kworker/6:0H-kb  0.0  0.0
      58 cpuhp/7          0.0  0.0
      59 idle_inject/7    0.0  0.0
      60 migration/7      0.0  0.0
      61 ksoftirqd/7      0.0  0.0
-     62 kworker/7:0-eve  0.0  0.0
      63 kworker/7:0H-kb  0.0  0.0
      64 kdevtmpfs        0.0  0.0
      65 kworker/R-inet_  0.0  0.0
@@ -108,13 +98,11 @@
      68 kauditd          0.0  0.0
      69 khungtaskd       0.0  0.0
      70 oom_reaper       0.0  0.0
-     72 kworker/u32:2-e  0.0  0.0
-     73 kworker/R-write  0.0  0.0
-     74 kcompactd0       0.0  0.0
-     75 ksmd             0.0  0.0
-     76 khugepaged       0.0  0.0
-     77 kworker/R-kbloc  0.0  0.0
-     78 kworker/R-blkcg  0.0  0.0
+     72 kworker/R-write  0.0  0.0
+     74 ksmd             0.0  0.0
+     75 khugepaged       0.0  0.0
+     76 kworker/R-kbloc  0.0  0.0
+     77 kworker/R-blkcg  0.0  0.0
      79 kworker/R-kinte  0.0  0.0
      80 irq/9-acpi       0.0  0.0
      83 kworker/R-tpm_d  0.0  0.0
@@ -125,154 +113,127 @@
      88 kworker/R-edac-  0.0  0.0
      89 kworker/R-devfr  0.0  0.0
      90 watchdogd        0.0  0.0
-     92 kworker/R-quota  0.0  0.0
+     91 kworker/R-quota  0.0  0.0
      93 kswapd0          0.0  0.0
      94 ecryptfs-kthrea  0.0  0.0
-     95 kworker/R-kthro  0.0  0.0
-     96 kworker/R-acpi_  0.0  0.0
-     98 kworker/R-scsi_  0.0  0.0
-    100 kworker/R-scsi_  0.0  0.0
-    102 kworker/u32:4-a  0.0  0.0
-    103 kworker/u32:5-a  0.0  0.0
-    106 kworker/R-mld    0.0  0.0
-    107 kworker/R-ipv6_  0.0  0.0
-    108 kworker/R-kstrp  0.0  0.0
-    113 kworker/u33:0    0.0  0.0
-    115 kworker/5:2-eve  0.0  0.0
-    126 kworker/R-charg  0.0  0.0
-    221 kworker/2:2-cgr  0.0  0.0
-    308 kworker/3:2-cgr  0.0  0.0
+     95 kworker/1:1-eve  0.0  0.0
+     96 kworker/R-kthro  0.0  0.0
+     97 kworker/R-acpi_  0.0  0.0
+     99 kworker/R-scsi_  0.0  0.0
+    101 kworker/R-scsi_  0.0  0.0
+    105 kworker/R-mld    0.0  0.0
+    106 kworker/R-ipv6_  0.0  0.0
+    107 kworker/R-kstrp  0.0  0.0
+    112 kworker/u33:0    0.0  0.0
+    125 kworker/R-charg  0.0  0.0
+    126 kworker/2:2-eve  0.0  0.0
+    292 kworker/7:2-eve  0.0  0.0
+    329 kworker/0:2-eve  0.0  0.0
     370 scsi_eh_2        0.0  0.0
     371 kworker/R-scsi_  0.0  0.0
     372 kworker/R-vmw_p  0.0  0.0
-    373 scsi_eh_3        0.0  0.0
-    374 kworker/R-scsi_  0.0  0.0
-    375 scsi_eh_4        0.0  0.0
-    376 kworker/R-scsi_  0.0  0.0
-    377 scsi_eh_5        0.0  0.0
-    378 kworker/R-scsi_  0.0  0.0
-    379 scsi_eh_6        0.0  0.0
-    380 kworker/R-scsi_  0.0  0.0
-    381 scsi_eh_7        0.0  0.0
-    382 kworker/R-scsi_  0.0  0.0
-    383 scsi_eh_8        0.0  0.0
-    384 kworker/R-scsi_  0.0  0.0
-    385 scsi_eh_9        0.0  0.0
-    386 kworker/R-scsi_  0.0  0.0
-    387 scsi_eh_10       0.0  0.0
-    388 kworker/R-scsi_  0.0  0.0
-    389 scsi_eh_11       0.0  0.0
-    390 kworker/R-scsi_  0.0  0.0
-    391 scsi_eh_12       0.0  0.0
-    392 kworker/R-scsi_  0.0  0.0
-    393 scsi_eh_13       0.0  0.0
-    394 kworker/R-scsi_  0.0  0.0
-    395 scsi_eh_14       0.0  0.0
-    396 kworker/R-scsi_  0.0  0.0
-    397 scsi_eh_15       0.0  0.0
-    398 kworker/R-scsi_  0.0  0.0
-    399 scsi_eh_16       0.0  0.0
-    400 kworker/R-scsi_  0.0  0.0
-    401 scsi_eh_17       0.0  0.0
-    402 kworker/R-scsi_  0.0  0.0
-    403 scsi_eh_18       0.0  0.0
-    404 kworker/R-scsi_  0.0  0.0
-    405 scsi_eh_19       0.0  0.0
-    406 kworker/R-scsi_  0.0  0.0
-    407 scsi_eh_20       0.0  0.0
-    408 kworker/R-scsi_  0.0  0.0
-    409 scsi_eh_21       0.0  0.0
-    410 kworker/R-scsi_  0.0  0.0
-    411 scsi_eh_22       0.0  0.0
-    412 kworker/R-scsi_  0.0  0.0
-    413 scsi_eh_23       0.0  0.0
-    414 kworker/R-scsi_  0.0  0.0
-    415 scsi_eh_24       0.0  0.0
-    416 kworker/R-scsi_  0.0  0.0
-    417 scsi_eh_25       0.0  0.0
-    418 kworker/R-scsi_  0.0  0.0
-    419 scsi_eh_26       0.0  0.0
-    420 kworker/R-scsi_  0.0  0.0
-    421 scsi_eh_27       0.0  0.0
-    422 kworker/R-scsi_  0.0  0.0
-    423 scsi_eh_28       0.0  0.0
-    424 kworker/R-scsi_  0.0  0.0
-    425 scsi_eh_29       0.0  0.0
-    426 kworker/R-scsi_  0.0  0.0
-    427 scsi_eh_30       0.0  0.0
-    428 kworker/R-scsi_  0.0  0.0
-    429 scsi_eh_31       0.0  0.0
-    430 kworker/R-scsi_  0.0  0.0
-    431 scsi_eh_32       0.0  0.0
-    432 kworker/R-scsi_  0.0  0.0
-    433 kworker/u32:6-a  0.0  0.0
-    434 kworker/u32:7-a  0.0  0.0
-    435 kworker/u32:8-a  0.0  0.0
-    436 kworker/u32:9-a  0.0  0.0
-    437 kworker/u32:10-  0.0  0.0
-    438 kworker/u32:11-  0.0  0.0
-    439 kworker/u32:12-  0.0  0.0
-    440 kworker/u32:13-  0.0  0.0
-    441 kworker/u32:14-  0.0  0.0
-    442 kworker/u32:15-  0.0  0.0
-    443 kworker/u32:16-  0.0  0.0
-    444 kworker/u32:17-  0.0  0.0
-    445 kworker/u32:18-  0.0  0.0
-    446 kworker/u32:19-  0.0  0.0
-    447 kworker/u32:20-  0.0  0.0
-    448 kworker/u32:21-  0.0  0.0
-    449 kworker/u32:22-  0.0  0.0
-    450 kworker/u32:23-  0.0  0.0
-    451 kworker/u32:24-  0.0  0.0
-    452 kworker/u32:25-  0.0  0.0
-    453 kworker/u32:26-  0.0  0.0
-    454 kworker/u32:27-  0.0  0.0
-    455 kworker/u32:28-  0.0  0.0
-    457 kworker/u32:30-  0.0  0.0
-    458 kworker/u32:31-  0.0  0.0
-    459 kworker/u32:32-  0.0  0.0
-    461 kworker/2:1H     0.0  0.0
-    462 kworker/0:1H-kb  0.0  0.0
-    463 kworker/1:2-cgr  0.0  0.0
-    553 kworker/R-kdmfl  0.0  0.0
-    586 kworker/1:1H-kb  0.0  0.0
-    590 kworker/6:3      0.0  0.0
-    591 jbd2/dm-0-8      0.0  0.0
-    592 kworker/R-ext4-  0.0  0.0
-    656 irq/35-vmw_vmci  0.0  0.0
-    657 irq/36-vmw_vmci  0.0  0.0
-    658 irq/37-vmw_vmci  0.0  0.0
-    685 kworker/4:1H-kb  0.0  0.0
-    689 psimon           0.0  0.0
-    697 kworker/3:1H-kb  0.0  0.0
-    705 kworker/6:1H-kb  0.0  0.0
+    374 scsi_eh_3        0.0  0.0
+    375 kworker/R-scsi_  0.0  0.0
+    376 scsi_eh_4        0.0  0.0
+    377 kworker/R-scsi_  0.0  0.0
+    378 scsi_eh_5        0.0  0.0
+    379 kworker/R-scsi_  0.0  0.0
+    380 scsi_eh_6        0.0  0.0
+    381 kworker/R-scsi_  0.0  0.0
+    382 scsi_eh_7        0.0  0.0
+    383 kworker/R-scsi_  0.0  0.0
+    384 scsi_eh_8        0.0  0.0
+    385 kworker/R-scsi_  0.0  0.0
+    386 scsi_eh_9        0.0  0.0
+    387 kworker/R-scsi_  0.0  0.0
+    388 scsi_eh_10       0.0  0.0
+    389 kworker/R-scsi_  0.0  0.0
+    390 scsi_eh_11       0.0  0.0
+    391 kworker/R-scsi_  0.0  0.0
+    392 scsi_eh_12       0.0  0.0
+    393 kworker/R-scsi_  0.0  0.0
+    394 scsi_eh_13       0.0  0.0
+    395 kworker/R-scsi_  0.0  0.0
+    396 scsi_eh_14       0.0  0.0
+    397 kworker/R-scsi_  0.0  0.0
+    398 scsi_eh_15       0.0  0.0
+    399 kworker/R-scsi_  0.0  0.0
+    400 scsi_eh_16       0.0  0.0
+    401 kworker/R-scsi_  0.0  0.0
+    402 scsi_eh_17       0.0  0.0
+    403 kworker/R-scsi_  0.0  0.0
+    404 scsi_eh_18       0.0  0.0
+    405 kworker/R-scsi_  0.0  0.0
+    406 scsi_eh_19       0.0  0.0
+    407 kworker/R-scsi_  0.0  0.0
+    408 scsi_eh_20       0.0  0.0
+    409 kworker/R-scsi_  0.0  0.0
+    410 scsi_eh_21       0.0  0.0
+    411 kworker/R-scsi_  0.0  0.0
+    412 scsi_eh_22       0.0  0.0
+    413 kworker/R-scsi_  0.0  0.0
+    414 scsi_eh_23       0.0  0.0
+    415 kworker/R-scsi_  0.0  0.0
+    416 scsi_eh_24       0.0  0.0
+    417 kworker/R-scsi_  0.0  0.0
+    418 scsi_eh_25       0.0  0.0
+    419 kworker/R-scsi_  0.0  0.0
+    420 scsi_eh_26       0.0  0.0
+    421 kworker/R-scsi_  0.0  0.0
+    422 scsi_eh_27       0.0  0.0
+    423 kworker/R-scsi_  0.0  0.0
+    424 scsi_eh_28       0.0  0.0
+    425 kworker/R-scsi_  0.0  0.0
+    426 scsi_eh_29       0.0  0.0
+    427 kworker/R-scsi_  0.0  0.0
+    428 scsi_eh_30       0.0  0.0
+    429 kworker/R-scsi_  0.0  0.0
+    430 scsi_eh_31       0.0  0.0
+    431 kworker/R-scsi_  0.0  0.0
+    432 scsi_eh_32       0.0  0.0
+    433 kworker/R-scsi_  0.0  0.0
+    463 kworker/1:1H     0.0  0.0
+    464 kworker/6:1H-kb  0.0  0.0
+    476 kworker/4:1H-kb  0.0  0.0
+    557 kworker/R-kdmfl  0.0  0.0
+    573 kworker/3:2-eve  0.0  0.0
+    589 kworker/2:1H-kb  0.0  0.0
+    593 jbd2/dm-0-8      0.0  0.0
+    594 kworker/R-ext4-  0.0  0.0
+    658 irq/35-vmw_vmci  0.0  0.0
+    659 irq/36-vmw_vmci  0.0  0.0
+    660 irq/37-vmw_vmci  0.0  0.0
+    690 psimon           0.0  0.0
+    698 kworker/7:1H-kb  0.0  0.0
     710 kworker/R-kmpat  0.0  0.0
     711 kworker/R-kmpat  0.0  0.0
-    749 kworker/7:3      0.0  0.0
-    756 psimon           0.0  0.0
-    855 irq/16-vmwgfx    0.0  0.0
-    856 kworker/R-ttm    0.0  0.0
-   1003 kworker/R-nfit   0.0  0.0
-   1013 jbd2/sda2-8      0.0  0.0
-   1014 kworker/R-ext4-  0.0  0.0
-   1103 kworker/4:3      0.0  0.0
-   1252 VGAuthService    0.0  0.0
-   1343 kworker/R-cfg80  0.0  0.0
-   1364 cron             0.0  0.0
-   1475 agetty           0.0  0.0
-   1494 chronyd          0.0  0.0
-   1511 chronyd          0.0  0.0
-   1747 kworker/7:1H-kb  0.0  0.0
-   1775 sshd             0.0  0.0
-   1784 kworker/1:3-eve  0.0  0.0
-   1786 (sd-pam)         0.0  0.0
-   1909 sshd-session     0.0  0.0
-   1932 sudo             0.0  0.0
-   1935 sudo             0.0  0.0
-   1977 kworker/5:1H-kb  0.0  0.0
-   1982 bash             0.0  0.0
-   1983 bash             0.0  0.0
-   1992 tee              0.0  0.0
-   2032 bash             0.0  0.0
-   2056 bash             0.0  0.0
-   2087 ps               0.0  0.0
+    715 kworker/0:1H-kb  0.0  0.0
+    738 kworker/5:1H-kb  0.0  0.0
+    758 psimon           0.0  0.0
+    856 irq/16-vmwgfx    0.0  0.0
+    857 kworker/R-ttm    0.0  0.0
+    990 kworker/R-nfit   0.0  0.0
+   1009 jbd2/sda2-8      0.0  0.0
+   1010 kworker/R-ext4-  0.0  0.0
+   1073 kworker/6:2-cgr  0.0  0.0
+   1120 kworker/3:1H-kb  0.0  0.0
+   1337 kworker/R-cfg80  0.0  0.0
+   1360 cron             0.0  0.0
+   1488 agetty           0.0  0.0
+   1504 chronyd          0.0  0.0
+   1801 sshd             0.0  0.0
+   1803 sshd-session     0.0  0.0
+   1811 (sd-pam)         0.0  0.0
+   1923 sshd-session     0.0  0.0
+   1971 sudo             0.0  0.0
+   1974 kworker/6:1      0.0  0.0
+   1977 sudo             0.0  0.0
+   1999 kworker/u32:0-e  0.0  0.0
+   2001 bash             0.0  0.0
+   2002 grep             0.0  0.0
+   2003 tail             0.0  0.0
+   2012 tee              0.0  0.0
+   2050 bash             0.0  0.0
+   2070 kworker/2:0      0.0  0.0
+   2075 bash             0.0  0.0
+   2106 ps               0.0  0.0

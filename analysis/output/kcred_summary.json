@@ -1,0 +1,82 @@
+{
+ "E6cred": {
+  "runs": 72,
+  "boots": 2,
+  "attr": {
+   "N": 6216,
+   "C": 6216,
+   "A": 0,
+   "M": 0,
+   "I": 0
+  },
+  "policy": {
+   "N": 8400,
+   "TA": 6216,
+   "TD": 2184,
+   "FA": 0,
+   "FD": 0,
+   "ND": 0
+  }
+ },
+ "E6reusecred": {
+  "runs": 24,
+  "boots": 2,
+  "policy": {
+   "N": 3600,
+   "TA": 2736,
+   "TD": 864,
+   "FA": 0,
+   "FD": 0
+  },
+  "kacct_exact_runs": 24,
+  "bytes_tx": 402192,
+  "bytes_rx": 246240
+ },
+ "E6spoofcred": {
+  "runs": 36,
+  "boots": 2,
+  "trust": {
+   "0": {
+    "N": 2100,
+    "FA": 546,
+    "FD": 0,
+    "ND": 0,
+    "refused": 0,
+    "runs": 18
+   },
+   "1": {
+    "N": 2100,
+    "FA": 0,
+    "FD": 0,
+    "ND": 0,
+    "refused": 2100,
+    "runs": 18
+   }
+  }
+ },
+ "E11file": {
+  "runs": 24,
+  "boots": 2,
+  "exact_runs": 24,
+  "bytes": 116191356,
+  "abs_err": 0
+ },
+ "E3cred": {
+  "runs": 30,
+  "boots": 2,
+  "median_ns": {
+   "prctl": {
+    "connect": 43353.5,
+    "open": 1483.5
+   },
+   "none": {
+    "connect": 29649.5,
+    "open": 1465.0
+   },
+   "openat": {
+    "connect": 50452.0,
+    "open": 1990.0
+   }
+  }
+ }
+}
