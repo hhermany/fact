@@ -1,0 +1,144 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E8ipfix-confirmatory-20261020T140618Z/runs/r0004-E8ipfix-c03-rep01",
+ "tool": "httpx_shared",
+ "execs": 8,
+ "messages": 3,
+ "decode_errors": 0,
+ "records": 10,
+ "connections": {
+  "reference": 0,
+  "ipfix_credited": 104,
+  "abs_error": 104,
+  "error_pct": null,
+  "uncredited": 21
+ },
+ "octets_sent": {
+  "reference": 31000,
+  "ipfix_credited": 31000,
+  "abs_error": 0,
+  "error_pct": 0.0,
+  "uncredited": 0
+ },
+ "octets_received": {
+  "reference": 18000,
+  "ipfix_credited": 18000,
+  "abs_error": 0,
+  "error_pct": 0.0,
+  "uncredited": 0
+ },
+ "ipfix_equals_factd": true,
+ "per_exec": {
+  "E00": {
+   "connections": [
+    25,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  },
+  "E01": {
+   "connections": [
+    19,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  },
+  "E02": {
+   "connections": [
+    15,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  },
+  "E03": {
+   "connections": [
+    6,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  },
+  "E04": {
+   "connections": [
+    11,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  },
+  "E05": {
+   "connections": [
+    23,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  },
+  "E06": {
+   "connections": [
+    3,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  },
+  "E07": {
+   "connections": [
+    2,
+    0
+   ],
+   "octets_sent": [
+    3875,
+    3875
+   ],
+   "octets_received": [
+    2250,
+    2250
+   ]
+  }
+ }
+}

@@ -1,0 +1,37 @@
+{
+ "campaign_seed": 43201,
+ "order": [
+  [
+   1,
+   "r0001-E6reuse-c03-rep00"
+  ],
+  [
+   2,
+   "r0002-E6reuse-c02-rep01"
+  ],
+  [
+   3,
+   "r0003-E6reuse-c01-rep00"
+  ],
+  [
+   4,
+   "r0004-E6reuse-c01-rep01"
+  ],
+  [
+   5,
+   "r0005-E6reuse-c00-rep01"
+  ],
+  [
+   6,
+   "r0006-E6reuse-c02-rep00"
+  ],
+  [
+   7,
+   "r0007-E6reuse-c00-rep00"
+  ],
+  [
+   8,
+   "r0008-E6reuse-c03-rep01"
+  ]
+ ]
+}

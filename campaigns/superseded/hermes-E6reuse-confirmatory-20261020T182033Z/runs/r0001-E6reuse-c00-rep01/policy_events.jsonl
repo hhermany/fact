@@ -1,0 +1,9 @@
+{"ev":"ready","lo":61000,"hi":64998,"no_ctx_allow":0,"lineage":0,"per_send":0}
+{"ev":"decision","ts":649880396498,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E00","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":649884022618,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E01","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":649884186654,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E02","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":649884322923,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E03","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":649890892292,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61001,"verdict":"allow","has_ctx":1,"ctx":"E00","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":649898842028,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61001,"verdict":"allow","has_ctx":1,"ctx":"E02","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":649899221569,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61001,"verdict":"deny","has_ctx":1,"ctx":"E03","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":649907280005,"pid":2234,"tid":2234,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E03","conflict":0,"from_lineage":0,"kind":"connect"}

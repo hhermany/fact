@@ -1,0 +1,1 @@
+{"tool": "httpx_fresh", "send_binding": 0, "requests": 100, "connections": 100, "shared": 0, "sent_opener_I": 0, "sent_sender_I": 11470, "received_opener_I": 0, "received_sender_I": 6660, "sent_N": 15500, "received_N": 9000}

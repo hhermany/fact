@@ -1,0 +1,346 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E9cost-confirmatory-20261020T193933Z/runs/r0010-execs8-factall-c03-rep03",
+ "cond": "E9cost",
+ "mode": "mcp",
+ "binding": true,
+ "capture": {
+  "planned": 200,
+  "attempted": 200,
+  "captured": 200,
+  "lost": [],
+  "n_lost": 0,
+  "duplicates": 200,
+  "bad_lines": 0,
+  "excluded": {
+   "no_reference": 222
+  }
+ },
+ "reference_connects": {
+  "E00": 75,
+  "E01": 75,
+  "E02": 75,
+  "E03": 75,
+  "E04": 75,
+  "E07": 75,
+  "E05": 75,
+  "E06": 75
+ },
+ "resolvers": {
+  "cgroup": {
+   "N": 600,
+   "C": 0,
+   "A": 600,
+   "A_in": 600,
+   "M": 0,
+   "I": 0,
+   "C/N": 0.0,
+   "A/N": 1.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": null,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E01": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E03": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E04": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E05": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E06": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E07": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    }
+   }
+  },
+  "lineage": {
+   "N": 600,
+   "C": 0,
+   "A": 600,
+   "A_in": 600,
+   "M": 0,
+   "I": 0,
+   "C/N": 0.0,
+   "A/N": 1.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": null,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E01": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E03": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E04": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E05": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E06": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E07": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    }
+   }
+  },
+  "context": {
+   "N": 600,
+   "C": 600,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": 1.0,
+   "A/N": 0.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": 1.0,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E01": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E03": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E04": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E05": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E06": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E07": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    }
+   }
+  },
+  "fused": {
+   "N": 600,
+   "C": 600,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": 1.0,
+   "A/N": 0.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": 1.0,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E01": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E03": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E04": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E05": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E06": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E07": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E3cred.json --n 2 --seed 43121 --label pilot

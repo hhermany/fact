@@ -1,0 +1,2 @@
+  modelo gpt-6.1-sol (API da OpenAI): OK, 1 chamada(s) de ferramenta, uso 137+29 tokens
+  modelo gpt-6-luna (API da OpenAI): OK, 1 chamada(s) de ferramenta, uso 137+29 tokens

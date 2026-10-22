@@ -1,0 +1,41 @@
+{
+ "campaign_seed": 51193,
+ "order": [
+  [
+   1,
+   "r0001-E5fetch-c01-rep02"
+  ],
+  [
+   2,
+   "r0002-E5fetch-c02-rep01"
+  ],
+  [
+   3,
+   "r0003-E5fetch-c00-rep00"
+  ],
+  [
+   4,
+   "r0004-E5fetch-c00-rep01"
+  ],
+  [
+   5,
+   "r0005-E5fetch-c01-rep00"
+  ],
+  [
+   6,
+   "r0006-E5fetch-c01-rep01"
+  ],
+  [
+   7,
+   "r0007-E5fetch-c00-rep02"
+  ],
+  [
+   8,
+   "r0008-E5fetch-c02-rep02"
+  ],
+  [
+   9,
+   "r0009-E5fetch-c02-rep00"
+  ]
+ ]
+}

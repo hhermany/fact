@@ -1,0 +1,29 @@
+{
+ "campaign_seed": 43521,
+ "order": [
+  [
+   1,
+   "r0001-E6spoof-c01-rep00"
+  ],
+  [
+   2,
+   "r0002-E6spoof-c02-rep00"
+  ],
+  [
+   3,
+   "r0003-E6spoof-c05-rep00"
+  ],
+  [
+   4,
+   "r0004-E6spoof-c03-rep00"
+  ],
+  [
+   5,
+   "r0005-E6spoof-c04-rep00"
+  ],
+  [
+   6,
+   "r0006-E6spoof-c00-rep00"
+  ]
+ ]
+}

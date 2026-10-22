@@ -1,0 +1,2 @@
+{"ev":"ready","lo":61000,"hi":64998,"no_ctx_allow":1,"lineage":0,"per_send":0}
+{"ev":"decision","ts":2166886262238,"pid":9397,"tid":9397,"daddr":"127.0.0.1","dport":63195,"verdict":"allow","has_ctx":0,"ctx":"","conflict":0,"from_lineage":0,"kind":"connect"}

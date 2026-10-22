@@ -1,0 +1,66 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E9b-confirmatory-20261020T185114Z/runs/r0006-E9b-c01-rep00",
+ "tool": "mixed",
+ "execs": 8,
+ "messages": 19,
+ "decode_errors": 0,
+ "records": 57,
+ "connections": {
+  "reference": 444,
+  "ipfix_credited": 444,
+  "abs_error": 0,
+  "error_pct": 0.0,
+  "uncredited": 170
+ },
+ "ipfix_equals_factd": true,
+ "per_exec": {
+  "E00": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E01": {
+   "connections": [
+    36,
+    36
+   ]
+  },
+  "E02": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E03": {
+   "connections": [
+    36,
+    36
+   ]
+  },
+  "E04": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E05": {
+   "connections": [
+    36,
+    36
+   ]
+  },
+  "E06": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E07": {
+   "connections": [
+    36,
+    36
+   ]
+  }
+ }
+}

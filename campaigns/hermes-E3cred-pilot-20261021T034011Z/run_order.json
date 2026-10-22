@@ -1,0 +1,29 @@
+{
+ "campaign_seed": 43121,
+ "order": [
+  [
+   1,
+   "r0001-ifaceopenat-c01-rep00"
+  ],
+  [
+   2,
+   "r0002-ifacenone-c00-rep00"
+  ],
+  [
+   3,
+   "r0003-ifaceprctl-c02-rep00"
+  ],
+  [
+   4,
+   "r0004-ifaceopenat-c01-rep01"
+  ],
+  [
+   5,
+   "r0005-ifaceprctl-c02-rep01"
+  ],
+  [
+   6,
+   "r0006-ifacenone-c00-rep01"
+  ]
+ ]
+}

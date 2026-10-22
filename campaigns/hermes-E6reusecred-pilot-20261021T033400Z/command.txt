@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E6reusecred.json --n 2 --seed 43211 --label pilot

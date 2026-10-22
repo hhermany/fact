@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E11file.json --n 3 --seed 43411 --label pilot

@@ -1,0 +1,141 @@
+{
+ "wall_s": 8.733,
+ "collector_cpu_s": 0.07,
+ "policy_loader_cpu_s": 0.01,
+ "bpf_run_time_s": 0.059258,
+ "bpf_run_cnt": 74544,
+ "bpf_progs": [
+  {
+   "id": 49,
+   "name": "restrict_filesystems",
+   "type": "lsm",
+   "delta_run_cnt": 15103,
+   "delta_run_time_ns": 3430122
+  },
+  {
+   "id": 212,
+   "name": "tracepoint_syscalls_sys_enter_openat_2",
+   "type": "tracepoint",
+   "delta_run_cnt": 21917,
+   "delta_run_time_ns": 22479876
+  },
+  {
+   "id": 213,
+   "name": "tracepoint_sched_sched_process_fork_3",
+   "type": "tracepoint",
+   "delta_run_cnt": 620,
+   "delta_run_time_ns": 4907742
+  },
+  {
+   "id": 214,
+   "name": "tracepoint_sched_sched_process_exec_4",
+   "type": "tracepoint",
+   "delta_run_cnt": 417,
+   "delta_run_time_ns": 2826919
+  },
+  {
+   "id": 215,
+   "name": "tracepoint_sched_sched_process_exit_5",
+   "type": "tracepoint",
+   "delta_run_cnt": 620,
+   "delta_run_time_ns": 4849627
+  },
+  {
+   "id": 216,
+   "name": "kprobe_tcp_connect_6",
+   "type": "kprobe",
+   "delta_run_cnt": 420,
+   "delta_run_time_ns": 2561742
+  },
+  {
+   "id": 217,
+   "name": "tracepoint_sock_inet_sock_set_state_7",
+   "type": "tracepoint",
+   "delta_run_cnt": 4595,
+   "delta_run_time_ns": 1951788
+  },
+  {
+   "id": 218,
+   "name": "kprobe_tcp_sendmsg_8",
+   "type": "kprobe",
+   "delta_run_cnt": 1496,
+   "delta_run_time_ns": 1410979
+  },
+  {
+   "id": 219,
+   "name": "kprobe_tcp_cleanup_rbuf_9",
+   "type": "kprobe",
+   "delta_run_cnt": 1431,
+   "delta_run_time_ns": 2033366
+  },
+  {
+   "id": 220,
+   "name": "kprobe_tcp_close_10",
+   "type": "kprobe",
+   "delta_run_cnt": 1038,
+   "delta_run_time_ns": 431356
+  },
+  {
+   "id": 221,
+   "name": "kprobe_udp_sendmsg_11",
+   "type": "kprobe",
+   "delta_run_cnt": 404,
+   "delta_run_time_ns": 2478330
+  },
+  {
+   "id": 222,
+   "name": "kprobe_udp_destroy_sock_12",
+   "type": "kprobe",
+   "delta_run_cnt": 400,
+   "delta_run_time_ns": 172525
+  },
+  {
+   "id": 230,
+   "name": "on_openat",
+   "type": "tracepoint",
+   "delta_run_cnt": 21917,
+   "delta_run_time_ns": 4343764
+  },
+  {
+   "id": 231,
+   "name": "on_fork",
+   "type": "tracing",
+   "delta_run_cnt": 620,
+   "delta_run_time_ns": 319976
+  },
+  {
+   "id": 232,
+   "name": "on_exit",
+   "type": "tracing",
+   "delta_run_cnt": 620,
+   "delta_run_time_ns": 539709
+  },
+  {
+   "id": 233,
+   "name": "on_connect4",
+   "type": "cgroup_sock_addr",
+   "delta_run_cnt": 420,
+   "delta_run_time_ns": 3468489
+  },
+  {
+   "id": 234,
+   "name": "on_sendmsg4",
+   "type": "cgroup_sock_addr",
+   "delta_run_cnt": 405,
+   "delta_run_time_ns": 100946
+  },
+  {
+   "id": 235,
+   "name": "on_sock_sendmsg",
+   "type": "lsm",
+   "delta_run_cnt": 2101,
+   "delta_run_time_ns": 950380
+  }
+ ],
+ "host_cpu_s": 9.53,
+ "fact_cpu_s": 0.139258,
+ "fact_share_of_host": 0.014613,
+ "fact_cores": 0.015945,
+ "factd_cpu_s": 0.1099,
+ "factd_events": 5501
+}

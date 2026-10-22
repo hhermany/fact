@@ -1,0 +1,235 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E9b-confirmatory-20261020T215653Z/runs/r0004-E9b-c00-rep02",
+ "cond": "E9b",
+ "mode": "mcp",
+ "binding": true,
+ "capture": {
+  "planned": 100,
+  "attempted": 100,
+  "captured": 74,
+  "lost": [
+   61008,
+   61010,
+   61012,
+   61013,
+   61017,
+   61025,
+   61029,
+   61036,
+   61042,
+   61043,
+   61044,
+   61046,
+   61049,
+   61050,
+   61056,
+   61069,
+   61077,
+   61078,
+   61081,
+   61083
+  ],
+  "n_lost": 26,
+  "duplicates": 74,
+  "bad_lines": 0,
+  "excluded": {
+   "no_reference": 91
+  }
+ },
+ "reference_connects": {
+  "E00": 75,
+  "E02": 75,
+  "E03": 36,
+  "E01": 36
+ },
+ "resolvers": {
+  "cgroup": {
+   "N": 222,
+   "C": 0,
+   "A": 222,
+   "A_in": 222,
+   "M": 0,
+   "I": 0,
+   "C/N": 0.0,
+   "A/N": 1.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": null,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E01": {
+     "reference": 36,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 36,
+     "credited": 0,
+     "net_error": -36
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E03": {
+     "reference": 36,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 36,
+     "credited": 0,
+     "net_error": -36
+    }
+   }
+  },
+  "lineage": {
+   "N": 222,
+   "C": 0,
+   "A": 222,
+   "A_in": 222,
+   "M": 0,
+   "I": 0,
+   "C/N": 0.0,
+   "A/N": 1.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": null,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E01": {
+     "reference": 36,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 36,
+     "credited": 0,
+     "net_error": -36
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 75,
+     "credited": 0,
+     "net_error": -75
+    },
+    "E03": {
+     "reference": 36,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 36,
+     "credited": 0,
+     "net_error": -36
+    }
+   }
+  },
+  "context": {
+   "N": 222,
+   "C": 222,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": 1.0,
+   "A/N": 0.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": 1.0,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E01": {
+     "reference": 36,
+     "credited_ok": 36,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 36,
+     "net_error": 0
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E03": {
+     "reference": 36,
+     "credited_ok": 36,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 36,
+     "net_error": 0
+    }
+   }
+  },
+  "fused": {
+   "N": 222,
+   "C": 222,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": 1.0,
+   "A/N": 0.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": 1.0,
+   "accounting": {
+    "E00": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E01": {
+     "reference": 36,
+     "credited_ok": 36,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 36,
+     "net_error": 0
+    },
+    "E02": {
+     "reference": 75,
+     "credited_ok": 75,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 75,
+     "net_error": 0
+    },
+    "E03": {
+     "reference": 36,
+     "credited_ok": 36,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 36,
+     "net_error": 0
+    }
+   }
+  }
+ }
+}

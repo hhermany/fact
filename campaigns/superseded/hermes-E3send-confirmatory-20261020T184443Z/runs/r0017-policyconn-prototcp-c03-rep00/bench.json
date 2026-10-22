@@ -1,0 +1,1 @@
+{"proto":"tcp","n":200000,"warmup":10000,"size":64,"port":63193,"failures":0,"mean_ns":5105.4,"p50_ns":4791,"p90_ns":6855,"p99_ns":8855,"max_ns":71996,"wall_ns":1026917082,"throughput_sps":194757.7}

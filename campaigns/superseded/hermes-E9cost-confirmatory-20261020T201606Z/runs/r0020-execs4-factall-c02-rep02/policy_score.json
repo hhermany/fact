@@ -1,0 +1,18 @@
+{
+ "N": 100,
+ "TA": 100,
+ "TD": 0,
+ "FA": 0,
+ "FD": 0,
+ "ND": 0,
+ "label": {
+  "owner": 100
+ },
+ "by_owner_class": {
+  "P": {
+   "TA": 100
+  },
+  "R": {}
+ },
+ "expected_allow": 100
+}

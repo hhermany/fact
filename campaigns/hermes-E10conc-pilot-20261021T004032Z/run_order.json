@@ -1,0 +1,21 @@
+{
+ "campaign_seed": 1,
+ "order": [
+  [
+   1,
+   "r0001-E10budget-c03-rep00"
+  ],
+  [
+   2,
+   "r0002-E10budget-c00-rep00"
+  ],
+  [
+   3,
+   "r0003-E10budget-c02-rep00"
+  ],
+  [
+   4,
+   "r0004-E10budget-c01-rep00"
+  ]
+ ]
+}

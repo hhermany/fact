@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E6spoofcred.json --n 1 --seed 43521 --label pilot

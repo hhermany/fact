@@ -1,0 +1,1 @@
+{"tool": "requests_shared", "send_binding": 0, "requests": 100, "connections": 2, "shared": 2, "sent_opener_I": 11850, "sent_sender_I": 11850, "received_opener_I": 6750, "received_sender_I": 6750, "sent_N": 15800, "received_N": 9000}

@@ -1,0 +1,62 @@
+{
+ "campaign_id": "hermes-E5partial-pilot-20261020T211244Z",
+ "experiment": "E5partial",
+ "label": "pilot",
+ "description": "Byte accounting under backpressure: a nonblocking sender with a small send buffer and a slow receiver (bench/partial_send.py), so that many sends are partial or fail with EAGAIN. The collector (fact-bytes.bt) credits the return value of tcp_sendmsg; the run compares it with the destination's count and with the sum of the requested sizes (what counting the argument of tcp_sendmsg would credit).",
+ "spec": {
+  "experiment": "E5partial",
+  "runner": "partial",
+  "description": "Byte accounting under backpressure: a nonblocking sender with a small send buffer and a slow receiver (bench/partial_send.py), so that many sends are partial or fail with EAGAIN. The collector (fact-bytes.bt) credits the return value of tcp_sendmsg; the run compares it with the destination's count and with the sum of the requested sizes (what counting the argument of tcp_sendmsg would credit).",
+  "factors": {
+   "total": [
+    8000000
+   ]
+  },
+  "fixed": {}
+ },
+ "n_per_cell": 1,
+ "campaign_seed": 1,
+ "cells": 1,
+ "total_runs": 1,
+ "started_utc": "20261020T211244Z",
+ "duration_s": 3.4,
+ "runs_ok": 0,
+ "runs_failed": 1,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "034c16f51b020c2c4c5448b2324b113dde49ad51",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "01a24136-5e79-4e97-b3c3-ad70ad6b6634",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": null,
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "total": 8000000
+   },
+   "position": 1,
+   "run_id": "r0001-total8000000-c00-rep00",
+   "returncode": 1,
+   "seconds": 3.278,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5partial-pilot-20261020T211244Z/runs/r0001-total8000000-c00-rep00",
+    "--seed",
+    "1"
+   ],
+   "status": "FAILED"
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+E8ipfix mode=mcp binding=True  capture 100/100  lost=0  excluded={'no_reference': 13}
+resolver     N     C     A     M     I  C/(C+I)  per-execution accounting [ok/wrong/uncredited; net error]
+cgroup     100     0   100     0     0      -    E00:0/0/25;-25  E01:0/0/25;-25  E02:0/0/25;-25  E03:0/0/25;-25
+lineage    100     0   100     0     0      -    E00:0/0/25;-25  E01:0/0/25;-25  E02:0/0/25;-25  E03:0/0/25;-25
+context    100   100     0     0     0    1.000  E00:25/0/0;+0  E01:25/0/0;+0  E02:25/0/0;+0  E03:25/0/0;+0
+fused      100   100     0     0     0    1.000  E00:25/0/0;+0  E01:25/0/0;+0  E02:25/0/0;+0  E03:25/0/0;+0

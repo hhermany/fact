@@ -1,0 +1,439 @@
+{
+ "campaign_id": "hermes-E3cred-confirmatory-20261021T034306Z",
+ "experiment": "E3cred",
+ "label": "confirmatory",
+ "description": "Cost of the context interface: no FACT; openat markers (collector fact-all.bt, fact_policy cred=0, both attach a probe to every openat on the host); execution credential (collector fact-cred.bt, fact_policy cred=1: the switch is prctl(PR_FACT) authorized by the BPF LSM, no openat probe). Each run measures connect() latency with two switches per connection (bench/connect_bench.c) and open()+close() latency of an unrelated file (bench/open_bench.c), i.e., what the interface costs processes that never use it; bpf_stats gives the eBPF time per program.",
+ "spec": {
+  "experiment": "E3cred",
+  "runner": "credcost",
+  "description": "Cost of the context interface: no FACT; openat markers (collector fact-all.bt, fact_policy cred=0, both attach a probe to every openat on the host); execution credential (collector fact-cred.bt, fact_policy cred=1: the switch is prctl(PR_FACT) authorized by the BPF LSM, no openat probe). Each run measures connect() latency with two switches per connection (bench/connect_bench.c) and open()+close() latency of an unrelated file (bench/open_bench.c), i.e., what the interface costs processes that never use it; bpf_stats gives the eBPF time per program.",
+  "factors": {
+   "iface": [
+    "none",
+    "openat",
+    "prctl"
+   ]
+  },
+  "fixed": {
+   "n": 20000,
+   "warmup": 1000
+  }
+ },
+ "n_per_cell": 5,
+ "campaign_seed": 51193,
+ "cells": 3,
+ "total_runs": 15,
+ "started_utc": "20261021T034306Z",
+ "duration_s": 37.8,
+ "runs_ok": 15,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "14833faa9539b6ec4e10130d9a77e094d4c9781c",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "e34e6866-e7ba-49c8-94ad-5167889096a0",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": "preflight/last",
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 2,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 1,
+   "run_id": "r0001-ifaceprctl-c02-rep02",
+   "returncode": 0,
+   "seconds": 3.111,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0001-ifaceprctl-c02-rep02",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 2,
+   "run_id": "r0002-ifaceprctl-c02-rep00",
+   "returncode": 0,
+   "seconds": 3.092,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0002-ifaceprctl-c02-rep00",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 3,
+   "run_id": "r0003-ifaceprctl-c02-rep01",
+   "returncode": 0,
+   "seconds": 3.121,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0003-ifaceprctl-c02-rep01",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 4,
+   "run_id": "r0004-ifaceprctl-c02-rep03",
+   "returncode": 0,
+   "seconds": 3.118,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0004-ifaceprctl-c02-rep03",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 5,
+   "run_id": "r0005-ifacenone-c00-rep01",
+   "returncode": 0,
+   "seconds": 1.032,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0005-ifacenone-c00-rep01",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 6,
+   "run_id": "r0006-ifacenone-c00-rep04",
+   "returncode": 0,
+   "seconds": 1.002,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0006-ifacenone-c00-rep04",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 7,
+   "run_id": "r0007-ifaceopenat-c01-rep03",
+   "returncode": 0,
+   "seconds": 3.489,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0007-ifaceopenat-c01-rep03",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 8,
+   "run_id": "r0008-ifacenone-c00-rep00",
+   "returncode": 0,
+   "seconds": 1.008,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0008-ifacenone-c00-rep00",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 9,
+   "run_id": "r0009-ifacenone-c00-rep02",
+   "returncode": 0,
+   "seconds": 1.009,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0009-ifacenone-c00-rep02",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 10,
+   "run_id": "r0010-ifacenone-c00-rep03",
+   "returncode": 0,
+   "seconds": 1.01,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0010-ifacenone-c00-rep03",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 11,
+   "run_id": "r0011-ifaceopenat-c01-rep02",
+   "returncode": 0,
+   "seconds": 3.378,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0011-ifaceopenat-c01-rep02",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 12,
+   "run_id": "r0012-ifaceopenat-c01-rep04",
+   "returncode": 0,
+   "seconds": 3.386,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0012-ifaceopenat-c01-rep04",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 13,
+   "run_id": "r0013-ifaceopenat-c01-rep00",
+   "returncode": 0,
+   "seconds": 3.379,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0013-ifaceopenat-c01-rep00",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 14,
+   "run_id": "r0014-ifaceprctl-c02-rep04",
+   "returncode": 0,
+   "seconds": 3.113,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0014-ifaceprctl-c02-rep04",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 15,
+   "run_id": "r0015-ifaceopenat-c01-rep01",
+   "returncode": 0,
+   "seconds": 3.369,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-confirmatory-20261021T034306Z/runs/r0015-ifaceopenat-c01-rep01",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  }
+ ]
+}

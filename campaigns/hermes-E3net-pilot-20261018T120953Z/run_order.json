@@ -1,0 +1,21 @@
+{
+ "campaign_seed": 51193,
+ "order": [
+  [
+   1,
+   "r0001-instrnone-markers0-c00-rep00"
+  ],
+  [
+   2,
+   "r0002-instrcollector-markers0-c02-rep00"
+  ],
+  [
+   3,
+   "r0003-instrnone-markers1-c01-rep00"
+  ],
+  [
+   4,
+   "r0004-instrcollector-markers1-c03-rep00"
+  ]
+ ]
+}

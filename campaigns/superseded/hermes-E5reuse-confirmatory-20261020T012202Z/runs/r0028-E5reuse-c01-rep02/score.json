@@ -1,0 +1,80 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E5reuse-confirmatory-20261020T012202Z/runs/r0028-E5reuse-c01-rep02",
+ "cond": "E5reuse",
+ "mode": "mcp",
+ "binding": true,
+ "capture": {
+  "planned": 0,
+  "attempted": 2,
+  "captured": 0,
+  "lost": [
+   61000,
+   61001
+  ],
+  "n_lost": 2,
+  "duplicates": 0,
+  "bad_lines": 0,
+  "excluded": {
+   "no_reference": 220
+  }
+ },
+ "reference_connects": {},
+ "resolvers": {
+  "cgroup": {
+   "N": 0,
+   "C": 0,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": null,
+   "A/N": null,
+   "M/N": null,
+   "I/N": null,
+   "C/(C+I)": null,
+   "accounting": {}
+  },
+  "lineage": {
+   "N": 0,
+   "C": 0,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": null,
+   "A/N": null,
+   "M/N": null,
+   "I/N": null,
+   "C/(C+I)": null,
+   "accounting": {}
+  },
+  "context": {
+   "N": 0,
+   "C": 0,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": null,
+   "A/N": null,
+   "M/N": null,
+   "I/N": null,
+   "C/(C+I)": null,
+   "accounting": {}
+  },
+  "fused": {
+   "N": 0,
+   "C": 0,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": null,
+   "A/N": null,
+   "M/N": null,
+   "I/N": null,
+   "C/(C+I)": null,
+   "accounting": {}
+  }
+ }
+}

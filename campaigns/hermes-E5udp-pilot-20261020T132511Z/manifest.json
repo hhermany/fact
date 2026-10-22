@@ -1,0 +1,321 @@
+{
+ "campaign_id": "hermes-E5udp-pilot-20261020T132511Z",
+ "experiment": "E5udp",
+ "label": "pilot",
+ "description": "UDP flows: the shared MCP server's asynchronous tools send a DNS-format query over a connected UDP socket (udp) or a DNS query with dnspython's asynchronous client (dns) to an exclusive port answered by a DNS-format responder. Manual binding (markers at start and end) versus automatic binding with fact_rt's datagram hooks. Collector fact-udp.bt (fact.bt plus the first datagram per socket and destination as a flow).",
+ "spec": {
+  "experiment": "E5udp",
+  "description": "UDP flows: the shared MCP server's asynchronous tools send a DNS-format query over a connected UDP socket (udp) or a DNS query with dnspython's asynchronous client (dns) to an exclusive port answered by a DNS-format responder. Manual binding (markers at start and end) versus automatic binding with fact_rt's datagram hooks. Collector fact-udp.bt (fact.bt plus the first datagram per socket and destination as a flow).",
+  "factors": {
+   "tool": [
+    "udp",
+    "dns"
+   ],
+   "binding_mode": [
+    "manual",
+    "auto"
+   ],
+   "execs": [
+    4,
+    8
+   ]
+  },
+  "fixed": {
+   "cond": "E5udp",
+   "ops": 25,
+   "workload": "workload/mcp_e4.py",
+   "collector": "fact-udp.bt"
+  }
+ },
+ "n_per_cell": 1,
+ "campaign_seed": 1,
+ "cells": 8,
+ "total_runs": 8,
+ "started_utc": "20261020T132511Z",
+ "duration_s": 73.3,
+ "runs_ok": 8,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "737050bc7b8ead2dcc438237e0c49c047d792769",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "565ca110-1247-4a9e-8a13-02b97cbfbb40",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": null,
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "udp",
+    "binding_mode": "auto",
+    "execs": 8
+   },
+   "position": 1,
+   "run_id": "r0001-E5udp-c03-rep00",
+   "returncode": 0,
+   "seconds": 9.199,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0001-E5udp-c03-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "udp",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "dns",
+    "binding_mode": "auto",
+    "execs": 4
+   },
+   "position": 2,
+   "run_id": "r0002-E5udp-c06-rep00",
+   "returncode": 0,
+   "seconds": 9.097,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0002-E5udp-c06-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "dns",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "udp",
+    "binding_mode": "manual",
+    "execs": 8
+   },
+   "position": 3,
+   "run_id": "r0003-E5udp-c01-rep00",
+   "returncode": 0,
+   "seconds": 9.191,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0003-E5udp-c01-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "udp",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "dns",
+    "binding_mode": "manual",
+    "execs": 8
+   },
+   "position": 4,
+   "run_id": "r0004-E5udp-c05-rep00",
+   "returncode": 0,
+   "seconds": 9.286,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0004-E5udp-c05-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "dns",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "dns",
+    "binding_mode": "auto",
+    "execs": 8
+   },
+   "position": 5,
+   "run_id": "r0005-E5udp-c07-rep00",
+   "returncode": 0,
+   "seconds": 9.241,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0005-E5udp-c07-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "dns",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "udp",
+    "binding_mode": "manual",
+    "execs": 4
+   },
+   "position": 6,
+   "run_id": "r0006-E5udp-c00-rep00",
+   "returncode": 0,
+   "seconds": 9.001,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0006-E5udp-c00-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "udp",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "dns",
+    "binding_mode": "manual",
+    "execs": 4
+   },
+   "position": 7,
+   "run_id": "r0007-E5udp-c04-rep00",
+   "returncode": 0,
+   "seconds": 9.078,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0007-E5udp-c04-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "dns",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5udp",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "collector": "fact-udp.bt",
+    "tool": "udp",
+    "binding_mode": "auto",
+    "execs": 4
+   },
+   "position": 8,
+   "run_id": "r0008-E5udp-c02-rep00",
+   "returncode": 0,
+   "seconds": 9.006,
+   "command": [
+    "E5udp",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5udp-pilot-20261020T132511Z/runs/r0008-E5udp-c02-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "udp",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  }
+ ]
+}

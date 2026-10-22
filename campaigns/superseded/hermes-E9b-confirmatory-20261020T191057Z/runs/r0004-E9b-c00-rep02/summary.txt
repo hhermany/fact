@@ -1,0 +1,6 @@
+E9b mode=mcp binding=True  capture 74/100  lost=26  excluded={'no_reference': 93}
+resolver     N     C     A     M     I  C/(C+I)  per-execution accounting [ok/wrong/uncredited; net error]
+cgroup     222     0   222     0     0      -    E00:0/0/75;-75  E01:0/0/36;-36  E02:0/0/75;-75  E03:0/0/36;-36
+lineage    222     0   222     0     0      -    E00:0/0/75;-75  E01:0/0/36;-36  E02:0/0/75;-75  E03:0/0/36;-36
+context    222   222     0     0     0    1.000  E00:75/0/0;+0  E01:36/0/0;+0  E02:75/0/0;+0  E03:36/0/0;+0
+fused      222   222     0     0     0    1.000  E00:75/0/0;+0  E01:36/0/0;+0  E02:75/0/0;+0  E03:36/0/0;+0

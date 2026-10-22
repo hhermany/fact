@@ -1,0 +1,9 @@
+{"wall_s": 8.703, "fact_cpu_s": 0.130962, "fact_share_of_host": 0.013685, "fact_cores": 0.015048}
+policy: N=200 TA=200 TD=0 FA=0 FD=0 ND=0 label={'owner': 200}
+E9cost mode=mcp binding=True  capture 200/200  lost=0  excluded={'no_reference': 229}
+resolver     N     C     A     M     I  C/(C+I)  per-execution accounting [ok/wrong/uncredited; net error]
+cgroup     600     0   600     0     0      -    E00:0/0/75;-75  E01:0/0/75;-75  E02:0/0/75;-75  E03:0/0/75;-75  E04:0/0/75;-75  E05:0/0/75;-75  E06:0/0/75;-75  E07:0/0/75;-75
+lineage    600     0   600     0     0      -    E00:0/0/75;-75  E01:0/0/75;-75  E02:0/0/75;-75  E03:0/0/75;-75  E04:0/0/75;-75  E05:0/0/75;-75  E06:0/0/75;-75  E07:0/0/75;-75
+context    600   600     0     0     0    1.000  E00:75/0/0;+0  E01:75/0/0;+0  E02:75/0/0;+0  E03:75/0/0;+0  E04:75/0/0;+0  E05:75/0/0;+0  E06:75/0/0;+0  E07:75/0/0;+0
+fused      600   600     0     0     0    1.000  E00:75/0/0;+0  E01:75/0/0;+0  E02:75/0/0;+0  E03:75/0/0;+0  E04:75/0/0;+0  E05:75/0/0;+0  E06:75/0/0;+0  E07:75/0/0;+0
+{"tool": "mixed", "execs": 8, "messages": 6, "decode_errors": 0, "records": 30, "connections": {"reference": 600, "ipfix_credited": 600, "abs_error": 0, "error_pct": 0.0, "uncredited": 229}, "ipfix_equals_factd": true}

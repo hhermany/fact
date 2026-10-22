@@ -1,0 +1,7 @@
+{
+ "tool": "async",
+ "calls": 100,
+ "tool_ms_p50": 8.1405395,
+ "tool_ms_mean": 8.57902999,
+ "tool_ms_p90": 10.788975
+}

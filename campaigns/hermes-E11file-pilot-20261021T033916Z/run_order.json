@@ -1,0 +1,53 @@
+{
+ "campaign_seed": 43411,
+ "order": [
+  [
+   1,
+   "r0001-execs4-modepool-c02-rep00"
+  ],
+  [
+   2,
+   "r0002-execs4-modepool-c02-rep01"
+  ],
+  [
+   3,
+   "r0003-execs8-modeasync-c01-rep02"
+  ],
+  [
+   4,
+   "r0004-execs8-modepool-c03-rep00"
+  ],
+  [
+   5,
+   "r0005-execs8-modepool-c03-rep01"
+  ],
+  [
+   6,
+   "r0006-execs8-modeasync-c01-rep01"
+  ],
+  [
+   7,
+   "r0007-execs8-modeasync-c01-rep00"
+  ],
+  [
+   8,
+   "r0008-execs8-modepool-c03-rep02"
+  ],
+  [
+   9,
+   "r0009-execs4-modeasync-c00-rep00"
+  ],
+  [
+   10,
+   "r0010-execs4-modeasync-c00-rep01"
+  ],
+  [
+   11,
+   "r0011-execs4-modeasync-c00-rep02"
+  ],
+  [
+   12,
+   "r0012-execs4-modepool-c02-rep02"
+  ]
+ ]
+}

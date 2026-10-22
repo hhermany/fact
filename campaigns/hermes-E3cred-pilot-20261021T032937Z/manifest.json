@@ -1,0 +1,283 @@
+{
+ "campaign_id": "hermes-E3cred-pilot-20261021T032937Z",
+ "experiment": "E3cred",
+ "label": "pilot",
+ "description": "Cost of the context interface: no FACT; openat markers (collector fact-all.bt, fact_policy cred=0, both attach a probe to every openat on the host); execution credential (collector fact-cred.bt, fact_policy cred=1: the switch is prctl(PR_FACT) authorized by the BPF LSM, no openat probe). Each run measures connect() latency with two switches per connection (bench/connect_bench.c) and open()+close() latency of an unrelated file (bench/open_bench.c), i.e., what the interface costs processes that never use it; bpf_stats gives the eBPF time per program.",
+ "spec": {
+  "experiment": "E3cred",
+  "runner": "credcost",
+  "description": "Cost of the context interface: no FACT; openat markers (collector fact-all.bt, fact_policy cred=0, both attach a probe to every openat on the host); execution credential (collector fact-cred.bt, fact_policy cred=1: the switch is prctl(PR_FACT) authorized by the BPF LSM, no openat probe). Each run measures connect() latency with two switches per connection (bench/connect_bench.c) and open()+close() latency of an unrelated file (bench/open_bench.c), i.e., what the interface costs processes that never use it; bpf_stats gives the eBPF time per program.",
+  "factors": {
+   "iface": [
+    "none",
+    "openat",
+    "prctl"
+   ]
+  },
+  "fixed": {
+   "n": 20000,
+   "warmup": 1000
+  }
+ },
+ "n_per_cell": 3,
+ "campaign_seed": 43101,
+ "cells": 3,
+ "total_runs": 9,
+ "started_utc": "20261021T032937Z",
+ "duration_s": 23.4,
+ "runs_ok": 9,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "909c517927f0c26fa1e7a40f443e5fc42b7687e7",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "e34e6866-e7ba-49c8-94ad-5167889096a0",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.14.4",
+  "virt": "vmware"
+ },
+ "preflight": null,
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 1,
+   "seed": 43102,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 1,
+   "run_id": "r0001-ifacenone-c00-rep01",
+   "returncode": 0,
+   "seconds": 1.089,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0001-ifacenone-c00-rep01",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43102"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 43101,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 2,
+   "run_id": "r0002-ifaceprctl-c02-rep00",
+   "returncode": 0,
+   "seconds": 3.337,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0002-ifaceprctl-c02-rep00",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43101"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 2,
+   "seed": 43103,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 3,
+   "run_id": "r0003-ifaceprctl-c02-rep02",
+   "returncode": 0,
+   "seconds": 3.353,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0003-ifaceprctl-c02-rep02",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43103"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 2,
+   "seed": 43103,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 4,
+   "run_id": "r0004-ifacenone-c00-rep02",
+   "returncode": 0,
+   "seconds": 0.987,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0004-ifacenone-c00-rep02",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43103"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 1,
+   "seed": 43102,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "prctl"
+   },
+   "position": 5,
+   "run_id": "r0005-ifaceprctl-c02-rep01",
+   "returncode": 0,
+   "seconds": 3.331,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0005-ifaceprctl-c02-rep01",
+    "--iface",
+    "prctl",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43102"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 43101,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 6,
+   "run_id": "r0006-ifaceopenat-c01-rep00",
+   "returncode": 0,
+   "seconds": 3.339,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0006-ifaceopenat-c01-rep00",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43101"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 2,
+   "seed": 43103,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 7,
+   "run_id": "r0007-ifaceopenat-c01-rep02",
+   "returncode": 0,
+   "seconds": 3.404,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0007-ifaceopenat-c01-rep02",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43103"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 1,
+   "seed": 43102,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "openat"
+   },
+   "position": 8,
+   "run_id": "r0008-ifaceopenat-c01-rep01",
+   "returncode": 0,
+   "seconds": 3.398,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0008-ifaceopenat-c01-rep01",
+    "--iface",
+    "openat",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43102"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 43101,
+   "params": {
+    "n": 20000,
+    "warmup": 1000,
+    "iface": "none"
+   },
+   "position": 9,
+   "run_id": "r0009-ifacenone-c00-rep00",
+   "returncode": 0,
+   "seconds": 1.005,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3cred-pilot-20261021T032937Z/runs/r0009-ifacenone-c00-rep00",
+    "--iface",
+    "none",
+    "--n",
+    "20000",
+    "--warmup",
+    "1000",
+    "--seed",
+    "43101"
+   ],
+   "status": "OK"
+  }
+ ]
+}

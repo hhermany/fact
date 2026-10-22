@@ -1,0 +1,12 @@
+{"ev":"ready","lo":61000,"hi":64998,"no_ctx_allow":0,"lineage":0,"per_send":0}
+{"ev":"decision","ts":793278278220,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E00","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793283618014,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E01","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793284017956,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E02","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793284387517,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61000,"verdict":"allow","has_ctx":1,"ctx":"E03","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793290097867,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61001,"verdict":"allow","has_ctx":1,"ctx":"E00","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793297057385,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61001,"verdict":"deny","has_ctx":1,"ctx":"E01","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793297582020,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61001,"verdict":"allow","has_ctx":1,"ctx":"E02","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793298095877,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61001,"verdict":"deny","has_ctx":1,"ctx":"E03","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793317631696,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61001,"verdict":"allow","has_ctx":1,"ctx":"E06","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793369946472,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61001,"verdict":"deny","has_ctx":1,"ctx":"E07","conflict":0,"from_lineage":0,"kind":"connect"}
+{"ev":"decision","ts":793508405954,"pid":3702,"tid":3702,"daddr":"127.0.0.1","dport":61001,"verdict":"allow","has_ctx":1,"ctx":"E02","conflict":0,"from_lineage":0,"kind":"connect"}

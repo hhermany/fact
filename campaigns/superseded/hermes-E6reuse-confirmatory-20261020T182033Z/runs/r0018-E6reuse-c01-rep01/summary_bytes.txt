@@ -1,0 +1,1 @@
+{"tool": "httpx_shared", "send_binding": 1, "requests": 169, "connections": 71, "shared": 44, "sent_opener_I": 14725, "sent_sender_I": 0, "received_opener_I": 8550, "received_sender_I": 0, "sent_N": 26195, "received_N": 15210}

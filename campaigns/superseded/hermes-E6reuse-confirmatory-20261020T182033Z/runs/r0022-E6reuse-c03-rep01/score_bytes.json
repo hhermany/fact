@@ -1,0 +1,33 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E6reuse-confirmatory-20261020T182033Z/runs/r0022-E6reuse-c03-rep01",
+ "tool": "aiohttp_shared",
+ "send_binding": 1,
+ "requests": 199,
+ "connections": 7,
+ "connections_shared": 7,
+ "unreferenced_bytes": {},
+ "bytes": {
+  "sent": {
+   "opener": {
+    "C": 5421,
+    "N": 27661,
+    "I": 22240
+   },
+   "sender": {
+    "C": 27661,
+    "N": 27661
+   }
+  },
+  "received": {
+   "opener": {
+    "C": 3510,
+    "N": 17910,
+    "I": 14400
+   },
+   "sender": {
+    "C": 17910,
+    "N": 17910
+   }
+  }
+ }
+}

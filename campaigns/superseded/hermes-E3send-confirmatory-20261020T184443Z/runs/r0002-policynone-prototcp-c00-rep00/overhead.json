@@ -1,0 +1,17 @@
+{
+ "policy": "none",
+ "proto": "tcp",
+ "n": 200000,
+ "warmup": 10000,
+ "size": 64,
+ "port": 63193,
+ "failures": 0,
+ "mean_ns": 5082.1,
+ "p50_ns": 4766,
+ "p90_ns": 6834,
+ "p99_ns": 8851,
+ "max_ns": 110156,
+ "wall_ns": 1022287298,
+ "throughput_sps": 195639.7,
+ "policy_denials": 0
+}

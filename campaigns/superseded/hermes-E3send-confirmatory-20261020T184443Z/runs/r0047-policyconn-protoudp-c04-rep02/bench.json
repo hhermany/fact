@@ -1,0 +1,1 @@
+{"proto":"udp","n":200000,"warmup":10000,"size":64,"port":63195,"failures":0,"mean_ns":4425.6,"p50_ns":3925,"p90_ns":6970,"p99_ns":7545,"max_ns":71983,"wall_ns":890896753,"throughput_sps":224492.9}

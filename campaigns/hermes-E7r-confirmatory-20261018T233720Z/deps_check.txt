@@ -1,0 +1,4 @@
+  gravação campaigns/hermes-E7c-confirmatory-20261018T204237Z: OK (52 rodadas, E7c)
+  gravação campaigns/hermes-E7c-confirmatory-20261018T210332Z: OK (52 rodadas, E7c)
+  gravação campaigns/hermes-E7o-confirmatory-20261018T214357Z: OK (52 rodadas, E7o)
+  gravação campaigns/hermes-E7o-confirmatory-20261018T215903Z: OK (52 rodadas, E7o)

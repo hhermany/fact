@@ -1,0 +1,6 @@
+E6reuse mode=mcp binding=True  capture 0/2  lost=2  excluded={'no_reference': 50}
+resolver     N     C     A     M     I  C/(C+I)  per-execution accounting [ok/wrong/uncredited; net error]
+cgroup       0     0     0     0     0      -    
+lineage      0     0     0     0     0      -    
+context      0     0     0     0     0      -    
+fused        0     0     0     0     0      -    

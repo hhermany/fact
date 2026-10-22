@@ -1,0 +1,7 @@
+{
+ "tool": "requests_shared",
+ "calls": 100,
+ "tool_ms_p50": 10.053675,
+ "tool_ms_mean": 13.80490276,
+ "tool_ms_p90": 10.974345
+}

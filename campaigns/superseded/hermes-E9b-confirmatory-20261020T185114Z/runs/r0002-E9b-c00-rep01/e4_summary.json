@@ -1,0 +1,7 @@
+{
+ "tool": "mixed",
+ "calls": 100,
+ "tool_ms_p50": 47.261587,
+ "tool_ms_mean": 566.27891084,
+ "tool_ms_p90": 2041.019899
+}

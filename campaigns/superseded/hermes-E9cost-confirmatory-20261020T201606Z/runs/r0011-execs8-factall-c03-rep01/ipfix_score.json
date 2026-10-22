@@ -1,0 +1,66 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E9cost-confirmatory-20261020T201606Z/runs/r0011-execs8-factall-c03-rep01",
+ "tool": "mixed",
+ "execs": 8,
+ "messages": 6,
+ "decode_errors": 0,
+ "records": 30,
+ "connections": {
+  "reference": 600,
+  "ipfix_credited": 600,
+  "abs_error": 0,
+  "error_pct": 0.0,
+  "uncredited": 229
+ },
+ "ipfix_equals_factd": true,
+ "per_exec": {
+  "E00": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E01": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E02": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E03": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E04": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E05": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E06": {
+   "connections": [
+    75,
+    75
+   ]
+  },
+  "E07": {
+   "connections": [
+    75,
+    75
+   ]
+  }
+ }
+}

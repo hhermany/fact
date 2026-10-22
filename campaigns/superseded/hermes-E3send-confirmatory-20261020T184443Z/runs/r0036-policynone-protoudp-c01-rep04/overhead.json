@@ -1,0 +1,17 @@
+{
+ "policy": "none",
+ "proto": "udp",
+ "n": 200000,
+ "warmup": 10000,
+ "size": 64,
+ "port": 63197,
+ "failures": 0,
+ "mean_ns": 4154.3,
+ "p50_ns": 3559,
+ "p90_ns": 6512,
+ "p99_ns": 7139,
+ "max_ns": 69598,
+ "wall_ns": 836649394,
+ "throughput_sps": 239048.8,
+ "policy_denials": 0
+}

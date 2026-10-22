@@ -1,0 +1,1 @@
+scripts/campaign.py --spec workflow/experiments/E5native.json --n 1 --seed 1 --label pilot

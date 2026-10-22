@@ -1,0 +1,214 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E8ipfix-confirmatory-20261020T140618Z/runs/r0005-E8ipfix-c00-rep02",
+ "cond": "E8ipfix",
+ "mode": "mcp",
+ "binding": true,
+ "capture": {
+  "planned": 100,
+  "attempted": 100,
+  "captured": 100,
+  "lost": [],
+  "n_lost": 0,
+  "duplicates": 0,
+  "bad_lines": 0,
+  "excluded": {
+   "no_reference": 13
+  }
+ },
+ "reference_connects": {
+  "E00": 25,
+  "E02": 25,
+  "E01": 25,
+  "E03": 25
+ },
+ "resolvers": {
+  "cgroup": {
+   "N": 100,
+   "C": 0,
+   "A": 100,
+   "A_in": 100,
+   "M": 0,
+   "I": 0,
+   "C/N": 0.0,
+   "A/N": 1.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": null,
+   "accounting": {
+    "E00": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    },
+    "E01": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    },
+    "E02": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    },
+    "E03": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    }
+   }
+  },
+  "lineage": {
+   "N": 100,
+   "C": 0,
+   "A": 100,
+   "A_in": 100,
+   "M": 0,
+   "I": 0,
+   "C/N": 0.0,
+   "A/N": 1.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": null,
+   "accounting": {
+    "E00": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    },
+    "E01": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    },
+    "E02": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    },
+    "E03": {
+     "reference": 25,
+     "credited_ok": 0,
+     "credited_wrong": 0,
+     "uncredited": 25,
+     "credited": 0,
+     "net_error": -25
+    }
+   }
+  },
+  "context": {
+   "N": 100,
+   "C": 100,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": 1.0,
+   "A/N": 0.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": 1.0,
+   "accounting": {
+    "E00": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    },
+    "E01": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    },
+    "E02": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    },
+    "E03": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    }
+   }
+  },
+  "fused": {
+   "N": 100,
+   "C": 100,
+   "A": 0,
+   "A_in": 0,
+   "M": 0,
+   "I": 0,
+   "C/N": 1.0,
+   "A/N": 0.0,
+   "M/N": 0.0,
+   "I/N": 0.0,
+   "C/(C+I)": 1.0,
+   "accounting": {
+    "E00": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    },
+    "E01": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    },
+    "E02": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    },
+    "E03": {
+     "reference": 25,
+     "credited_ok": 25,
+     "credited_wrong": 0,
+     "uncredited": 0,
+     "credited": 25,
+     "net_error": 0
+    }
+   }
+  }
+ }
+}

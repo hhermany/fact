@@ -1,0 +1,33 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E8ipfix-confirmatory-20261020T140618Z/runs/r0004-E8ipfix-c03-rep01",
+ "tool": "httpx_shared",
+ "send_binding": 1,
+ "requests": 200,
+ "connections": 104,
+ "connections_shared": 68,
+ "unreferenced_bytes": {},
+ "bytes": {
+  "sent": {
+   "opener": {
+    "C": 16120,
+    "N": 31000,
+    "I": 14880
+   },
+   "sender": {
+    "C": 31000,
+    "N": 31000
+   }
+  },
+  "received": {
+   "opener": {
+    "C": 9360,
+    "N": 18000,
+    "I": 8640
+   },
+   "sender": {
+    "C": 18000,
+    "N": 18000
+   }
+  }
+ }
+}

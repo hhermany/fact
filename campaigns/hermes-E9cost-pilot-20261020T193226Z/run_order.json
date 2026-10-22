@@ -1,0 +1,21 @@
+{
+ "campaign_seed": 1,
+ "order": [
+  [
+   1,
+   "r0001-execs8-factall-c03-rep00"
+  ],
+  [
+   2,
+   "r0002-execs4-factoff-c00-rep00"
+  ],
+  [
+   3,
+   "r0003-execs4-factall-c02-rep00"
+  ],
+  [
+   4,
+   "r0004-execs8-factoff-c01-rep00"
+  ]
+ ]
+}

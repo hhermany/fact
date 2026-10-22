@@ -1,0 +1,2231 @@
+{
+ "campaign_id": "hermes-E3send-confirmatory-20261021T005401Z",
+ "experiment": "E3send",
+ "label": "confirmatory",
+ "description": "Cost of the egress policy per send (bench/send_bench.c, 64-byte messages on loopback): no policy; policy without per-send authorization (cgroup/connect4 + cgroup/sendmsg4); per-send authorization (BPF LSM socket_sendmsg) on a port inside the policed range (identity allowed) and outside it (the cost every other send on the host pays). Connected TCP, connected UDP, and unconnected UDP (sendto). Budget: per-send authorization plus a per-execution budget that is never spent, so every send is also charged (fexit on tcp_sendmsg/udp_sendmsg) and checked.",
+ "spec": {
+  "experiment": "E3send",
+  "runner": "sendcost",
+  "description": "Cost of the egress policy per send (bench/send_bench.c, 64-byte messages on loopback): no policy; policy without per-send authorization (cgroup/connect4 + cgroup/sendmsg4); per-send authorization (BPF LSM socket_sendmsg) on a port inside the policed range (identity allowed) and outside it (the cost every other send on the host pays). Connected TCP, connected UDP, and unconnected UDP (sendto). Budget: per-send authorization plus a per-execution budget that is never spent, so every send is also charged (fexit on tcp_sendmsg/udp_sendmsg) and checked.",
+  "factors": {
+   "policy": [
+    "none",
+    "conn",
+    "send_in",
+    "send_out",
+    "budget"
+   ],
+   "proto": [
+    "tcp",
+    "udp",
+    "udpu"
+   ]
+  },
+  "fixed": {
+   "n": 200000,
+   "warmup": 10000
+  }
+ },
+ "n_per_cell": 5,
+ "campaign_seed": 51193,
+ "cells": 15,
+ "total_runs": 75,
+ "started_utc": "20261021T005401Z",
+ "duration_s": 100.2,
+ "runs_ok": 75,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "6bb2ddbefcc45f1fdd2d1597717312306394810e",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "e34e6866-e7ba-49c8-94ad-5167889096a0",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": "preflight/last",
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "tcp"
+   },
+   "position": 1,
+   "run_id": "r0001-policynone-prototcp-c00-rep00",
+   "returncode": 0,
+   "seconds": 1.142,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0001-policynone-prototcp-c00-rep00",
+    "--policy",
+    "none",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udpu"
+   },
+   "position": 2,
+   "run_id": "r0002-policysend_in-protoudpu-c08-rep01",
+   "returncode": 0,
+   "seconds": 1.488,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0002-policysend_in-protoudpu-c08-rep01",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udpu"
+   },
+   "position": 3,
+   "run_id": "r0003-policyconn-protoudpu-c05-rep02",
+   "returncode": 0,
+   "seconds": 1.35,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0003-policyconn-protoudpu-c05-rep02",
+    "--policy",
+    "conn",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udpu"
+   },
+   "position": 4,
+   "run_id": "r0004-policynone-protoudpu-c02-rep02",
+   "returncode": 0,
+   "seconds": 1.036,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0004-policynone-protoudpu-c02-rep02",
+    "--policy",
+    "none",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 11,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udpu"
+   },
+   "position": 5,
+   "run_id": "r0005-policysend_out-protoudpu-c11-rep00",
+   "returncode": 0,
+   "seconds": 1.421,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0005-policysend_out-protoudpu-c11-rep00",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 12,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "tcp"
+   },
+   "position": 6,
+   "run_id": "r0006-policybudget-prototcp-c12-rep01",
+   "returncode": 0,
+   "seconds": 1.502,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0006-policybudget-prototcp-c12-rep01",
+    "--policy",
+    "budget",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "tcp"
+   },
+   "position": 7,
+   "run_id": "r0007-policysend_in-prototcp-c06-rep03",
+   "returncode": 0,
+   "seconds": 1.414,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0007-policysend_in-prototcp-c06-rep03",
+    "--policy",
+    "send_in",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "tcp"
+   },
+   "position": 8,
+   "run_id": "r0008-policynone-prototcp-c00-rep02",
+   "returncode": 0,
+   "seconds": 1.173,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0008-policynone-prototcp-c00-rep02",
+    "--policy",
+    "none",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udp"
+   },
+   "position": 9,
+   "run_id": "r0009-policyconn-protoudp-c04-rep03",
+   "returncode": 0,
+   "seconds": 1.174,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0009-policyconn-protoudp-c04-rep03",
+    "--policy",
+    "conn",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udp"
+   },
+   "position": 10,
+   "run_id": "r0010-policysend_in-protoudp-c07-rep03",
+   "returncode": 0,
+   "seconds": 1.238,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0010-policysend_in-protoudp-c07-rep03",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 13,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udp"
+   },
+   "position": 11,
+   "run_id": "r0011-policybudget-protoudp-c13-rep00",
+   "returncode": 0,
+   "seconds": 1.421,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0011-policybudget-protoudp-c13-rep00",
+    "--policy",
+    "budget",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 10,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udp"
+   },
+   "position": 12,
+   "run_id": "r0012-policysend_out-protoudp-c10-rep04",
+   "returncode": 0,
+   "seconds": 1.289,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0012-policysend_out-protoudp-c10-rep04",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udp"
+   },
+   "position": 13,
+   "run_id": "r0013-policyconn-protoudp-c04-rep04",
+   "returncode": 0,
+   "seconds": 1.154,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0013-policyconn-protoudp-c04-rep04",
+    "--policy",
+    "conn",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 12,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "tcp"
+   },
+   "position": 14,
+   "run_id": "r0014-policybudget-prototcp-c12-rep02",
+   "returncode": 0,
+   "seconds": 1.59,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0014-policybudget-prototcp-c12-rep02",
+    "--policy",
+    "budget",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "tcp"
+   },
+   "position": 15,
+   "run_id": "r0015-policynone-prototcp-c00-rep01",
+   "returncode": 0,
+   "seconds": 1.159,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0015-policynone-prototcp-c00-rep01",
+    "--policy",
+    "none",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 13,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udp"
+   },
+   "position": 16,
+   "run_id": "r0016-policybudget-protoudp-c13-rep03",
+   "returncode": 0,
+   "seconds": 1.406,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0016-policybudget-protoudp-c13-rep03",
+    "--policy",
+    "budget",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udp"
+   },
+   "position": 17,
+   "run_id": "r0017-policysend_in-protoudp-c07-rep01",
+   "returncode": 0,
+   "seconds": 1.244,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0017-policysend_in-protoudp-c07-rep01",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udp"
+   },
+   "position": 18,
+   "run_id": "r0018-policynone-protoudp-c01-rep00",
+   "returncode": 0,
+   "seconds": 0.941,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0018-policynone-protoudp-c01-rep00",
+    "--policy",
+    "none",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "tcp"
+   },
+   "position": 19,
+   "run_id": "r0019-policysend_in-prototcp-c06-rep00",
+   "returncode": 0,
+   "seconds": 1.421,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0019-policysend_in-prototcp-c06-rep00",
+    "--policy",
+    "send_in",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udp"
+   },
+   "position": 20,
+   "run_id": "r0020-policyconn-protoudp-c04-rep02",
+   "returncode": 0,
+   "seconds": 1.165,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0020-policyconn-protoudp-c04-rep02",
+    "--policy",
+    "conn",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "tcp"
+   },
+   "position": 21,
+   "run_id": "r0021-policyconn-prototcp-c03-rep04",
+   "returncode": 0,
+   "seconds": 1.351,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0021-policyconn-prototcp-c03-rep04",
+    "--policy",
+    "conn",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "tcp"
+   },
+   "position": 22,
+   "run_id": "r0022-policyconn-prototcp-c03-rep03",
+   "returncode": 0,
+   "seconds": 1.362,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0022-policyconn-prototcp-c03-rep03",
+    "--policy",
+    "conn",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "tcp"
+   },
+   "position": 23,
+   "run_id": "r0023-policysend_in-prototcp-c06-rep01",
+   "returncode": 0,
+   "seconds": 1.416,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0023-policysend_in-prototcp-c06-rep01",
+    "--policy",
+    "send_in",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 11,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udpu"
+   },
+   "position": 24,
+   "run_id": "r0024-policysend_out-protoudpu-c11-rep02",
+   "returncode": 0,
+   "seconds": 1.428,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0024-policysend_out-protoudpu-c11-rep02",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 14,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udpu"
+   },
+   "position": 25,
+   "run_id": "r0025-policybudget-protoudpu-c14-rep04",
+   "returncode": 0,
+   "seconds": 1.641,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0025-policybudget-protoudpu-c14-rep04",
+    "--policy",
+    "budget",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udp"
+   },
+   "position": 26,
+   "run_id": "r0026-policysend_in-protoudp-c07-rep02",
+   "returncode": 0,
+   "seconds": 1.249,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0026-policysend_in-protoudp-c07-rep02",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udpu"
+   },
+   "position": 27,
+   "run_id": "r0027-policynone-protoudpu-c02-rep01",
+   "returncode": 0,
+   "seconds": 1.043,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0027-policynone-protoudpu-c02-rep01",
+    "--policy",
+    "none",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udpu"
+   },
+   "position": 28,
+   "run_id": "r0028-policynone-protoudpu-c02-rep03",
+   "returncode": 0,
+   "seconds": 1.05,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0028-policynone-protoudpu-c02-rep03",
+    "--policy",
+    "none",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "tcp"
+   },
+   "position": 29,
+   "run_id": "r0029-policysend_in-prototcp-c06-rep04",
+   "returncode": 0,
+   "seconds": 1.448,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0029-policysend_in-prototcp-c06-rep04",
+    "--policy",
+    "send_in",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 14,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udpu"
+   },
+   "position": 30,
+   "run_id": "r0030-policybudget-protoudpu-c14-rep01",
+   "returncode": 0,
+   "seconds": 1.706,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0030-policybudget-protoudpu-c14-rep01",
+    "--policy",
+    "budget",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 14,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udpu"
+   },
+   "position": 31,
+   "run_id": "r0031-policybudget-protoudpu-c14-rep02",
+   "returncode": 0,
+   "seconds": 1.652,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0031-policybudget-protoudpu-c14-rep02",
+    "--policy",
+    "budget",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 10,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udp"
+   },
+   "position": 32,
+   "run_id": "r0032-policysend_out-protoudp-c10-rep03",
+   "returncode": 0,
+   "seconds": 1.306,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0032-policysend_out-protoudp-c10-rep03",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udp"
+   },
+   "position": 33,
+   "run_id": "r0033-policyconn-protoudp-c04-rep01",
+   "returncode": 0,
+   "seconds": 1.181,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0033-policyconn-protoudp-c04-rep01",
+    "--policy",
+    "conn",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "tcp"
+   },
+   "position": 34,
+   "run_id": "r0034-policynone-prototcp-c00-rep04",
+   "returncode": 0,
+   "seconds": 1.16,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0034-policynone-prototcp-c00-rep04",
+    "--policy",
+    "none",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udp"
+   },
+   "position": 35,
+   "run_id": "r0035-policynone-protoudp-c01-rep02",
+   "returncode": 0,
+   "seconds": 0.948,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0035-policynone-protoudp-c01-rep02",
+    "--policy",
+    "none",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 11,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udpu"
+   },
+   "position": 36,
+   "run_id": "r0036-policysend_out-protoudpu-c11-rep04",
+   "returncode": 0,
+   "seconds": 1.426,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0036-policysend_out-protoudpu-c11-rep04",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "tcp"
+   },
+   "position": 37,
+   "run_id": "r0037-policysend_in-prototcp-c06-rep02",
+   "returncode": 0,
+   "seconds": 1.46,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0037-policysend_in-prototcp-c06-rep02",
+    "--policy",
+    "send_in",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 14,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udpu"
+   },
+   "position": 38,
+   "run_id": "r0038-policybudget-protoudpu-c14-rep00",
+   "returncode": 0,
+   "seconds": 1.638,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0038-policybudget-protoudpu-c14-rep00",
+    "--policy",
+    "budget",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 10,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udp"
+   },
+   "position": 39,
+   "run_id": "r0039-policysend_out-protoudp-c10-rep02",
+   "returncode": 0,
+   "seconds": 1.227,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0039-policysend_out-protoudp-c10-rep02",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udp"
+   },
+   "position": 40,
+   "run_id": "r0040-policysend_in-protoudp-c07-rep00",
+   "returncode": 0,
+   "seconds": 1.254,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0040-policysend_in-protoudp-c07-rep00",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "tcp"
+   },
+   "position": 41,
+   "run_id": "r0041-policysend_out-prototcp-c09-rep00",
+   "returncode": 0,
+   "seconds": 1.402,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0041-policysend_out-prototcp-c09-rep00",
+    "--policy",
+    "send_out",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udpu"
+   },
+   "position": 42,
+   "run_id": "r0042-policyconn-protoudpu-c05-rep03",
+   "returncode": 0,
+   "seconds": 1.373,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0042-policyconn-protoudpu-c05-rep03",
+    "--policy",
+    "conn",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "tcp"
+   },
+   "position": 43,
+   "run_id": "r0043-policyconn-prototcp-c03-rep00",
+   "returncode": 0,
+   "seconds": 1.35,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0043-policyconn-prototcp-c03-rep00",
+    "--policy",
+    "conn",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udpu"
+   },
+   "position": 44,
+   "run_id": "r0044-policysend_in-protoudpu-c08-rep03",
+   "returncode": 0,
+   "seconds": 1.499,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0044-policysend_in-protoudpu-c08-rep03",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 14,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udpu"
+   },
+   "position": 45,
+   "run_id": "r0045-policybudget-protoudpu-c14-rep03",
+   "returncode": 0,
+   "seconds": 1.643,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0045-policybudget-protoudpu-c14-rep03",
+    "--policy",
+    "budget",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 13,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udp"
+   },
+   "position": 46,
+   "run_id": "r0046-policybudget-protoudp-c13-rep02",
+   "returncode": 0,
+   "seconds": 1.461,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0046-policybudget-protoudp-c13-rep02",
+    "--policy",
+    "budget",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udpu"
+   },
+   "position": 47,
+   "run_id": "r0047-policysend_in-protoudpu-c08-rep02",
+   "returncode": 0,
+   "seconds": 1.562,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0047-policysend_in-protoudpu-c08-rep02",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 11,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udpu"
+   },
+   "position": 48,
+   "run_id": "r0048-policysend_out-protoudpu-c11-rep03",
+   "returncode": 0,
+   "seconds": 1.417,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0048-policysend_out-protoudpu-c11-rep03",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udpu"
+   },
+   "position": 49,
+   "run_id": "r0049-policynone-protoudpu-c02-rep04",
+   "returncode": 0,
+   "seconds": 1.058,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0049-policynone-protoudpu-c02-rep04",
+    "--policy",
+    "none",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 7,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udp"
+   },
+   "position": 50,
+   "run_id": "r0050-policysend_in-protoudp-c07-rep04",
+   "returncode": 0,
+   "seconds": 1.278,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0050-policysend_in-protoudp-c07-rep04",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 10,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udp"
+   },
+   "position": 51,
+   "run_id": "r0051-policysend_out-protoudp-c10-rep01",
+   "returncode": 0,
+   "seconds": 1.25,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0051-policysend_out-protoudp-c10-rep01",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udp"
+   },
+   "position": 52,
+   "run_id": "r0052-policynone-protoudp-c01-rep04",
+   "returncode": 0,
+   "seconds": 0.944,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0052-policynone-protoudp-c01-rep04",
+    "--policy",
+    "none",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "tcp"
+   },
+   "position": 53,
+   "run_id": "r0053-policysend_out-prototcp-c09-rep04",
+   "returncode": 0,
+   "seconds": 1.405,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0053-policysend_out-prototcp-c09-rep04",
+    "--policy",
+    "send_out",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 12,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "tcp"
+   },
+   "position": 54,
+   "run_id": "r0054-policybudget-prototcp-c12-rep00",
+   "returncode": 0,
+   "seconds": 1.516,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0054-policybudget-prototcp-c12-rep00",
+    "--policy",
+    "budget",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udpu"
+   },
+   "position": 55,
+   "run_id": "r0055-policynone-protoudpu-c02-rep00",
+   "returncode": 0,
+   "seconds": 1.037,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0055-policynone-protoudpu-c02-rep00",
+    "--policy",
+    "none",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 13,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udp"
+   },
+   "position": 56,
+   "run_id": "r0056-policybudget-protoudp-c13-rep01",
+   "returncode": 0,
+   "seconds": 1.429,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0056-policybudget-protoudp-c13-rep01",
+    "--policy",
+    "budget",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 13,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "udp"
+   },
+   "position": 57,
+   "run_id": "r0057-policybudget-protoudp-c13-rep04",
+   "returncode": 0,
+   "seconds": 1.423,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0057-policybudget-protoudp-c13-rep04",
+    "--policy",
+    "budget",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udp"
+   },
+   "position": 58,
+   "run_id": "r0058-policynone-protoudp-c01-rep01",
+   "returncode": 0,
+   "seconds": 0.938,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0058-policynone-protoudp-c01-rep01",
+    "--policy",
+    "none",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 12,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "tcp"
+   },
+   "position": 59,
+   "run_id": "r0059-policybudget-prototcp-c12-rep03",
+   "returncode": 0,
+   "seconds": 1.587,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0059-policybudget-prototcp-c12-rep03",
+    "--policy",
+    "budget",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udpu"
+   },
+   "position": 60,
+   "run_id": "r0060-policyconn-protoudpu-c05-rep00",
+   "returncode": 0,
+   "seconds": 1.382,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0060-policyconn-protoudpu-c05-rep00",
+    "--policy",
+    "conn",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "udp"
+   },
+   "position": 61,
+   "run_id": "r0061-policynone-protoudp-c01-rep03",
+   "returncode": 0,
+   "seconds": 0.953,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0061-policynone-protoudp-c01-rep03",
+    "--policy",
+    "none",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "tcp"
+   },
+   "position": 62,
+   "run_id": "r0062-policysend_out-prototcp-c09-rep02",
+   "returncode": 0,
+   "seconds": 1.481,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0062-policysend_out-prototcp-c09-rep02",
+    "--policy",
+    "send_out",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udpu"
+   },
+   "position": 63,
+   "run_id": "r0063-policyconn-protoudpu-c05-rep01",
+   "returncode": 0,
+   "seconds": 1.38,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0063-policyconn-protoudpu-c05-rep01",
+    "--policy",
+    "conn",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "tcp"
+   },
+   "position": 64,
+   "run_id": "r0064-policyconn-prototcp-c03-rep01",
+   "returncode": 0,
+   "seconds": 1.361,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0064-policyconn-prototcp-c03-rep01",
+    "--policy",
+    "conn",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udpu"
+   },
+   "position": 65,
+   "run_id": "r0065-policysend_in-protoudpu-c08-rep04",
+   "returncode": 0,
+   "seconds": 1.454,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0065-policysend_in-protoudpu-c08-rep04",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udp"
+   },
+   "position": 66,
+   "run_id": "r0066-policyconn-protoudp-c04-rep00",
+   "returncode": 0,
+   "seconds": 1.235,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0066-policyconn-protoudp-c04-rep00",
+    "--policy",
+    "conn",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 12,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "budget",
+    "proto": "tcp"
+   },
+   "position": 67,
+   "run_id": "r0067-policybudget-prototcp-c12-rep04",
+   "returncode": 0,
+   "seconds": 1.587,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0067-policybudget-prototcp-c12-rep04",
+    "--policy",
+    "budget",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "tcp"
+   },
+   "position": 68,
+   "run_id": "r0068-policysend_out-prototcp-c09-rep01",
+   "returncode": 0,
+   "seconds": 1.41,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0068-policysend_out-prototcp-c09-rep01",
+    "--policy",
+    "send_out",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "none",
+    "proto": "tcp"
+   },
+   "position": 69,
+   "run_id": "r0069-policynone-prototcp-c00-rep03",
+   "returncode": 0,
+   "seconds": 1.218,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0069-policynone-prototcp-c00-rep03",
+    "--policy",
+    "none",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "tcp"
+   },
+   "position": 70,
+   "run_id": "r0070-policyconn-prototcp-c03-rep02",
+   "returncode": 0,
+   "seconds": 1.356,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0070-policyconn-prototcp-c03-rep02",
+    "--policy",
+    "conn",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "conn",
+    "proto": "udpu"
+   },
+   "position": 71,
+   "run_id": "r0071-policyconn-protoudpu-c05-rep04",
+   "returncode": 0,
+   "seconds": 1.406,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0071-policyconn-protoudpu-c05-rep04",
+    "--policy",
+    "conn",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 11,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udpu"
+   },
+   "position": 72,
+   "run_id": "r0072-policysend_out-protoudpu-c11-rep01",
+   "returncode": 0,
+   "seconds": 1.417,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0072-policysend_out-protoudpu-c11-rep01",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_in",
+    "proto": "udpu"
+   },
+   "position": 73,
+   "run_id": "r0073-policysend_in-protoudpu-c08-rep00",
+   "returncode": 0,
+   "seconds": 1.489,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0073-policysend_in-protoudpu-c08-rep00",
+    "--policy",
+    "send_in",
+    "--proto",
+    "udpu",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "tcp"
+   },
+   "position": 74,
+   "run_id": "r0074-policysend_out-prototcp-c09-rep03",
+   "returncode": 0,
+   "seconds": 1.391,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0074-policysend_out-prototcp-c09-rep03",
+    "--policy",
+    "send_out",
+    "--proto",
+    "tcp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 10,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "n": 200000,
+    "warmup": 10000,
+    "policy": "send_out",
+    "proto": "udp"
+   },
+   "position": 75,
+   "run_id": "r0075-policysend_out-protoudp-c10-rep00",
+   "returncode": 0,
+   "seconds": 1.214,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E3send-confirmatory-20261021T005401Z/runs/r0075-policysend_out-protoudp-c10-rep00",
+    "--policy",
+    "send_out",
+    "--proto",
+    "udp",
+    "--n",
+    "200000",
+    "--warmup",
+    "10000",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  }
+ ]
+}

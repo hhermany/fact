@@ -1,0 +1,23 @@
+{
+ "N": 200,
+ "TA": 152,
+ "TD": 48,
+ "FA": 0,
+ "FD": 0,
+ "ND": 0,
+ "label": {},
+ "by_owner_class": {
+  "P": {
+   "TA": 100
+  },
+  "R": {
+   "TA": 52,
+   "TD": 48
+  }
+ },
+ "denials_by_kind": {
+  "connect": 43,
+  "send": 24
+ },
+ "per_send": null
+}

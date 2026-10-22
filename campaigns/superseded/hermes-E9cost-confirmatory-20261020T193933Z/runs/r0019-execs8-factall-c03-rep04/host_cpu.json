@@ -1,0 +1,9 @@
+{
+ "fact": "all",
+ "host_cpu_s": 9.57,
+ "wall_s": 8.723,
+ "calls": 200,
+ "ok": 200,
+ "host_cpu_round_s": 11.87,
+ "wall_round_s": 14.004623889923096
+}

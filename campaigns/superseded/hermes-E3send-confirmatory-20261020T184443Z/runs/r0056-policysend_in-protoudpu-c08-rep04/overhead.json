@@ -1,0 +1,59 @@
+{
+ "policy": "send_in",
+ "proto": "udpu",
+ "n": 200000,
+ "warmup": 10000,
+ "size": 64,
+ "port": 63197,
+ "failures": 0,
+ "mean_ns": 11658.5,
+ "p50_ns": 12058,
+ "p90_ns": 12570,
+ "p99_ns": 15289,
+ "max_ns": 40037,
+ "wall_ns": 2337797162,
+ "throughput_sps": 85550.6,
+ "bpf_progs": [
+  {
+   "id": 1703,
+   "name": "on_openat",
+   "type": "tracepoint",
+   "delta_run_cnt": 42,
+   "delta_run_time_ns": 7969,
+   "ns_per_run": 189.7
+  },
+  {
+   "id": 1704,
+   "name": "on_fork",
+   "type": "tracing",
+   "delta_run_cnt": 3,
+   "delta_run_time_ns": 2415,
+   "ns_per_run": 805.0
+  },
+  {
+   "id": 1705,
+   "name": "on_exit",
+   "type": "tracing",
+   "delta_run_cnt": 3,
+   "delta_run_time_ns": 3805,
+   "ns_per_run": 1268.3
+  },
+  {
+   "id": 1707,
+   "name": "on_sendmsg4",
+   "type": "cgroup_sock_addr",
+   "delta_run_cnt": 210000,
+   "delta_run_time_ns": 835749578,
+   "ns_per_run": 3979.8
+  },
+  {
+   "id": 1708,
+   "name": "on_sock_sendmsg",
+   "type": "lsm",
+   "delta_run_cnt": 210001,
+   "delta_run_time_ns": 43841427,
+   "ns_per_run": 208.8
+  }
+ ],
+ "policy_denials": 0
+}

@@ -1,0 +1,7 @@
+{
+ "tool": "httpx_fresh",
+ "calls": 100,
+ "tool_ms_p50": 38.5084485,
+ "tool_ms_mean": 39.96029814,
+ "tool_ms_p90": 41.467249
+}

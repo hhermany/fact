@@ -1,0 +1,441 @@
+{
+ "campaign_id": "hermes-E5node-pilot-20261020T120406Z",
+ "experiment": "E5node",
+ "label": "pilot",
+ "description": "Second runtime: the shared MCP server is written in Node.js with the official TypeScript SDK (@modelcontextprotocol/sdk 1.32.1); one process and one JavaScript thread serve every session. Tools: async_get (timer, then net.connect), subproc_get (spawns node -e connect), http_get (node:http client, no keep-alive). Manual binding (the tools emit markers at start and end, thread-keyed) versus automatic binding (fact_rt_node: identity in AsyncLocalStorage from _meta, handed to the kernel at the libuv connect and at spawn; the tools emit nothing). Same reference (destination port -> execution).",
+ "spec": {
+  "experiment": "E5node",
+  "description": "Second runtime: the shared MCP server is written in Node.js with the official TypeScript SDK (@modelcontextprotocol/sdk 1.32.1); one process and one JavaScript thread serve every session. Tools: async_get (timer, then net.connect), subproc_get (spawns node -e connect), http_get (node:http client, no keep-alive). Manual binding (the tools emit markers at start and end, thread-keyed) versus automatic binding (fact_rt_node: identity in AsyncLocalStorage from _meta, handed to the kernel at the libuv connect and at spawn; the tools emit nothing). Same reference (destination port -> execution).",
+  "factors": {
+   "tool": [
+    "node_async",
+    "node_subproc",
+    "node_http"
+   ],
+   "binding_mode": [
+    "manual",
+    "auto"
+   ],
+   "execs": [
+    4,
+    8
+   ]
+  },
+  "fixed": {
+   "cond": "E5node",
+   "ops": 25,
+   "workload": "workload/mcp_e4.py"
+  }
+ },
+ "n_per_cell": 1,
+ "campaign_seed": 1,
+ "cells": 12,
+ "total_runs": 12,
+ "started_utc": "20261020T120406Z",
+ "duration_s": 49.3,
+ "runs_ok": 12,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "4a92a5b05a9c9a531358b44b086d973ba8c4d8e2",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "eca73b99-5f4a-445b-b910-e1a4d74f3c1f",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": null,
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 7,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_subproc",
+    "binding_mode": "auto",
+    "execs": 8
+   },
+   "position": 1,
+   "run_id": "r0001-E5node-c07-rep00",
+   "returncode": 0,
+   "seconds": 4.771,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0001-E5node-c07-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_subproc",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 11,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_http",
+    "binding_mode": "auto",
+    "execs": 8
+   },
+   "position": 2,
+   "run_id": "r0002-E5node-c11-rep00",
+   "returncode": 0,
+   "seconds": 3.827,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0002-E5node-c11-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_http",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_async",
+    "binding_mode": "manual",
+    "execs": 4
+   },
+   "position": 3,
+   "run_id": "r0003-E5node-c00-rep00",
+   "returncode": 0,
+   "seconds": 3.75,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0003-E5node-c00-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_async",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 8,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_http",
+    "binding_mode": "manual",
+    "execs": 4
+   },
+   "position": 4,
+   "run_id": "r0004-E5node-c08-rep00",
+   "returncode": 0,
+   "seconds": 3.596,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0004-E5node-c08-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_http",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_subproc",
+    "binding_mode": "manual",
+    "execs": 8
+   },
+   "position": 5,
+   "run_id": "r0005-E5node-c05-rep00",
+   "returncode": 0,
+   "seconds": 4.761,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0005-E5node-c05-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_subproc",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 6,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_subproc",
+    "binding_mode": "auto",
+    "execs": 4
+   },
+   "position": 6,
+   "run_id": "r0006-E5node-c06-rep00",
+   "returncode": 0,
+   "seconds": 4.534,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0006-E5node-c06-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_subproc",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_async",
+    "binding_mode": "auto",
+    "execs": 8
+   },
+   "position": 7,
+   "run_id": "r0007-E5node-c03-rep00",
+   "returncode": 0,
+   "seconds": 3.962,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0007-E5node-c03-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_async",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 10,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_http",
+    "binding_mode": "auto",
+    "execs": 4
+   },
+   "position": 8,
+   "run_id": "r0008-E5node-c10-rep00",
+   "returncode": 0,
+   "seconds": 3.802,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0008-E5node-c10-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_http",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_subproc",
+    "binding_mode": "manual",
+    "execs": 4
+   },
+   "position": 9,
+   "run_id": "r0009-E5node-c04-rep00",
+   "returncode": 0,
+   "seconds": 4.531,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0009-E5node-c04-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_subproc",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_async",
+    "binding_mode": "manual",
+    "execs": 8
+   },
+   "position": 10,
+   "run_id": "r0010-E5node-c01-rep00",
+   "returncode": 0,
+   "seconds": 3.761,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0010-E5node-c01-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_async",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 9,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_http",
+    "binding_mode": "manual",
+    "execs": 8
+   },
+   "position": 11,
+   "run_id": "r0011-E5node-c09-rep00",
+   "returncode": 0,
+   "seconds": 4.022,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0011-E5node-c09-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_http",
+    "--binding-mode",
+    "manual",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "cond": "E5node",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "tool": "node_async",
+    "binding_mode": "auto",
+    "execs": 4
+   },
+   "position": 12,
+   "run_id": "r0012-E5node-c02-rep00",
+   "returncode": 0,
+   "seconds": 3.773,
+   "command": [
+    "E5node",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5node-pilot-20261020T120406Z/runs/r0012-E5node-c02-rep00",
+    "--seed",
+    "1",
+    "--ops",
+    "25",
+    "--tool",
+    "node_async",
+    "--binding-mode",
+    "auto",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  }
+ ]
+}

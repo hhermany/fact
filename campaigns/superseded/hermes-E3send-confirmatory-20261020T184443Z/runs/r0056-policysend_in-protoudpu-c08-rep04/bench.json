@@ -1,0 +1,1 @@
+{"proto":"udpu","n":200000,"warmup":10000,"size":64,"port":63197,"failures":0,"mean_ns":11658.5,"p50_ns":12058,"p90_ns":12570,"p99_ns":15289,"max_ns":40037,"wall_ns":2337797162,"throughput_sps":85550.6}

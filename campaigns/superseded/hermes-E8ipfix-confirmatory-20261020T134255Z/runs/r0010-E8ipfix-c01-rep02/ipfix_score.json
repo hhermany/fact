@@ -1,0 +1,66 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E8ipfix-confirmatory-20261020T134255Z/runs/r0010-E8ipfix-c01-rep02",
+ "tool": "async",
+ "execs": 8,
+ "messages": 3,
+ "decode_errors": 0,
+ "records": 12,
+ "connections": {
+  "reference": 200,
+  "ipfix_credited": 200,
+  "abs_error": 0,
+  "error_pct": 0.0,
+  "uncredited": 21
+ },
+ "ipfix_equals_factd": true,
+ "per_exec": {
+  "E00": {
+   "connections": [
+    25,
+    25
+   ]
+  },
+  "E01": {
+   "connections": [
+    25,
+    25
+   ]
+  },
+  "E02": {
+   "connections": [
+    25,
+    25
+   ]
+  },
+  "E03": {
+   "connections": [
+    25,
+    25
+   ]
+  },
+  "E04": {
+   "connections": [
+    25,
+    25
+   ]
+  },
+  "E05": {
+   "connections": [
+    25,
+    25
+   ]
+  },
+  "E06": {
+   "connections": [
+    25,
+    25
+   ]
+  },
+  "E07": {
+   "connections": [
+    25,
+    25
+   ]
+  }
+ }
+}

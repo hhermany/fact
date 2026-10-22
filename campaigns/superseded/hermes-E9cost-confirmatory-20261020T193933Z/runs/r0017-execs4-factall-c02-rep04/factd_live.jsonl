@@ -1,0 +1,13 @@
+{"type": "uncredited", "t0": 2486819426621, "t1": 2487819426621, "ambiguous": 0, "unattributed": 1, "ambiguous_sets": {}}
+{"type": "uncredited", "t0": 2487819426621, "t1": 2488819426621, "ambiguous": 0, "unattributed": 5, "ambiguous_sets": {}}
+{"type": "exec_flow", "t0": 2488819426621, "t1": 2489819426621, "exec": "E00", "connections": 45, "established": 30, "failed": 0, "destinations": 15, "octets_sent": 2205, "octets_received": 1275}
+{"type": "exec_flow", "t0": 2488819426621, "t1": 2489819426621, "exec": "E01", "connections": 44, "established": 29, "failed": 0, "destinations": 15, "octets_sent": 2205, "octets_received": 1275}
+{"type": "exec_flow", "t0": 2488819426621, "t1": 2489819426621, "exec": "E02", "connections": 44, "established": 29, "failed": 0, "destinations": 15, "octets_sent": 2058, "octets_received": 1190}
+{"type": "exec_flow", "t0": 2488819426621, "t1": 2489819426621, "exec": "E03", "connections": 43, "established": 28, "failed": 0, "destinations": 15, "octets_sent": 2058, "octets_received": 1190}
+{"type": "uncredited", "t0": 2488819426621, "t1": 2489819426621, "ambiguous": 0, "unattributed": 68, "ambiguous_sets": {}}
+{"type": "exec_flow", "t0": 2489819426621, "t1": 2490819426621, "exec": "E00", "connections": 30, "established": 20, "failed": 0, "destinations": 10, "octets_sent": 1470, "octets_received": 850}
+{"type": "exec_flow", "t0": 2489819426621, "t1": 2490819426621, "exec": "E01", "connections": 31, "established": 21, "failed": 0, "destinations": 11, "octets_sent": 1470, "octets_received": 850}
+{"type": "exec_flow", "t0": 2489819426621, "t1": 2490819426621, "exec": "E02", "connections": 31, "established": 21, "failed": 0, "destinations": 11, "octets_sent": 1617, "octets_received": 935}
+{"type": "exec_flow", "t0": 2489819426621, "t1": 2490819426621, "exec": "E03", "connections": 32, "established": 22, "failed": 0, "destinations": 11, "octets_sent": 1617, "octets_received": 935}
+{"type": "uncredited", "t0": 2489819426621, "t1": 2490819426621, "ambiguous": 0, "unattributed": 40, "ambiguous_sets": {}}
+{"type": "summary", "exec": {"E00": {"connections": 75, "established": 50, "octets_sent": 3675, "octets_received": 2125}, "E01": {"connections": 75, "established": 50, "octets_sent": 3675, "octets_received": 2125}, "E02": {"connections": 75, "established": 50, "octets_sent": 3675, "octets_received": 2125}, "E03": {"connections": 75, "established": 50, "octets_sent": 3675, "octets_received": 2125}}, "uncredited": {"unattributed": 114}}

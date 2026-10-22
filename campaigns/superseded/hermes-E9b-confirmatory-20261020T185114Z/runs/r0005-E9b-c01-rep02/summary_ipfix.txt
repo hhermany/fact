@@ -1,0 +1,1 @@
+{"tool": "mixed", "execs": 8, "messages": 20, "decode_errors": 0, "records": 61, "connections": {"reference": 444, "ipfix_credited": 444, "abs_error": 0, "error_pct": 0.0, "uncredited": 174}, "ipfix_equals_factd": true}

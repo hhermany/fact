@@ -1,0 +1,11 @@
+{"type": "uncredited", "t0": 760480026687, "t1": 761480026687, "ambiguous": 0, "unattributed": 2, "ambiguous_sets": {}}
+{"type": "exec_flow", "t0": 761480026687, "t1": 762480026687, "exec": "E00", "connections": 7, "established": 7, "failed": 0, "destinations": 7}
+{"type": "exec_flow", "t0": 761480026687, "t1": 762480026687, "exec": "E01", "connections": 6, "established": 6, "failed": 0, "destinations": 6}
+{"type": "exec_flow", "t0": 761480026687, "t1": 762480026687, "exec": "E02", "connections": 7, "established": 7, "failed": 0, "destinations": 7}
+{"type": "exec_flow", "t0": 761480026687, "t1": 762480026687, "exec": "E03", "connections": 7, "established": 7, "failed": 0, "destinations": 7}
+{"type": "uncredited", "t0": 761480026687, "t1": 762480026687, "ambiguous": 0, "unattributed": 11, "ambiguous_sets": {}}
+{"type": "exec_flow", "t0": 762480026687, "t1": 763480026687, "exec": "E00", "connections": 18, "established": 18, "failed": 0, "destinations": 18}
+{"type": "exec_flow", "t0": 762480026687, "t1": 763480026687, "exec": "E01", "connections": 19, "established": 19, "failed": 0, "destinations": 19}
+{"type": "exec_flow", "t0": 762480026687, "t1": 763480026687, "exec": "E02", "connections": 18, "established": 18, "failed": 0, "destinations": 18}
+{"type": "exec_flow", "t0": 762480026687, "t1": 763480026687, "exec": "E03", "connections": 18, "established": 18, "failed": 0, "destinations": 18}
+{"type": "summary", "exec": {"E00": {"connections": 25, "established": 25}, "E01": {"connections": 25, "established": 25}, "E02": {"connections": 25, "established": 25}, "E03": {"connections": 25, "established": 25}}, "uncredited": {"unattributed": 13}}

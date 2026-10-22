@@ -1,0 +1,17 @@
+{
+ "campaign_seed": 1,
+ "order": [
+  [
+   1,
+   "r0001-E5fetch-c01-rep00"
+  ],
+  [
+   2,
+   "r0002-E5fetch-c02-rep00"
+  ],
+  [
+   3,
+   "r0003-E5fetch-c00-rep00"
+  ]
+ ]
+}

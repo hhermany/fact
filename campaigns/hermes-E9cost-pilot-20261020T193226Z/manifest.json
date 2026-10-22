@@ -1,0 +1,155 @@
+{
+ "campaign_id": "hermes-E9cost-pilot-20261020T193226Z",
+ "experiment": "E9cost",
+ "label": "pilot",
+ "description": "Cost of the full recommended configuration (E9b: session-derived identity, clearing, send binding, datagram hooks, trusted runtime, policy with per-send authorization, live IPFIX, collector fact-all.bt) against no FACT at all, under the same workload: the shared MCP server, K sessions, 25 calls each, every call a DNS query over UDP, an HTTP GET, and a subprocess connect, all permitted. Client-side call latency (p50/p90/p99), host CPU during the workload, and CPU of FACT's components (COST=1).",
+ "spec": {
+  "experiment": "E9cost",
+  "runner": "fullcost",
+  "description": "Cost of the full recommended configuration (E9b: session-derived identity, clearing, send binding, datagram hooks, trusted runtime, policy with per-send authorization, live IPFIX, collector fact-all.bt) against no FACT at all, under the same workload: the shared MCP server, K sessions, 25 calls each, every call a DNS query over UDP, an HTTP GET, and a subprocess connect, all permitted. Client-side call latency (p50/p90/p99), host CPU during the workload, and CPU of FACT's components (COST=1).",
+  "factors": {
+   "fact": [
+    "off",
+    "all"
+   ],
+   "execs": [
+    4,
+    8
+   ]
+  },
+  "fixed": {
+   "ops": 25
+  }
+ },
+ "n_per_cell": 1,
+ "campaign_seed": 1,
+ "cells": 4,
+ "total_runs": 4,
+ "started_utc": "20261020T193226Z",
+ "duration_s": 43.3,
+ "runs_ok": 4,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "a6f5247752622577f5e94f88343207dc4963fba6",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "4c5fc2e1-9b8a-40f8-ab03-38b1e0ef2a03",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": null,
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "ops": 25,
+    "fact": "all",
+    "execs": 8
+   },
+   "position": 1,
+   "run_id": "r0001-execs8-factall-c03-rep00",
+   "returncode": 0,
+   "seconds": 14.069,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E9cost-pilot-20261020T193226Z/runs/r0001-execs8-factall-c03-rep00",
+    "--fact",
+    "all",
+    "--execs",
+    "8",
+    "--ops",
+    "25",
+    "--seed",
+    "1"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "ops": 25,
+    "fact": "off",
+    "execs": 4
+   },
+   "position": 2,
+   "run_id": "r0002-execs4-factoff-c00-rep00",
+   "returncode": 0,
+   "seconds": 7.573,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E9cost-pilot-20261020T193226Z/runs/r0002-execs4-factoff-c00-rep00",
+    "--fact",
+    "off",
+    "--execs",
+    "4",
+    "--ops",
+    "25",
+    "--seed",
+    "1"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "ops": 25,
+    "fact": "all",
+    "execs": 4
+   },
+   "position": 3,
+   "run_id": "r0003-execs4-factall-c02-rep00",
+   "returncode": 0,
+   "seconds": 12.918,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E9cost-pilot-20261020T193226Z/runs/r0003-execs4-factall-c02-rep00",
+    "--fact",
+    "all",
+    "--execs",
+    "4",
+    "--ops",
+    "25",
+    "--seed",
+    "1"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 1,
+   "params": {
+    "ops": 25,
+    "fact": "off",
+    "execs": 8
+   },
+   "position": 4,
+   "run_id": "r0004-execs8-factoff-c01-rep00",
+   "returncode": 0,
+   "seconds": 8.597,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E9cost-pilot-20261020T193226Z/runs/r0004-execs8-factoff-c01-rep00",
+    "--fact",
+    "off",
+    "--execs",
+    "8",
+    "--ops",
+    "25",
+    "--seed",
+    "1"
+   ],
+   "status": "OK"
+  }
+ ]
+}

@@ -1,0 +1,1 @@
+{"tool": "aiohttp_shared", "send_binding": 1, "requests": 100, "connections": 7, "shared": 7, "sent_opener_I": 9313, "sent_sender_I": 0, "received_opener_I": 6030, "received_sender_I": 0, "sent_N": 13900, "received_N": 9000}

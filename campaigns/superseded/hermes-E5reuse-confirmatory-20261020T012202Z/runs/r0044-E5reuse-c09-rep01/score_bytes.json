@@ -1,0 +1,35 @@
+{
+ "run": "/home/ikki/projetos/agentnet/campaigns/hermes-E5reuse-confirmatory-20261020T012202Z/runs/r0044-E5reuse-c09-rep01",
+ "tool": "aiohttp_shared",
+ "send_binding": 0,
+ "requests": 200,
+ "connections": 8,
+ "connections_shared": 8,
+ "unreferenced_bytes": {},
+ "bytes": {
+  "sent": {
+   "opener": {
+    "C": 3614,
+    "N": 27800,
+    "I": 24186
+   },
+   "sender": {
+    "I": 24186,
+    "N": 27800,
+    "C": 3614
+   }
+  },
+  "received": {
+   "opener": {
+    "C": 2340,
+    "N": 18000,
+    "I": 15660
+   },
+   "sender": {
+    "I": 15660,
+    "N": 18000,
+    "C": 2340
+   }
+  }
+ }
+}

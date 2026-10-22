@@ -1,0 +1,134 @@
+{
+ "campaign_id": "hermes-E5partial-confirmatory-20261020T211540Z",
+ "experiment": "E5partial",
+ "label": "confirmatory",
+ "description": "Byte accounting under backpressure: a nonblocking sender with a small send buffer and a slow receiver (bench/partial_send.py), so that many sends are partial or fail with EAGAIN. The collector (fact-bytes.bt) credits the return value of tcp_sendmsg; the run compares it with the destination's count and with the sum of the requested sizes (what counting the argument of tcp_sendmsg would credit).",
+ "spec": {
+  "experiment": "E5partial",
+  "runner": "partial",
+  "description": "Byte accounting under backpressure: a nonblocking sender with a small send buffer and a slow receiver (bench/partial_send.py), so that many sends are partial or fail with EAGAIN. The collector (fact-bytes.bt) credits the return value of tcp_sendmsg; the run compares it with the destination's count and with the sum of the requested sizes (what counting the argument of tcp_sendmsg would credit).",
+  "factors": {
+   "total": [
+    8000000
+   ]
+  },
+  "fixed": {}
+ },
+ "n_per_cell": 5,
+ "campaign_seed": 51193,
+ "cells": 1,
+ "total_runs": 5,
+ "started_utc": "20261020T211540Z",
+ "duration_s": 16.5,
+ "runs_ok": 5,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "28788d6499c2dacb4a474376faeac09014d40631",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "01a24136-5e79-4e97-b3c3-ad70ad6b6634",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": "preflight/last",
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "total": 8000000
+   },
+   "position": 1,
+   "run_id": "r0001-total8000000-c00-rep00",
+   "returncode": 0,
+   "seconds": 3.269,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5partial-confirmatory-20261020T211540Z/runs/r0001-total8000000-c00-rep00",
+    "--seed",
+    "51193"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 2,
+   "seed": 51195,
+   "params": {
+    "total": 8000000
+   },
+   "position": 2,
+   "run_id": "r0002-total8000000-c00-rep02",
+   "returncode": 0,
+   "seconds": 3.28,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5partial-confirmatory-20261020T211540Z/runs/r0002-total8000000-c00-rep02",
+    "--seed",
+    "51195"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 1,
+   "seed": 51194,
+   "params": {
+    "total": 8000000
+   },
+   "position": 3,
+   "run_id": "r0003-total8000000-c00-rep01",
+   "returncode": 0,
+   "seconds": 3.274,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5partial-confirmatory-20261020T211540Z/runs/r0003-total8000000-c00-rep01",
+    "--seed",
+    "51194"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 4,
+   "seed": 51197,
+   "params": {
+    "total": 8000000
+   },
+   "position": 4,
+   "run_id": "r0004-total8000000-c00-rep04",
+   "returncode": 0,
+   "seconds": 3.286,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5partial-confirmatory-20261020T211540Z/runs/r0004-total8000000-c00-rep04",
+    "--seed",
+    "51197"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 0,
+   "rep": 3,
+   "seed": 51196,
+   "params": {
+    "total": 8000000
+   },
+   "position": 5,
+   "run_id": "r0005-total8000000-c00-rep03",
+   "returncode": 0,
+   "seconds": 3.275,
+   "command": [
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E5partial-confirmatory-20261020T211540Z/runs/r0005-total8000000-c00-rep03",
+    "--seed",
+    "51196"
+   ],
+   "status": "OK"
+  }
+ ]
+}

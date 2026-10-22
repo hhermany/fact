@@ -1,0 +1,279 @@
+{
+ "campaign_id": "hermes-E6spoof-pilot-20261020T005759Z",
+ "experiment": "E6spoof",
+ "label": "pilot",
+ "description": "Misbehaving tool: in the shared MCP server with the egress policy (classes as in E6), every call of a restricted execution runs a tool whose child process emits a marker claiming a permissive execution's identity before connecting. Without trust, the claim is accepted; with trust (trust_map: markers accepted only from the MCP server process), the child's marker is ignored and the child keeps the identity it inherited at fork. Automatic binding; same reference (exclusive destination port).",
+ "spec": {
+  "experiment": "E6spoof",
+  "description": "Misbehaving tool: in the shared MCP server with the egress policy (classes as in E6), every call of a restricted execution runs a tool whose child process emits a marker claiming a permissive execution's identity before connecting. Without trust, the claim is accepted; with trust (trust_map: markers accepted only from the MCP server process), the child's marker is ignored and the child keeps the identity it inherited at fork. Automatic binding; same reference (exclusive destination port).",
+  "factors": {
+   "trust": [
+    0,
+    1
+   ],
+   "execs": [
+    2,
+    4,
+    8
+   ]
+  },
+  "fixed": {
+   "cond": "E6spoof",
+   "tool": "spoof",
+   "binding_mode": "auto",
+   "ops": 25,
+   "workload": "workload/mcp_e4.py",
+   "policy": 1,
+   "policy_noctx_allow": 0
+  }
+ },
+ "n_per_cell": 1,
+ "campaign_seed": 51193,
+ "cells": 6,
+ "total_runs": 6,
+ "started_utc": "20261020T005759Z",
+ "duration_s": 58.8,
+ "runs_ok": 6,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/agentnet",
+  "commit": "b1aa78cb50ce23f1621a25ab5900a769b8410467",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "c01c5377-9c24-40f9-86b7-3e9646ca4290",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": null,
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E6spoof",
+    "tool": "spoof",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "trust": 0,
+    "execs": 2
+   },
+   "position": 1,
+   "run_id": "r0001-E6spoof-c00-rep00",
+   "returncode": 0,
+   "seconds": 9.644,
+   "command": [
+    "E6spoof",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E6spoof-pilot-20261020T005759Z/runs/r0001-E6spoof-c00-rep00",
+    "--seed",
+    "51193",
+    "--tool",
+    "spoof",
+    "--binding-mode",
+    "auto",
+    "--ops",
+    "25",
+    "--trust",
+    "0",
+    "--execs",
+    "2"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E6spoof",
+    "tool": "spoof",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "trust": 0,
+    "execs": 4
+   },
+   "position": 2,
+   "run_id": "r0002-E6spoof-c01-rep00",
+   "returncode": 0,
+   "seconds": 9.709,
+   "command": [
+    "E6spoof",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E6spoof-pilot-20261020T005759Z/runs/r0002-E6spoof-c01-rep00",
+    "--seed",
+    "51193",
+    "--tool",
+    "spoof",
+    "--binding-mode",
+    "auto",
+    "--ops",
+    "25",
+    "--trust",
+    "0",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 4,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E6spoof",
+    "tool": "spoof",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "trust": 1,
+    "execs": 4
+   },
+   "position": 3,
+   "run_id": "r0003-E6spoof-c04-rep00",
+   "returncode": 0,
+   "seconds": 9.712,
+   "command": [
+    "E6spoof",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E6spoof-pilot-20261020T005759Z/runs/r0003-E6spoof-c04-rep00",
+    "--seed",
+    "51193",
+    "--tool",
+    "spoof",
+    "--binding-mode",
+    "auto",
+    "--ops",
+    "25",
+    "--trust",
+    "1",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E6spoof",
+    "tool": "spoof",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "trust": 0,
+    "execs": 8
+   },
+   "position": 4,
+   "run_id": "r0004-E6spoof-c02-rep00",
+   "returncode": 0,
+   "seconds": 9.923,
+   "command": [
+    "E6spoof",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E6spoof-pilot-20261020T005759Z/runs/r0004-E6spoof-c02-rep00",
+    "--seed",
+    "51193",
+    "--tool",
+    "spoof",
+    "--binding-mode",
+    "auto",
+    "--ops",
+    "25",
+    "--trust",
+    "0",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 5,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E6spoof",
+    "tool": "spoof",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "trust": 1,
+    "execs": 8
+   },
+   "position": 5,
+   "run_id": "r0005-E6spoof-c05-rep00",
+   "returncode": 0,
+   "seconds": 9.928,
+   "command": [
+    "E6spoof",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E6spoof-pilot-20261020T005759Z/runs/r0005-E6spoof-c05-rep00",
+    "--seed",
+    "51193",
+    "--tool",
+    "spoof",
+    "--binding-mode",
+    "auto",
+    "--ops",
+    "25",
+    "--trust",
+    "1",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E6spoof",
+    "tool": "spoof",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "trust": 1,
+    "execs": 2
+   },
+   "position": 6,
+   "run_id": "r0006-E6spoof-c03-rep00",
+   "returncode": 0,
+   "seconds": 9.663,
+   "command": [
+    "E6spoof",
+    "/home/ikki/projetos/agentnet/campaigns/hermes-E6spoof-pilot-20261020T005759Z/runs/r0006-E6spoof-c03-rep00",
+    "--seed",
+    "51193",
+    "--tool",
+    "spoof",
+    "--binding-mode",
+    "auto",
+    "--ops",
+    "25",
+    "--trust",
+    "1",
+    "--execs",
+    "2"
+   ],
+   "status": "OK"
+  }
+ ]
+}
