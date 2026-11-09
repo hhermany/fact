@@ -196,3 +196,37 @@ if (file.exists(bl_csv)) {
 
 #+ session
 sessionInfo()
+
+#+ noms-revision extra figures: fig_baselines2 (correct-attribution framing) + fig_realagents (E7, external baselines)
+if (exists("bl")) {
+  blc <- bl |> mutate(correct = 1 - I)
+  g4b <- ggplot(blc, aes(cell, correct, fill = mech)) +
+    geom_col(position = position_dodge(width = 0.86), width = 0.82, colour = "black", linewidth = 0.25) +
+    geom_text(aes(label = ifelse(is.na(correct), "", pct(correct)), group = mech),
+              position = position_dodge(width = 0.86), vjust = -0.3, size = 1.7, family = fam) +
+    scale_y_continuous(labels = pct, limits = c(0, 1.16), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
+    scale_fill_manual(values = c(greys[1], greys[2], greys[3], "white", ours), drop = FALSE) +
+    guides(fill = guide_legend(nrow = 3)) +
+    labs(x = NULL, y = "correctly attributed") + theme_paper()
+  save_fig(g4b, "fig_baselines2", 2.4)
+}
+
+ra_csv <- file.path(indir, "E7_attrib.csv")
+if (file.exists(ra_csv)) {
+  ra <- read_csv(ra_csv, show_col_types = FALSE) |>
+    filter(resolver %in% c("cgroup", "lineage", "fused")) |>
+    transmute(resolver, Correct = C / N, Ambiguous = A / N) |>
+    mutate(resolver = recode(resolver, cgroup = "cgroup", lineage = "process lineage", fused = "FACT"),
+           resolver = factor(resolver, c("cgroup", "process lineage", "FACT"))) |>
+    pivot_longer(c(Correct, Ambiguous), names_to = "outcome", values_to = "frac") |>
+    mutate(outcome = factor(outcome, c("Ambiguous", "Correct")))
+  g5 <- ggplot(ra, aes(resolver, frac, fill = outcome)) +
+    geom_col(width = 0.66, colour = "black", linewidth = 0.3) +
+    geom_text(data = subset(ra, frac > 0.02), aes(label = pct(frac), colour = outcome),
+              position = position_stack(vjust = 0.5), size = 2.1, family = fam) +
+    scale_y_continuous(labels = pct, expand = c(0, 0), limits = c(0, 1.001)) +
+    scale_fill_manual(values = c(Ambiguous = "grey80", Correct = ours)) +
+    scale_colour_manual(values = c(Ambiguous = "black", Correct = "white"), guide = "none") +
+    labs(x = NULL, y = "real-agent connections") + theme_paper()
+  save_fig(g5, "fig_realagents", 1.8)
+}
