@@ -133,7 +133,7 @@ fw <- bind_rows(e5, e6) |>
 g3 <- ggplot(fw, aes(factor(K), value, colour = binding, shape = binding, linetype = binding, group = binding)) +
   geom_line(linewidth = 0.6) + geom_point(size = 1.7, stroke = 0.7) +
   geom_text(data = filter(fw, binding_mode == "manual", tool == "Asynchronous"),
-            aes(label = pct(value), hjust = ifelse(K == 2, -0.15, ifelse(K == 8, 1.15, 0.5))),
+            aes(label = pct(value), hjust = ifelse(K == 2, -0.15, 0.5)),
             vjust = -0.8, size = 2.1, family = fam, colour = "black", show.legend = FALSE) +
   facet_grid(metric ~ tool) +
   scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
