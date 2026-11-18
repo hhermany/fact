@@ -64,7 +64,7 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 |---|---|---|
 | Fig. 2; scaling to K = 64 (Sec. VI-A) | E1, E2 | `cell_summary.csv`, `E2_scale.csv` |
 | Fig. 3 (shared MCP server) | E5, E6 | `E5_framework.csv`, `E6_policy.csv` |
-| Fig. 4 (related mechanisms) | E1, E5, E5ap, E5aps | `baselines.csv`, `E5ap_agentprov.csv`, `E5aps_agentprov.csv` |
+| Fig. 4 (related mechanisms) | E1, E1ap, E5, E5ap, E5aps | `baselines.csv`, `E1ap_agentprov.csv`, `E5ap_agentprov.csv`, `E5aps_agentprov.csv` |
 | Sec. VI-B (faulty identities, native code) | E5f, E6f, E7f, E6L, E6Ls, E5native | `analysis/fault_tables.py`, `E5native_boundary.csv` |
 | Table III, Sec. VI-C (policy, reuse, bytes, budgets) | E6, E5reuse, E6reuse, E5partial, E5udp, E10budget, E10conc | `E6_policy.csv`, `E5reuse_bytes.csv`, `E6reuse_policy.csv`, `E5partial.csv`, `E5udp_flows.csv`, `E10budget.csv` |
 | Table IV, Sec. VI-D (selective containment) | E12contain | `contain_summary.json` |

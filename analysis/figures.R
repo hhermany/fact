@@ -174,6 +174,14 @@ if (file.exists(bl_csv)) {
       transmute(cell = paste("E5", tool), resolver = "agentprov_srv", I = I / N)
     bl <- bind_rows(bl, aps)
   }
+  #' AgentProvenance executed for real on the synthetic shared worker (E1ap, N3),
+  #' with client-side operation windows (the synthetic workload has no server).
+  e1ap_csv <- file.path(indir, "E1ap_agentprov.csv")
+  if (file.exists(e1ap_csv)) {
+    e1ap <- read_csv(e1ap_csv, show_col_types = FALSE) |> filter(system == "AgentProvenance", cond == "N3") |>
+      summarise(I = sum(I) / sum(N)) |> mutate(cell = "E1 N3", resolver = "agentprov")
+    bl <- bind_rows(bl, e1ap)
+  }
   bl <- bl |>
     mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "agentprov", "agentprov_srv", "fused"),
                          c("Time Window (Emulated)", "Latest Scope (Emulated)",
