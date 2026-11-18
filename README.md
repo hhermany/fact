@@ -48,7 +48,7 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | Live accounting (`factd`) | all confirmatory campaigns (`analysis/output/factd_equiv.json`) | `tests/test_factd_equiv.py` |
 | AgentProvenance in its own setting (E1ap) | `hermes-E1ap-confirmatory-*` | `analysis/agentprov_table.py --experiment E1ap` |
 | Policy on reused connections, per-send authorization (E6reuse); integrated configuration with the policy on every send (E9b) | `hermes-E6reuse-confirmatory-*`, `hermes-E9b-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_reuse_policy.py` |
-| Integrated configuration, every option on (E9all) | `hermes-E9all-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
+| Integrated configuration, every option available before budgets and the kernel-held credential (E9all) | `hermes-E9all-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Session identity (E6sess), failure boundary (E5native), unmodified fetch server (E5fetch), UDP flows (E5udp), IPFIX export (E8ipfix) | `hermes-E6sess-confirmatory-*`, `hermes-E5native-confirmatory-*`, `hermes-E5fetch-confirmatory-*`, `hermes-E5udp-confirmatory-*`, `hermes-E8ipfix-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Second runtime: Node.js MCP server (E5node) | `hermes-E5node-confirmatory-*` | `analysis/presub_tables.py` |
 | Third-party clients (E5lib), connection reuse and bytes (E5reuse), spoofed markers (E6spoof), CPU cost under agents (E7rc) | `hermes-E5lib-confirmatory-*`, `hermes-E5reuse-confirmatory-*`, `hermes-E6spoof-confirmatory-*`, `hermes-E7rc-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_bytes.py` |
@@ -72,6 +72,34 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 | Kernel-held credential (Secs. IV-G, VII) | E3cred, E6cred, E6reusecred, E6spoofcred, E11file | `kcred_summary.json` |
 | Live accounting and IPFIX (Sec. IV-E) | E8ipfix, E9all | `E8ipfix_accounting.csv`, `E9all_ipfix.csv`, `factd_equiv.json` |
 | Structural conflicts (Sec. IV-D) | all confirmatory campaigns | `structural_conflicts.csv` |
+
+### Configuration behind each result
+
+Every number in the paper comes from one configuration. "Markers" is the runtime handoff of Sec. IV-B/C
+(`fact_rt`, task-scoped unless stated); "kernel-held" is the credential of Sec. IV-G (`prctl(PR_FACT)`).
+Connection-level policy is the `cgroup/connect4` hook; per-send authorization adds the BPF LSM `socket_sendmsg` hook.
+
+| Result | Campaigns | Identity handoff | Policy | Budgets | IPFIX | Workload |
+|---|---|---|---|---|---|---|
+| Fig. 2, K = 64 (Sec. VI-A) | E1, E2 | markers (context per operation) | none | no | no | synthetic workers N0-N3 |
+| Fig. 3 | E5, E6 | markers: thread-keyed (manual) vs. task-scoped | connection-level (E6) | no | no | shared MCP server, four tool types |
+| Fig. 4 | E1, E1ap, E5, E5ap, E5aps | markers (FACT); AgentProvenance bindings | none | no | no | synthetic N3; shared MCP server |
+| Sec. VI-B | E5f, E6f, E7f, E6L, E6Ls, E5native | markers, mislabeled at rate p; clearing on/off (E5native) | connection-level, lineage check (E6L, E6Ls) | no | no | synthetic; shared MCP server; LLM agents (E7f) |
+| Sec. VI-C, Table III: egress policy | E6 | markers | connection-level | no | no | shared MCP server |
+| Sec. VI-C, Table III: reused connections | E5reuse, E6reuse | markers + send binding | per-send on/off (E6reuse) | no | no | shared keep-alive pools |
+| Sec. VI-C, Table III: accepted bytes | E5partial | n/a (one sender) | none | no | no | nonblocking sender under backpressure |
+| Sec. VI-C: unconnected datagrams | E5udp, E9b | markers + datagram hooks | per-send, `cgroup/sendmsg4` (E9b) | no | E9b | shared MCP server, DNS over UDP |
+| Sec. VI-C, Table III: budgets | E10budget, E10conc | markers + send binding | per-send | connections, bytes | no | shared MCP server, keep-alive pool |
+| Table IV (Sec. VI-D) | E12contain | markers + send binding | per-send | bytes (worker or runaway) | no | shared MCP server, keep-alive pool |
+| Sec. VI-E: real agents | E7, E7m, E7c, E7o | markers via `_meta` | connection-level, per tenant | no | no | LLM operations agents (health checks) |
+| Sec. VI-E: kernel-held credential | E6cred, E6reusecred, E6spoofcred, E11file, E3cred | kernel-held (`prctl`) vs. markers (E3cred) | connection-level; per-send (E6reusecred) | no | no | shared MCP server; file writes; connect benchmark |
+| Sec. VI-E: collector and per-send cost | E3, E3net, E3send | markers off/on (E3); none (E3send) | none, connection, per-send, budget (E3send) | E3send only | no | microbenchmarks (loopback, vmxnet3) |
+| Sec. VI-E: CPU at agent pace | E7rc | markers | connection-level | no | no | model-free replay of E7c/E7o runs |
+| Sec. VI-E: integrated cost | E9cost | markers, session-derived identity, clearing, send binding, datagram hooks, trusted runtime | per-send | no | yes | shared MCP server: DNS, HTTP, subprocess per call |
+| Sec. IV-E: live IPFIX | E8ipfix, E9all | markers (+ as in E9cost for E9all) | none (E8ipfix); connection-level (E9all) | no | yes | shared MCP server |
+
+No campaign combines the kernel-held credential with budgets; the integrated configurations (E9all, E9b,
+E9cost) predate both and use markers.
 
 ## Re-running the confirmatory campaigns
 
