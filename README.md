@@ -51,7 +51,7 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | Integrated configuration, every option available before budgets and the kernel-held credential (E9all) | `hermes-E9all-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Kernel-held credential with budgets: concurrent budgets (E10conccred), selective containment (E12containcred), integrated cost with every option (E9costcred) | `hermes-E10conccred-confirmatory-*`, `hermes-E12containcred-confirmatory-*`, `hermes-E9costcred-confirmatory-*` | `analysis/credint_tables.py` |
 | Network-operations incident with LLM agents (E7net) | `hermes-E7net-confirmatory-*` | `analysis/e7net_summary.py` |
-| OBI v1.0.0 association test (no FACT) | `campaigns/obi-assoc-20261118/` | `bench/obi_assoc.py`, `scripts/run_obi_all.sh`, `scripts/run_obi_tools.sh` |
+| OBI v1.0.0 association test (no FACT) | `campaigns/obi-assoc-20261118/` | `bench/obi_assoc.py`, `scripts/run_obi_all.sh`, `scripts/run_obi_tools.sh`, `analysis/obi_summary.py` |
 | Session identity (E6sess), failure boundary (E5native), unmodified fetch server (E5fetch), UDP flows (E5udp), IPFIX export (E8ipfix) | `hermes-E6sess-confirmatory-*`, `hermes-E5native-confirmatory-*`, `hermes-E5fetch-confirmatory-*`, `hermes-E5udp-confirmatory-*`, `hermes-E8ipfix-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Second runtime: Node.js MCP server (E5node) | `hermes-E5node-confirmatory-*` | `analysis/presub_tables.py` |
 | Third-party clients (E5lib), connection reuse and bytes (E5reuse), spoofed markers (E6spoof), CPU cost under agents (E7rc) | `hermes-E5lib-confirmatory-*`, `hermes-E5reuse-confirmatory-*`, `hermes-E6spoof-confirmatory-*`, `hermes-E7rc-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_bytes.py` |
@@ -74,6 +74,7 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 | Sec. VI-E (real agents, overhead) | E7, E7m, E7c, E7o, E7r, E7net, E3, E3net, E3send, E7rc, E9costcred, E9cost | `E7net_summary.json`, `credint_summary.json`, `E7_*.csv`, `E3_overhead.csv`, `E3net_overhead.csv`, `E3send_cost.csv`, `E7rc_cost.csv`, `E9cost.csv`, `cost_stability.csv` |
 | Kernel-held credential (Secs. IV-G, VII) | E3cred, E6cred, E6reusecred, E6spoofcred, E11file | `kcred_summary.json` |
 | Live accounting and IPFIX (Sec. IV-E) | E8ipfix, E9all | `E8ipfix_accounting.csv`, `E9all_ipfix.csv`, `factd_equiv.json` |
+| OBI measured (Sec. III) | OBI test (`campaigns/obi-assoc-20261118/`) | `obi_assoc.csv` |
 | Structural conflicts (Sec. IV-D) | all confirmatory campaigns | `structural_conflicts.csv` |
 
 ### Configuration behind each result
@@ -177,6 +178,21 @@ sudo scripts/run_confirmatory.sh E7o                           # once per boot, 
 # E7r: replay of E7c/E7o without any API (extract the recorded campaigns first)
 scripts/extract_campaigns.sh campaigns ~/raw-data   # if they are only archived
 sudo scripts/run_confirmatory.sh E7r                           # once per boot, two boots; no cost
+```
+
+## OBI association test (comparison only, no FACT)
+
+OBI v1.0.0 attaches to the shared server (by its open port; by executable for the subprocess tool) with
+context propagation on (`OTEL_EBPF_BPF_CONTEXT_PROPAGATION=all`). Each execution sends its own W3C trace
+ID; each tool call makes one outgoing GET to a port owned by that execution, and the destination logs the
+trace ID it receives. Reference: the destination port. 25 calls per execution, K = 4 and 8, three
+repetitions, plus one control run without OBI per configuration.
+
+```sh
+# root, inside nix develop; OBI binary at $OBI_BIN (default ~/obi/obi)
+scripts/run_obi_all.sh   /tmp/obi_runs    # direct and MCP-SSE servers, asynchronous tool
+scripts/run_obi_tools.sh /tmp/obi_runs2   # MCP-SSE server, thread-pool and subprocess tools
+python3 analysis/obi_summary.py           # -> analysis/output/obi_assoc.csv
 ```
 
 ## Regenerating the summarized CSVs
