@@ -1,0 +1,14 @@
+OBI mcp-sse thread K=4 rep=1 {"mode": "mcp-sse", "tool": "thread", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.7}
+OBI mcp-sse subproc K=4 rep=1 {"mode": "mcp-sse", "tool": "subproc", "execs": 4, "calls": 25, "requests": 100, "correct": 0, "wrong": 0, "new_trace": 100, "none": 0, "wall_s": 5.12}
+OBI mcp-sse thread K=8 rep=1 {"mode": "mcp-sse", "tool": "thread", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 4.65}
+OBI mcp-sse subproc K=8 rep=1 {"mode": "mcp-sse", "tool": "subproc", "execs": 8, "calls": 25, "requests": 200, "correct": 0, "wrong": 0, "new_trace": 200, "none": 0, "wall_s": 7.11}
+OBI mcp-sse thread K=4 rep=2 {"mode": "mcp-sse", "tool": "thread", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.68}
+OBI mcp-sse subproc K=4 rep=2 {"mode": "mcp-sse", "tool": "subproc", "execs": 4, "calls": 25, "requests": 100, "correct": 0, "wrong": 0, "new_trace": 100, "none": 0, "wall_s": 5.08}
+OBI mcp-sse thread K=8 rep=2 {"mode": "mcp-sse", "tool": "thread", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 4.68}
+OBI mcp-sse subproc K=8 rep=2 {"mode": "mcp-sse", "tool": "subproc", "execs": 8, "calls": 25, "requests": 200, "correct": 0, "wrong": 0, "new_trace": 200, "none": 0, "wall_s": 7.08}
+OBI mcp-sse thread K=4 rep=3 {"mode": "mcp-sse", "tool": "thread", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.64}
+OBI mcp-sse subproc K=4 rep=3 {"mode": "mcp-sse", "tool": "subproc", "execs": 4, "calls": 25, "requests": 100, "correct": 0, "wrong": 0, "new_trace": 100, "none": 0, "wall_s": 5.1}
+OBI mcp-sse thread K=8 rep=3 {"mode": "mcp-sse", "tool": "thread", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 4.66}
+OBI mcp-sse subproc K=8 rep=3 {"mode": "mcp-sse", "tool": "subproc", "execs": 8, "calls": 25, "requests": 200, "correct": 0, "wrong": 0, "new_trace": 200, "none": 0, "wall_s": 7.19}
+CTRL mcp-sse thread K=4 {"mode": "mcp-sse", "tool": "thread", "execs": 4, "calls": 25, "requests": 100, "correct": 0, "wrong": 0, "new_trace": 0, "none": 100, "wall_s": 2.62}
+CTRL mcp-sse subproc K=4 {"mode": "mcp-sse", "tool": "subproc", "execs": 4, "calls": 25, "requests": 100, "correct": 0, "wrong": 0, "new_trace": 0, "none": 100, "wall_s": 5.08}

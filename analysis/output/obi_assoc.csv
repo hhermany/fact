@@ -1,0 +1,13 @@
+instrumentation,server,tool,execs,runs,requests,correct,wrong,new_trace,none
+OBI v1.0.0,direct,async,4,3,300,300,0,0,0
+OBI v1.0.0,direct,async,8,3,600,600,0,0,0
+OBI v1.0.0,mcp-sse,async,4,3,300,300,0,0,0
+OBI v1.0.0,mcp-sse,async,8,3,600,600,0,0,0
+OBI v1.0.0,mcp-sse,subproc,4,3,300,0,0,300,0
+OBI v1.0.0,mcp-sse,subproc,8,3,600,0,0,600,0
+OBI v1.0.0,mcp-sse,thread,4,3,300,300,0,0,0
+OBI v1.0.0,mcp-sse,thread,8,3,600,600,0,0,0
+no OBI (control),direct,async,4,1,100,0,0,0,100
+no OBI (control),mcp-sse,async,4,1,100,0,0,0,100
+no OBI (control),mcp-sse,subproc,4,1,100,0,0,0,100
+no OBI (control),mcp-sse,thread,4,1,100,0,0,0,100

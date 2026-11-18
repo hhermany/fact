@@ -1,0 +1,19 @@
+time=2026-11-18T17:23:51.886Z level=INFO msg="OpenTelemetry eBPF Instrumentation" Version=v1.0.0 Revision=d23be0d6b "OpenTelemetry SDK Version"=1.47.0
+time=2026-11-18T17:23:51.886Z level=INFO msg="configuration loaded" version=v1
+time=2026-11-18T17:23:53.888Z level=WARN msg="timed out while waiting for Cloud metadata. Ignoring" component=meta.NodeMeta.otelNodeFetcher detector=ec2.resourceDetector
+time=2026-11-18T17:23:53.888Z level=WARN msg="timed out while waiting for Cloud metadata. Ignoring" component=meta.NodeMeta.otelNodeFetcher detector=azurevm.ResourceDetector
+time=2026-11-18T17:23:53.889Z level=INFO msg="starting Application Observability mode"
+time=2026-11-18T17:23:53.889Z level=INFO msg="using hostname" component=traces.ReadDecorator function=instance_ID_hostNamePIDDecorator hostname=hermes
+time=2026-11-18T17:23:53.903Z level=INFO msg="using hostname" component=traces.ReadDecorator function=instance_ID_hostNamePIDDecorator hostname=hermes
+time=2026-11-18T17:23:53.903Z level=INFO msg="Starting main node" component=obi.Instrumenter
+time=2026-11-18T17:23:53.904Z level=INFO msg="attaching uprobes as uprobe_multi links"
+time=2026-11-18T17:23:59.168Z level=INFO msg="instrumenting process" component=discover.traceAttacher cmd=/nix/store/jd20rkmqmkfkcvk2wl2lmzz7acq4svlr-python3-3.12.12/bin/python3.12 pid=41495 ino=3696017 type=python service="" logenricher=false
+time=2026-11-18T17:23:59.746Z level=INFO msg="Enabling trace information parsing" component=generic.Tracer bpf_loop_enabled=true
+time=2026-11-18T17:24:03.360Z level=WARN msg="kernel misreports ioctl(FIONREAD) for sockets in a sockhash (kernel commit 929e30f93125, present in 6.6.128+, 6.12.75+, 6.18.14+ and 6.19+); enabling BPF compensation for tracked sockets" component=tpinjector
+time=2026-11-18T17:24:03.986Z level=INFO msg="FIONREAD compensation verified" component=tpinjector
+time=2026-11-18T17:24:03.986Z level=INFO msg="Attaching sock msgs"
+time=2026-11-18T17:24:03.986Z level=INFO msg="Attaching sock ops"
+2026-11-18 00:53:56.1118125356 (0s[0s]) ProcessAlive(subType=0) 0   [ as :0]->[ as python3.12:0] contentLen:0B responseLen:0B svc=[python3.12 python] traceparent=[]
+time=2026-11-18T17:24:04.014Z level=INFO msg="Launching p.Tracer" component=generic.Tracer
+time=2026-11-18T17:24:09.445Z level=INFO msg="exiting auto-instrumenter" component=obi.Instrumenter
+time=2026-11-18T17:24:09.693Z level=INFO msg="OpenTelemetry eBPF Instrumentation successfully exiting"

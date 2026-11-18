@@ -1,0 +1,11 @@
+{
+ "mode": "mcp-sse",
+ "execs": 4,
+ "calls": 25,
+ "requests": 100,
+ "correct": 100,
+ "wrong": 0,
+ "new_trace": 0,
+ "none": 0,
+ "wall_s": 2.73
+}

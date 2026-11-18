@@ -1,0 +1,14 @@
+OBI direct K=4 rep=1 {"mode": "direct", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 1.37}
+OBI direct K=8 rep=1 {"mode": "direct", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.15}
+OBI mcp-sse K=4 rep=1 {"mode": "mcp-sse", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.73}
+OBI mcp-sse K=8 rep=1 {"mode": "mcp-sse", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 4.65}
+OBI direct K=4 rep=2 {"mode": "direct", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 1.36}
+OBI direct K=8 rep=2 {"mode": "direct", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.2}
+OBI mcp-sse K=4 rep=2 {"mode": "mcp-sse", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.74}
+OBI mcp-sse K=8 rep=2 {"mode": "mcp-sse", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 4.67}
+OBI direct K=4 rep=3 {"mode": "direct", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 1.39}
+OBI direct K=8 rep=3 {"mode": "direct", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.19}
+OBI mcp-sse K=4 rep=3 {"mode": "mcp-sse", "execs": 4, "calls": 25, "requests": 100, "correct": 100, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 2.7}
+OBI mcp-sse K=8 rep=3 {"mode": "mcp-sse", "execs": 8, "calls": 25, "requests": 200, "correct": 200, "wrong": 0, "new_trace": 0, "none": 0, "wall_s": 4.73}
+CTRL direct K=4 {"mode": "direct", "execs": 4, "calls": 25, "requests": 100, "correct": 0, "wrong": 0, "new_trace": 0, "none": 100, "wall_s": 1.33}
+CTRL mcp-sse K=4 {"mode": "mcp-sse", "execs": 4, "calls": 25, "requests": 100, "correct": 0, "wrong": 0, "new_trace": 0, "none": 100, "wall_s": 2.74}
