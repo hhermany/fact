@@ -1,0 +1,240 @@
+{
+ "E10conccred": {
+  "async-K8": {
+   "runs": 6,
+   "cred_runs": 6,
+   "execs_within_rule": 48,
+   "execs_outside_rule": 0,
+   "N": 1200,
+   "TA": 0,
+   "TD": 0,
+   "FA": 0,
+   "FD": 0,
+   "exact_runs": 6,
+   "max_overshoot_bytes": 0,
+   "misattributed": 0
+  },
+  "httpx_shared-K8": {
+   "runs": 6,
+   "cred_runs": 6,
+   "execs_within_rule": 48,
+   "execs_outside_rule": 0,
+   "N": 1200,
+   "TA": 0,
+   "TD": 0,
+   "FA": 0,
+   "FD": 0,
+   "exact_runs": 6,
+   "max_overshoot_bytes": 50,
+   "misattributed": 0
+  },
+  "httpx_shared-K4": {
+   "runs": 6,
+   "cred_runs": 6,
+   "execs_within_rule": 24,
+   "execs_outside_rule": 0,
+   "N": 600,
+   "TA": 0,
+   "TD": 0,
+   "FA": 0,
+   "FD": 0,
+   "exact_runs": 6,
+   "max_overshoot_bytes": 50,
+   "misattributed": 0
+  },
+  "async-K4": {
+   "runs": 6,
+   "cred_runs": 6,
+   "execs_within_rule": 24,
+   "execs_outside_rule": 0,
+   "N": 600,
+   "TA": 0,
+   "TD": 0,
+   "FA": 0,
+   "FD": 0,
+   "exact_runs": 6,
+   "max_overshoot_bytes": 0,
+   "misattributed": 0
+  }
+ },
+ "E12containcred": {
+  "exec-K4": {
+   "runs": 6,
+   "cred_runs": 6,
+   "normal_completed": 450,
+   "normal_calls": 450,
+   "normal_p50_ms_min_max": [
+    10.5,
+    11.4
+   ],
+   "runaway_bytes_median": 131788.0,
+   "runaway_completed_median": 4.0,
+   "accounting_exact_runs": 6,
+   "max_overshoot_bytes": 716
+  },
+  "exec-K8": {
+   "runs": 6,
+   "cred_runs": 6,
+   "normal_completed": 1050,
+   "normal_calls": 1050,
+   "normal_p50_ms_min_max": [
+    14.7,
+    16.2
+   ],
+   "runaway_bytes_median": 131788.0,
+   "runaway_completed_median": 4.0,
+   "accounting_exact_runs": 6,
+   "max_overshoot_bytes": 716
+  },
+  "none-K4": {
+   "runs": 6,
+   "cred_runs": 6,
+   "normal_completed": 450,
+   "normal_calls": 450,
+   "normal_p50_ms_min_max": [
+    117.3,
+    117.4
+   ],
+   "runaway_bytes_median": 9884100.0,
+   "runaway_completed_median": 300.0,
+   "accounting_exact_runs": 6,
+   "max_overshoot_bytes": null
+  },
+  "none-K8": {
+   "runs": 6,
+   "cred_runs": 6,
+   "normal_completed": 1050,
+   "normal_calls": 1050,
+   "normal_p50_ms_min_max": [
+    122.2,
+    123.3
+   ],
+   "runaway_bytes_median": 9884100.0,
+   "runaway_completed_median": 300.0,
+   "accounting_exact_runs": 6,
+   "max_overshoot_bytes": null
+  },
+  "process-K4": {
+   "runs": 6,
+   "cred_runs": 6,
+   "normal_completed": 36,
+   "normal_calls": 450,
+   "normal_p50_ms_min_max": [
+    77.2,
+    77.6
+   ],
+   "runaway_bytes_median": 197682.0,
+   "runaway_completed_median": 6.0,
+   "accounting_exact_runs": 6,
+   "max_overshoot_bytes": 29140
+  },
+  "process-K8": {
+   "runs": 6,
+   "cred_runs": 6,
+   "normal_completed": 79,
+   "normal_calls": 1050,
+   "normal_p50_ms_min_max": [
+    58.3,
+    94.9
+   ],
+   "runaway_bytes_median": 230629.0,
+   "runaway_completed_median": 7.0,
+   "accounting_exact_runs": 6,
+   "max_overshoot_bytes": 12592
+  }
+ },
+ "E9costcred": {
+  "checks": {
+   "K8": {
+    "runs": 10,
+    "calls": 2000,
+    "ok": 2000,
+    "cred_runs": 10,
+    "misattributed": 0,
+    "policy_errors": 0,
+    "ipfix_ok_runs": 10,
+    "fact_pct_of_host": [
+     1.4,
+     1.31,
+     1.41,
+     1.31,
+     1.42,
+     1.42,
+     1.21,
+     1.2,
+     1.41,
+     1.42
+    ]
+   },
+   "K4": {
+    "runs": 10,
+    "calls": 1000,
+    "ok": 1000,
+    "cred_runs": 10,
+    "misattributed": 0,
+    "policy_errors": 0,
+    "ipfix_ok_runs": 10,
+    "fact_pct_of_host": [
+     1.1,
+     1.1,
+     1.28,
+     1.29,
+     1.11,
+     1.47,
+     1.1,
+     1.11,
+     1.48,
+     1.3
+    ]
+   }
+  },
+  "K4 tool_p50_pct": {
+   "pairs": 10,
+   "median": 1.8,
+   "ci95": [
+    -0.99,
+    2.77
+   ]
+  },
+  "K4 tool_p99_pct": {
+   "pairs": 10,
+   "median": 3.23,
+   "ci95": [
+    -3.22,
+    7.07
+   ]
+  },
+  "K4 host_cpu_per_call_pct": {
+   "pairs": 10,
+   "median": 3.84,
+   "ci95": [
+    3.18,
+    4.15
+   ]
+  },
+  "K8 tool_p50_pct": {
+   "pairs": 10,
+   "median": 2.97,
+   "ci95": [
+    1.95,
+    3.83
+   ]
+  },
+  "K8 tool_p99_pct": {
+   "pairs": 10,
+   "median": 3.79,
+   "ci95": [
+    1.16,
+    8.23
+   ]
+  },
+  "K8 host_cpu_per_call_pct": {
+   "pairs": 10,
+   "median": 4.5,
+   "ci95": [
+    3.25,
+    5.03
+   ]
+  }
+ }
+}

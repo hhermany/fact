@@ -1,6 +1,38 @@
 {
  "claude-haiku-5-5-K8": {
-  "runs": 3,
+  "runs": 6,
+  "conn_N": 120,
+  "conn_C": 120,
+  "conn_A": 0,
+  "conn_M": 0,
+  "conn_I": 0,
+  "pol_N": 144,
+  "pol_TA": 120,
+  "pol_TD": 24,
+  "pol_FA": 0,
+  "pol_FD": 0,
+  "agents": 48,
+  "agents_final": 48,
+  "agents_diag_congestion": 48
+ },
+ "qwen2.5:3b-K8": {
+  "runs": 6,
+  "conn_N": 116,
+  "conn_C": 116,
+  "conn_A": 0,
+  "conn_M": 0,
+  "conn_I": 0,
+  "pol_N": 144,
+  "pol_TA": 120,
+  "pol_TD": 24,
+  "pol_FA": 0,
+  "pol_FD": 0,
+  "agents": 48,
+  "agents_final": 48,
+  "agents_diag_congestion": 48
+ },
+ "qwen2.5:3b-K4": {
+  "runs": 6,
   "conn_N": 60,
   "conn_C": 60,
   "conn_A": 0,
@@ -15,10 +47,10 @@
   "agents_final": 24,
   "agents_diag_congestion": 24
  },
- "qwen2.5:3b-K8": {
-  "runs": 3,
-  "conn_N": 58,
-  "conn_C": 58,
+ "claude-haiku-5-5-K4": {
+  "runs": 6,
+  "conn_N": 60,
+  "conn_C": 60,
   "conn_A": 0,
   "conn_M": 0,
   "conn_I": 0,
@@ -30,37 +62,5 @@
   "agents": 24,
   "agents_final": 24,
   "agents_diag_congestion": 24
- },
- "qwen2.5:3b-K4": {
-  "runs": 3,
-  "conn_N": 30,
-  "conn_C": 30,
-  "conn_A": 0,
-  "conn_M": 0,
-  "conn_I": 0,
-  "pol_N": 36,
-  "pol_TA": 30,
-  "pol_TD": 6,
-  "pol_FA": 0,
-  "pol_FD": 0,
-  "agents": 12,
-  "agents_final": 12,
-  "agents_diag_congestion": 12
- },
- "claude-haiku-5-5-K4": {
-  "runs": 3,
-  "conn_N": 30,
-  "conn_C": 30,
-  "conn_A": 0,
-  "conn_M": 0,
-  "conn_I": 0,
-  "pol_N": 36,
-  "pol_TA": 30,
-  "pol_TD": 6,
-  "pol_FA": 0,
-  "pol_FD": 0,
-  "agents": 12,
-  "agents_final": 12,
-  "agents_diag_congestion": 12
  }
 }
