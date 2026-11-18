@@ -158,20 +158,20 @@ if (file.exists(bl_csv)) {
     filter((cell == "E1 N3" & resolver %in% c("tw-nearest-500ms", "scope-latest", "fused")) |
            (cell != "E1 N3" & binding_mode == "manual" & resolver %in% c("tw-nearest-500ms", "scope-latest")) |
            (cell != "E1 N3" & binding_mode != "manual" & resolver == "fused")) |>
-    group_by(cell, resolver) |> summarise(I = sum(I) / sum(N), .groups = "drop")
+    group_by(cell, resolver) |> summarise(Cc = sum(C) / sum(N), I = sum(I) / sum(N), .groups = "drop")
   #' AgentProvenance executed for real next to FACT in the E5 rounds (E5ap,
   #' `analysis/agentprov_table.py`), with eight sessions, when available.
   ap_csv <- file.path(indir, "E5ap_agentprov.csv")
   if (file.exists(ap_csv)) {
     ap <- read_csv(ap_csv, show_col_types = FALSE) |> filter(system == "AgentProvenance", execs == 8) |>
-      transmute(cell = paste("E5", tool), resolver = "agentprov", I = I / N)
+      transmute(cell = paste("E5", tool), resolver = "agentprov", Cc = C / N, I = I / N)
     bl <- bind_rows(bl, ap)
   }
   #' The same with the call windows measured inside the server (E5aps).
   aps_csv <- file.path(indir, "E5aps_agentprov.csv")
   if (file.exists(aps_csv)) {
     aps <- read_csv(aps_csv, show_col_types = FALSE) |> filter(system == "AgentProvenance", execs == 8) |>
-      transmute(cell = paste("E5", tool), resolver = "agentprov_srv", I = I / N)
+      transmute(cell = paste("E5", tool), resolver = "agentprov_srv", Cc = C / N, I = I / N)
     bl <- bind_rows(bl, aps)
   }
   #' AgentProvenance executed for real on the synthetic shared worker (E1ap, N3),
@@ -179,7 +179,7 @@ if (file.exists(bl_csv)) {
   e1ap_csv <- file.path(indir, "E1ap_agentprov.csv")
   if (file.exists(e1ap_csv)) {
     e1ap <- read_csv(e1ap_csv, show_col_types = FALSE) |> filter(system == "AgentProvenance", cond == "N3") |>
-      summarise(I = sum(I) / sum(N)) |> mutate(cell = "E1 N3", resolver = "agentprov")
+      summarise(Cc = sum(C) / sum(N), I = sum(I) / sum(N)) |> mutate(cell = "E1 N3", resolver = "agentprov")
     bl <- bind_rows(bl, e1ap)
   }
   bl <- bl |>
@@ -187,7 +187,7 @@ if (file.exists(bl_csv)) {
                          c("Time Window (Emulated)", "Latest Scope (Emulated)",
                            "AgentProvenance, Client Windows", "AgentProvenance, Server Windows", "FACT")),
            cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"), c("Synthetic\nShared Worker", "Synchronous", "Threaded", "Subprocess", "Asynchronous"))) |>
-    select(cell, mech, I) |> complete(cell, mech)   # empty slot where a system was not run
+    select(cell, mech, Cc, I) |> complete(cell, mech)   # empty slot where a system was not run
   g4 <- ggplot(bl, aes(cell, I, fill = mech)) +
     geom_col(position = position_dodge(width = 0.86), width = 0.82, colour = "black", linewidth = 0.25) +
     geom_text(aes(y = ifelse(is.na(I), 0, I), label = ifelse(is.na(I), "", round(100 * I)), group = mech), position = position_dodge(width = 0.86),
@@ -204,7 +204,7 @@ sessionInfo()
 
 #+ noms-revision extra figures: fig_baselines2 (correct-attribution framing) + fig_realagents (E7, external baselines)
 if (exists("bl")) {
-  blc <- bl |> mutate(correct = 1 - I)
+  blc <- bl |> mutate(correct = Cc)   # correct share (C/N): ambiguous and missing are not counted as correct
   g4b <- ggplot(blc, aes(cell, correct, fill = mech)) +
     geom_col(position = position_dodge(width = 0.86), width = 0.82, colour = "black", linewidth = 0.25) +
     geom_text(aes(y = ifelse(is.na(correct), 0, correct), label = ifelse(is.na(correct), "n/a", round(100 * correct)), group = mech),
