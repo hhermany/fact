@@ -1,0 +1,22 @@
+{
+  "experiment": "E7net",
+  "description": "E7 with a network-operations incident instead of the service health check: each agent diagnoses its site's uplink by reading interface counters from the edge router's RESTCONF API, querying link utilization from the site's telemetry collector, and checking NETCONF reachability of the core switch, all through the shared MCP server, under a per-site egress policy (restricted sites may not open management sessions to the core switch). The emulated devices answer with YANG-modeled JSON. Claude Haiku 5.5 (API, answers capped at 512 tokens) and the local Qwen2.5 3B, with 4 and 8 agents.",
+  "factors": {
+    "model": [
+      "claude-haiku-5-5",
+      "qwen2.5:3b"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E7net",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "num_predict": 512,
+    "scenario": "netops"
+  }
+}

@@ -48,6 +48,32 @@ TASK = ("Health check for tenant {e}:\n"
         "2. billing API at http://127.0.0.1:{p1}/status - use the fetch_url tool.\n"
         "3. database at host 127.0.0.1 port {p2} - use the tcp_check tool.\n"
         "Report the status of each service.")
+NETOPS_SYSTEM = ("You are a network operations agent responsible for one site. Use the provided tools to collect "
+                 "evidence; call one tool per check, exactly as instructed, and never guess a result. If a tool reports an "
+                 "error or a refused connection, report it as such. Finish with one line per check and a one-line diagnosis.")
+NETOPS_TASK = ("Incident at site {e}: users report slow access through the uplink ge-0/0/1.\n"
+               "1. Read the interface counters of edge router {e}-r1 from its RESTCONF API at "
+               "http://127.0.0.1:{p0}/restconf/data/ietf-interfaces:interfaces-state/interface=ge-0%2F0%2F1"
+               " - use the http_get tool.\n"
+               "2. Query the uplink utilization from the site's telemetry collector at "
+               "http://127.0.0.1:{p1}/telemetry/v1/link-utilization?if=ge-0/0/1 - use the fetch_url tool.\n"
+               "3. Check that the NETCONF service of core switch {e}-s1 is reachable at host 127.0.0.1 port {p2}"
+               " - use the tcp_check tool.\n"
+               "Report each result and your diagnosis.")
+
+
+def farm_reply(req):
+    """Answer of an emulated service: YANG-modeled JSON for RESTCONF and telemetry paths (netops)."""
+    if b"/restconf/" in req:
+        body = ('{"ietf-interfaces:interface":{"name":"ge-0/0/1","oper-status":"up","speed":1000000000,'
+                '"statistics":{"in-octets":918273645,"out-octets":1203948576,"in-errors":0,"out-discards":48211}}}')
+        ctype = "application/yang-data+json"
+    elif b"/telemetry/" in req:
+        body = '{"interface":"ge-0/0/1","utilization-percent":97.4,"window-s":300,"trend":"rising"}'
+        ctype = "application/json"
+    else:
+        return b"HTTP/1.0 200 OK\r\nContent-Type: text/plain\r\n\r\nservice healthy\n"
+    return f"HTTP/1.0 200 OK\r\nContent-Type: {ctype}\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode()
 
 
 class ServiceFarm(threading.Thread):
@@ -60,11 +86,12 @@ class ServiceFarm(threading.Thread):
         loop = asyncio.new_event_loop()
 
         async def handle(r, w):
+            req = b""
             try:
-                await asyncio.wait_for(r.read(1024), 1)
+                req = await asyncio.wait_for(r.read(1024), 1)
             except Exception:
                 pass
-            w.write(b"HTTP/1.0 200 OK\r\nContent-Type: text/plain\r\n\r\nservice healthy\n")
+            w.write(farm_reply(req))
             try:
                 await w.drain()
             finally:
@@ -400,6 +427,8 @@ def main():
     ap.add_argument("--base-port", type=int, default=61000)
     ap.add_argument("--server-port", type=int, default=64999)
     ap.add_argument("--policy", type=int, default=0)
+    ap.add_argument("--scenario", choices=["health", "netops"], default="health",
+                    help="health: service health check (E7); netops: network operations incident (E7net)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--mode", default="agent")       # compatibility with run_round/campaign
     ap.add_argument("--wrong-label", type=float, default=0.0)
@@ -416,6 +445,8 @@ def main():
     execs = [f"T{i:02d}" for i in range(a.execs)]
     ports = rng.sample(range(a.base_port, a.base_port + 2000), 3 * len(execs))
     own = {e: ports[3 * i:3 * i + 3] for i, e in enumerate(execs)}
+    if a.scenario == "netops":   # network operations incident instead of the health check
+        globals().update(SYSTEM=NETOPS_SYSTEM, TASK=NETOPS_TASK)
     tasks = {e: TASK.format(e=e, p0=own[e][0], p1=own[e][1], p2=own[e][2]) for e in execs}
     # binding faults: round(p * 3) of each agent's first three calls carry another
     # agent's identity in _meta (the agent decides how many calls it makes)
@@ -429,7 +460,7 @@ def main():
             "wrong_calls": a.wrong_calls,
             "listen_addr": "127.0.0.1", "mcp_version": version("mcp"), "model": a.model, "num_predict": a.num_predict,
             "dport_map": {str(p): [e, f"{e}-svc{j}"] for e in execs for j, p in enumerate(own[e])},
-            "tasks": tasks}
+            "tasks": tasks, "scenario": a.scenario}
     if a.policy:
         classes = {e: ("P" if i % 2 == 0 else "R") for i, e in enumerate(execs)}
         allow = {e: (own[e] if classes[e] == "P" else own[e][:2]) for e in execs}   # R: database forbidden

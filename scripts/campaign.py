@@ -37,7 +37,7 @@ ARG = {"cond": None, "wrong_label": "--wrong-label", "mode": "--mode", "execs": 
        "server_windows": "--server-windows", "allow_all": "--allow-all",
        "budget_conns": "--budget-conns", "budget_bytes": "--budget-bytes", "concurrency": "--concurrency",
        "contain": "--contain", "runaway_ops": "--runaway-ops", "runaway_size": "--runaway-size",
-       "runaway_conc": "--runaway-conc", "think_ms": "--think-ms", "service_rate": "--service-rate"}
+       "runaway_conc": "--runaway-conc", "think_ms": "--think-ms", "service_rate": "--service-rate", "scenario": "--scenario"}
 
 
 def sh(cmd, cwd=None):
