@@ -69,30 +69,30 @@ e1 <- read_csv(file.path(indir, "cell_summary.csv"), show_col_types = FALSE) |>
   group_by(cond, wrong_label, resolver) |>
   summarise(A = sum(A_total) / sum(N_total), I = sum(I_total) / sum(N_total), .groups = "drop") |>
   pivot_longer(c(A, I), names_to = "metric", values_to = "share") |>
-  mutate(metric = factor(metric, c("I", "A"), c("wrong", "ambiguous")),
+  mutate(metric = factor(metric, c("I", "A"), c("Wrong", "Ambiguous")),
          p = factor(paste0("p = ", wrong_label), paste0("p = ", c(0, 0.05, 0.2))),
          resolver = factor(resolver, c("cgroup", "lineage", "context", "fused"),
-                           c("cgroup only", "lineage only", "context only", "FACT (fused)")))
+                           c("Cgroup Only", "Lineage Only", "Context Only", "FACT (Fused)")))
 #' Drawn as an annotated heat map (the usual NOMS form for a parameter sweep):
 #' rows are resolvers, columns the execution structures, and each cell gives
 #' the share in percent; FACT's row is set in bold.
 e1 <- e1 |> mutate(resolver = factor(resolver, rev(levels(resolver))),
                    lab = paste0(round(100 * share)),
-                   face = ifelse(resolver == "FACT (fused)", "bold", "plain"))
+                   face = ifelse(resolver == "FACT (Fused)", "bold", "plain"))
 g1 <- ggplot(e1, aes(cond, resolver, fill = share)) +
   geom_tile(colour = "black", linewidth = 0.25) +
   geom_text(aes(label = lab, colour = share > 0.5, fontface = face), size = 2.3, family = fam) +
   facet_grid(metric ~ p) +
   scale_fill_gradient(low = "white", high = "grey25", limits = c(0, 1), labels = pct,
-                      breaks = c(0, 0.5, 1), name = "share of connections") +
+                      breaks = c(0, 0.5, 1), name = "Share of Connections") +
   scale_colour_manual(values = c("black", "white"), guide = "none") +
   scale_x_discrete(expand = c(0, 0)) +
-  scale_y_discrete(expand = c(0, 0), labels = c("FACT (fused)" = expression(bold("FACT (fused)")),
-                                                 "context only" = "context only", "lineage only" = "lineage only",
-                                                 "cgroup only" = "cgroup only")) +
+  scale_y_discrete(expand = c(0, 0), labels = c("FACT (Fused)" = expression(bold("FACT (Fused)")),
+                                                 "Context Only" = "Context Only", "Lineage Only" = "Lineage Only",
+                                                 "Cgroup Only" = "Cgroup Only")) +
   guides(fill = guide_colourbar(barheight = unit(5, "pt"), barwidth = unit(60, "pt"),
                                 title.position = "left", title.vjust = 1)) +
-  labs(x = "execution structure", y = NULL) + theme_paper() +
+  labs(x = "Execution Structure", y = NULL) + theme_paper() +
   theme(legend.title = element_text(size = 7), panel.grid.major = element_blank())
 save_fig(g1, "fig_e1", 2.35)
 
@@ -105,18 +105,18 @@ save_fig(g1, "fig_e1", 2.35)
 acct <- read_csv(file.path(indir, "E1_accounting.csv"), show_col_types = FALSE) |>
   pivot_longer(matches("^(wrong|unc|net)_(context|fused)$"), names_to = c("kind", "resolver"), names_sep = "_",
                values_to = "conns") |>
-  mutate(resolver = factor(resolver, c("context", "fused"), c("context only", "FACT")),
+  mutate(resolver = factor(resolver, c("context", "fused"), c("Context Only", "FACT")),
          p = factor(paste0("p = ", wrong_label), paste0("p = ", c(0.05, 0.2))))
 bars <- acct |> filter(kind != "net") |>
-  mutate(kind = factor(kind, c("wrong", "unc"), c("credited wrongly", "uncredited")))
-net <- acct |> filter(kind == "net") |> mutate(conns = abs(conns), kind = "|net error|")
+  mutate(kind = factor(kind, c("wrong", "unc"), c("Credited Wrongly", "Uncredited")))
+net <- acct |> filter(kind == "net") |> mutate(conns = abs(conns), kind = "|Net Error|")
 g2 <- ggplot(bars, aes(cond, conns)) +
   geom_col(aes(fill = kind), position = position_dodge(width = 0.75), width = 0.7,
            colour = "black", linewidth = 0.25) +
   geom_point(data = net, aes(shape = kind), size = 1.6, colour = "black") +
-  facet_grid(resolver ~ p, labeller = labeller(resolver = c("context only" = "context", "FACT" = "FACT"))) +
+  facet_grid(resolver ~ p, labeller = labeller(resolver = c("Context Only" = "Context", "FACT" = "FACT"))) +
   scale_fill_manual(values = c("grey30", "grey80")) + scale_shape_manual(values = 18) +
-  labs(x = "execution structure", y = "connections per run") + theme_paper()
+  labs(x = "Execution Structure", y = "Connections per Run") + theme_paper()
 save_fig(g2, "fig_acct", 1.9)
 
 #' ## E5 and E6: manual vs task-scoped binding in a shared MCP server
@@ -129,12 +129,12 @@ e6 <- read_csv(file.path(indir, "E6_policy.csv"), show_col_types = FALSE) |>
   transmute(binding_mode, tool, K = execs, value = (TA + TD) / N, metric = "policy")
 fw <- bind_rows(e5, e6) |>
   mutate(binding = factor(binding_mode, c("manual", "auto"),
-                          c("thread-keyed markers", "FACT (task-scoped)")),
-         tool = factor(tool, c("sync", "thread", "subproc", "async")),
-         metric = factor(metric, c("attribution", "policy")))
+                          c("Thread-Keyed Markers", "FACT (Task-Scoped)")),
+         tool = factor(tool, c("sync", "thread", "subproc", "async"), c("Synchronous", "Threaded", "Subprocess", "Asynchronous")),
+         metric = factor(metric, c("attribution", "policy"), c("Attribution", "Policy")))
 g3 <- ggplot(fw, aes(K, value, colour = binding, shape = binding, linetype = binding)) +
   geom_line(linewidth = 0.6) + geom_point(size = 1.7, stroke = 0.7) +
-  geom_text(data = filter(fw, binding_mode == "manual", tool == "async"),
+  geom_text(data = filter(fw, binding_mode == "manual", tool == "Asynchronous"),
             aes(label = pct(value), hjust = ifelse(K == 2, -0.15, ifelse(K == 8, 1.15, 0.5))),
             vjust = -0.8, size = 2.1, family = fam, colour = "black", show.legend = FALSE) +
   facet_grid(metric ~ tool) +
@@ -142,7 +142,7 @@ g3 <- ggplot(fw, aes(K, value, colour = binding, shape = binding, linetype = bin
   scale_y_continuous(labels = pct, limits = c(0, 1), breaks = c(0, 0.5, 1), expand = expansion(mult = 0.1)) +
   scale_colour_manual(values = c(greys[2], ours)) + scale_shape_manual(values = c(2, 16)) +
   scale_linetype_manual(values = c("dashed", "solid")) +
-  labs(x = "concurrent sessions K", y = "correct") + theme_paper()
+  labs(x = "Concurrent Sessions (K)", y = "Correct") + theme_paper()
 save_fig(g3, "fig_e5e6", 2.05)
 
 #' ## Related systems vs FACT in shared workers
@@ -179,9 +179,9 @@ if (file.exists(bl_csv)) {
   }
   bl <- bl |>
     mutate(mech = factor(resolver, c("tw-nearest-500ms", "scope-latest", "agentprov", "agentprov_srv", "fused"),
-                         c("time window (emulated)", "latest scope (emulated)",
-                           "AgentProvenance, client windows", "AgentProvenance, server windows", "FACT")),
-           cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"))) |>
+                         c("Time Window (Emulated)", "Latest Scope (Emulated)",
+                           "AgentProvenance, Client Windows", "AgentProvenance, Server Windows", "FACT")),
+           cell = factor(cell, c("E1 N3", "E5 sync", "E5 thread", "E5 subproc", "E5 async"), c("Synthetic\nShared Worker", "Synchronous", "Threaded", "Subprocess", "Asynchronous"))) |>
     select(cell, mech, I) |> complete(cell, mech)   # empty slot where a system was not run
   g4 <- ggplot(bl, aes(cell, I, fill = mech)) +
     geom_col(position = position_dodge(width = 0.86), width = 0.82, colour = "black", linewidth = 0.25) +
@@ -190,7 +190,7 @@ if (file.exists(bl_csv)) {
     scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
     scale_fill_manual(values = c(greys[1], greys[2], greys[3], "white", ours), drop = FALSE) +
     guides(fill = guide_legend(nrow = 3)) +
-    labs(x = NULL, y = "credited to the wrong execution") + theme_paper()
+    labs(x = NULL, y = "Credited to the Wrong Execution") + theme_paper()
   save_fig(g4, "fig_baselines", 2.4)
 } else message("baselines.csv not found: run `snakemake baselines` first")
 
@@ -202,12 +202,13 @@ if (exists("bl")) {
   blc <- bl |> mutate(correct = 1 - I)
   g4b <- ggplot(blc, aes(cell, correct, fill = mech)) +
     geom_col(position = position_dodge(width = 0.86), width = 0.82, colour = "black", linewidth = 0.25) +
-    geom_text(aes(label = ifelse(is.na(correct), "", pct(correct)), group = mech),
+    geom_text(aes(label = ifelse(is.na(correct), "", round(100 * correct)), group = mech),
               position = position_dodge(width = 0.86), vjust = -0.3, size = 1.7, family = fam) +
     scale_y_continuous(labels = pct, limits = c(0, 1.16), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
     scale_fill_manual(values = c(greys[1], greys[2], greys[3], "white", ours), drop = FALSE) +
     guides(fill = guide_legend(nrow = 3)) +
-    labs(x = NULL, y = "correctly attributed") + theme_paper()
+    labs(x = NULL, y = "Correctly Attributed") + theme_paper() +
+    theme(legend.text = element_text(size = 6), legend.key.width = unit(7, "pt"), legend.spacing.x = unit(2, "pt"))
   save_fig(g4b, "fig_baselines2", 2.4)
 }
 
@@ -216,8 +217,8 @@ if (file.exists(ra_csv)) {
   ra <- read_csv(ra_csv, show_col_types = FALSE) |>
     filter(resolver %in% c("cgroup", "lineage", "fused")) |>
     transmute(resolver, Correct = C / N, Ambiguous = A / N) |>
-    mutate(resolver = recode(resolver, cgroup = "cgroup", lineage = "process lineage", fused = "FACT"),
-           resolver = factor(resolver, c("cgroup", "process lineage", "FACT"))) |>
+    mutate(resolver = recode(resolver, cgroup = "Cgroup", lineage = "Process Lineage", fused = "FACT"),
+           resolver = factor(resolver, c("Cgroup", "Process Lineage", "FACT"))) |>
     pivot_longer(c(Correct, Ambiguous), names_to = "outcome", values_to = "frac") |>
     mutate(outcome = factor(outcome, c("Ambiguous", "Correct")))
   g5 <- ggplot(ra, aes(resolver, frac, fill = outcome)) +
@@ -227,6 +228,6 @@ if (file.exists(ra_csv)) {
     scale_y_continuous(labels = pct, expand = c(0, 0), limits = c(0, 1.001)) +
     scale_fill_manual(values = c(Ambiguous = "grey80", Correct = ours)) +
     scale_colour_manual(values = c(Ambiguous = "black", Correct = "white"), guide = "none") +
-    labs(x = NULL, y = "real-agent connections") + theme_paper()
+    labs(x = NULL, y = "Real-Agent Connections") + theme_paper()
   save_fig(g5, "fig_realagents", 1.8)
 }
