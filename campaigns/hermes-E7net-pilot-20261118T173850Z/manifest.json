@@ -1,0 +1,191 @@
+{
+ "campaign_id": "hermes-E7net-pilot-20261118T173850Z",
+ "experiment": "E7net",
+ "label": "pilot",
+ "description": "E7 with a network-operations incident instead of the service health check: each agent diagnoses its site's uplink by reading interface counters from the edge router's RESTCONF API, querying link utilization from the site's telemetry collector, and checking NETCONF reachability of the core switch, all through the shared MCP server, under a per-site egress policy (restricted sites may not open management sessions to the core switch). The emulated devices answer with YANG-modeled JSON. Claude Haiku 5.5 (API, answers capped at 512 tokens) and the local Qwen2.5 3B, with 4 and 8 agents.",
+ "spec": {
+  "experiment": "E7net",
+  "description": "E7 with a network-operations incident instead of the service health check: each agent diagnoses its site's uplink by reading interface counters from the edge router's RESTCONF API, querying link utilization from the site's telemetry collector, and checking NETCONF reachability of the core switch, all through the shared MCP server, under a per-site egress policy (restricted sites may not open management sessions to the core switch). The emulated devices answer with YANG-modeled JSON. Claude Haiku 5.5 (API, answers capped at 512 tokens) and the local Qwen2.5 3B, with 4 and 8 agents.",
+  "factors": {
+   "model": [
+    "claude-haiku-5-5",
+    "qwen2.5:3b"
+   ],
+   "execs": [
+    4,
+    8
+   ]
+  },
+  "fixed": {
+   "cond": "E7net",
+   "workload": "workload/agent_e7.py",
+   "policy": 1,
+   "policy_noctx_allow": 0,
+   "num_predict": 512,
+   "scenario": "netops"
+  }
+ },
+ "n_per_cell": 1,
+ "campaign_seed": 51193,
+ "cells": 4,
+ "total_runs": 4,
+ "started_utc": "20261118T173850Z",
+ "duration_s": 757.5,
+ "runs_ok": 4,
+ "runs_failed": 0,
+ "git": {
+  "toplevel": "/home/ikki/projetos/fact",
+  "commit": "71f08e6b2ec4d92f72b152db94970964cf1fe9e5",
+  "branch": "main",
+  "dirty": false,
+  "status_porcelain": []
+ },
+ "environment": {
+  "hostname": "hermes",
+  "boot_id": "6ac1e18e-5019-4cf5-907d-59336e67935e",
+  "kernel": "7.0.0-29-generic",
+  "bpftrace": "bpftrace v0.25.0",
+  "python": "3.12.12",
+  "virt": "vmware"
+ },
+ "preflight": null,
+ "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
+ "runs": [
+  {
+   "cell": 0,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E7net",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "num_predict": 512,
+    "scenario": "netops",
+    "model": "claude-haiku-5-5",
+    "execs": 4
+   },
+   "position": 1,
+   "run_id": "r0001-E7net-c00-rep00",
+   "returncode": 0,
+   "seconds": 13.558,
+   "command": [
+    "E7net",
+    "campaigns/hermes-E7net-pilot-20261118T173850Z/runs/r0001-E7net-c00-rep00",
+    "--seed",
+    "51193",
+    "--num-predict",
+    "512",
+    "--scenario",
+    "netops",
+    "--model",
+    "claude-haiku-5-5",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 2,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E7net",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "num_predict": 512,
+    "scenario": "netops",
+    "model": "qwen2.5:3b",
+    "execs": 4
+   },
+   "position": 2,
+   "run_id": "r0002-E7net-c02-rep00",
+   "returncode": 0,
+   "seconds": 253.204,
+   "command": [
+    "E7net",
+    "campaigns/hermes-E7net-pilot-20261118T173850Z/runs/r0002-E7net-c02-rep00",
+    "--seed",
+    "51193",
+    "--num-predict",
+    "512",
+    "--scenario",
+    "netops",
+    "--model",
+    "qwen2.5:3b",
+    "--execs",
+    "4"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 1,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E7net",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "num_predict": 512,
+    "scenario": "netops",
+    "model": "claude-haiku-5-5",
+    "execs": 8
+   },
+   "position": 3,
+   "run_id": "r0003-E7net-c01-rep00",
+   "returncode": 0,
+   "seconds": 13.822,
+   "command": [
+    "E7net",
+    "campaigns/hermes-E7net-pilot-20261118T173850Z/runs/r0003-E7net-c01-rep00",
+    "--seed",
+    "51193",
+    "--num-predict",
+    "512",
+    "--scenario",
+    "netops",
+    "--model",
+    "claude-haiku-5-5",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  },
+  {
+   "cell": 3,
+   "rep": 0,
+   "seed": 51193,
+   "params": {
+    "cond": "E7net",
+    "workload": "workload/agent_e7.py",
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "num_predict": 512,
+    "scenario": "netops",
+    "model": "qwen2.5:3b",
+    "execs": 8
+   },
+   "position": 4,
+   "run_id": "r0004-E7net-c03-rep00",
+   "returncode": 0,
+   "seconds": 476.78,
+   "command": [
+    "E7net",
+    "campaigns/hermes-E7net-pilot-20261118T173850Z/runs/r0004-E7net-c03-rep00",
+    "--seed",
+    "51193",
+    "--num-predict",
+    "512",
+    "--scenario",
+    "netops",
+    "--model",
+    "qwen2.5:3b",
+    "--execs",
+    "8"
+   ],
+   "status": "OK"
+  }
+ ]
+}

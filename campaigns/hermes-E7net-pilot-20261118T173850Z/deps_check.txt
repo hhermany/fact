@@ -1,0 +1,2 @@
+  model claude-haiku-5-5 (Anthropic API): OK, 1 tool call(s), usage 518+76 tokens
+  model qwen2.5:3b (Ollama 127.0.0.1:11434): OK, 1 tool call(s), digest 357c53fb659c5076
