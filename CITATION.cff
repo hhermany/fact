@@ -1,19 +1,21 @@
 cff-version: 1.2.0
 message: "If you use this software or data, please cite the paper below."
-title: "FACT: per-execution network attribution, accounting, and control for AI agents"
+title: "FACT: Fused Attribution, Accounting, and Control per Task"
 type: software
 license: MIT
-authors:
-  - family-names: Hermany
-    given-names: Henrique
-  # co-authors to be confirmed before publication
 repository-code: "https://github.com/hhermany/fact"
+authors: &authors
+  - {family-names: Hermany, given-names: Henrique, affiliation: "Federal University of Rio Grande do Sul (UFRGS)"}
+  - {family-names: Ccana, given-names: Jhonatan Jauja, affiliation: "Federal University of Rio Grande do Sul (UFRGS)"}
+  - {family-names: Britto, name-particle: de, given-names: Afonso Hafner, affiliation: "Federal University of Rio Grande do Sul (UFRGS)"}
+  - {family-names: Garcia, given-names: Cecília Duarte, affiliation: "Federal University of Rio Grande do Sul (UFRGS)"}
+  - {family-names: Wickboldt, given-names: Juliano Araujo, affiliation: "Federal University of Rio Grande do Sul (UFRGS)"}
+  - {family-names: Nobre, given-names: Jéferson Campos, affiliation: "Federal University of Rio Grande do Sul (UFRGS)"}
+  - {family-names: Scheid, given-names: Eder John, affiliation: "Federal University of Rio Grande do Sul (UFRGS)"}
 preferred-citation:
   type: conference-paper
-  title: "Who Opened This Connection? Per-Execution Network Attribution, Accounting, and Control for AI Agents"
-  authors:
-    - family-names: Hermany
-      given-names: Henrique
+  title: "Who Opened This Connection? eBPF-based Per-Execution Network Attribution, Accounting, and Control for AI Agents"
+  authors: *authors
   conference:
     name: "IEEE/IFIP Network Operations and Management Symposium (NOMS 2027)"
   year: 2027
