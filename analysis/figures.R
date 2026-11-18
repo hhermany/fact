@@ -130,16 +130,16 @@ fw <- bind_rows(e5, e6) |>
                           c("Thread-Keyed Markers", "FACT (Task-Scoped)")),
          tool = factor(tool, c("sync", "thread", "subproc", "async"), c("Synchronous", "Threaded", "Subprocess", "Asynchronous")),
          metric = factor(metric, c("attribution", "policy"), c("Attribution", "Policy")))
-pd <- position_dodge(width = 0.45)
-g3 <- ggplot(fw, aes(factor(K), value, colour = binding, shape = binding)) +
-  geom_point(size = 1.8, stroke = 0.7, position = pd) +
+g3 <- ggplot(fw, aes(factor(K), value, colour = binding, shape = binding, linetype = binding, group = binding)) +
+  geom_line(linewidth = 0.6) + geom_point(size = 1.7, stroke = 0.7) +
   geom_text(data = filter(fw, binding_mode == "manual", tool == "Asynchronous"),
-            aes(label = pct(value)), position = position_nudge(x = -0.1125),
-            vjust = -1, size = 2.1, family = fam, colour = "black", show.legend = FALSE) +
+            aes(label = pct(value), hjust = ifelse(K == 2, -0.15, ifelse(K == 8, 1.15, 0.5))),
+            vjust = -0.8, size = 2.1, family = fam, colour = "black", show.legend = FALSE) +
   facet_grid(metric ~ tool) +
   scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
   scale_colour_manual(values = c(greys[2], ours)) + scale_shape_manual(values = c(2, 16)) +
-  labs(x = "Concurrent Sessions (K)", y = "Correct") + theme_paper()
+  scale_linetype_manual(values = c("dashed", "solid")) +
+  labs(x = "Concurrent Sessions (K)", y = "Correct Outcomes") + theme_paper()
 save_fig(g3, "fig_e5e6", 2.05)
 
 #' ## Related systems vs FACT in shared workers
