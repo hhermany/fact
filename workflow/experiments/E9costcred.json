@@ -1,0 +1,18 @@
+{
+  "experiment": "E9costcred",
+  "runner": "fullcost",
+  "description": "E9cost with the strongest configuration: everything in E9cost plus the execution credential (prctl(PR_FACT), BPF LSM) instead of openat markers and per-execution connection budgets enforced in the kernel (limits not reached, so both configurations make the same calls).",
+  "factors": {
+    "fact": [
+      "off",
+      "credbudget"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "ops": 25
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "experiment": "E12containcred",
+  "description": "E12contain with the execution credential (prctl(PR_FACT)) instead of openat markers: the runaway execution is contained by a byte budget keyed by the kernel-held credential.",
+  "factors": {
+    "contain": [
+      "none",
+      "process",
+      "exec"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E12contain",
+    "tool": "httpx_shared",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "send_binding": 1,
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "per_send": 1,
+    "allow_all": 1,
+    "budget_bytes": 131072,
+    "runaway_ops": 300,
+    "runaway_size": 32768,
+    "runaway_conc": 4,
+    "think_ms": 20,
+    "service_rate": 1000000,
+    "collector": "fact-cred.bt",
+    "cred": 1
+  }
+}

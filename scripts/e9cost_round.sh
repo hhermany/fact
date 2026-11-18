@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One E9cost run: cost of the full recommended configuration under the E9 workload.
-#   scripts/e9cost_round.sh <OUT_DIR> --fact off|all --execs K [--ops 25] [--seed S]
+#   scripts/e9cost_round.sh <OUT_DIR> --fact off|all|credbudget --execs K [--ops 25] [--seed S]
 # Workload in both: the shared MCP server (one process), K sessions, 25 calls each;
 # every call sends a DNS query over UDP (dnspython), an HTTP GET (httpx), and a
 # subprocess connect (workload/mcp_e4.py --tool mixed). Every call is permitted.
@@ -42,6 +42,13 @@ case "$FACT" in
     IPFIX=1 COST=1 "$HERE/run_round.sh" E9cost "$OUT" --seed "$SEED" --tool mixed --binding-mode auto \
         --execs "$K" --ops "$OPS" --identity session --clear-after 1 --send-binding 1 --trust 1 \
         --allow-all 1 > "$OUT/round.log" 2>&1
+    ;;
+  credbudget)   # E9costcred: as 'all', with the execution credential (prctl) and per-execution budgets
+    COLLECTOR=fact-cred.bt WORKLOAD=workload/mcp_e4.py POLICY=1 POLICY_NOCTX_ALLOW=0 POLICY_PER_SEND=1 \
+    POLICY_BUDGET=1 POLICY_BUDGET_PLAN=1 POLICY_CRED=1 FACT_IFACE=prctl \
+    IPFIX=1 COST=1 "$HERE/run_round.sh" E9cost "$OUT" --seed "$SEED" --tool mixed --binding-mode auto \
+        --execs "$K" --ops "$OPS" --identity session --clear-after 1 --send-binding 1 --trust 1 \
+        --allow-all 1 --budget-conns 100000 > "$OUT/round.log" 2>&1
     ;;
   *) echo "unknown --fact $FACT"; exit 2;;
 esac

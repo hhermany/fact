@@ -1,0 +1,31 @@
+{
+  "experiment": "E10conccred",
+  "description": "E10conc with the execution credential (prctl(PR_FACT), BPF LSM task_prctl) instead of openat markers: budgets, per-send authorization, and accounting keyed by the kernel-held credential; four calls in flight per session.",
+  "factors": {
+    "tool": [
+      "async",
+      "httpx_shared"
+    ],
+    "execs": [
+      4,
+      8
+    ]
+  },
+  "fixed": {
+    "cond": "E10budget",
+    "binding_mode": "auto",
+    "ops": 25,
+    "workload": "workload/mcp_e4.py",
+    "send_binding": 1,
+    "policy": 1,
+    "policy_noctx_allow": 0,
+    "per_send": 1,
+    "allow_all": 1,
+    "budget_conns": 10,
+    "budget_bytes": 1500,
+    "collector": "fact-cred.bt",
+    "budget": 1,
+    "concurrency": 4,
+    "cred": 1
+  }
+}

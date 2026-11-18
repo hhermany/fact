@@ -260,5 +260,18 @@ experiments:
     pilot_n: 3
     n: 3   # per boot (2 boots): containment of a runaway execution
 
+  E10conccred:
+    spec: workflow/experiments/E10conccred.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots), as E10conc
+  E12containcred:
+    spec: workflow/experiments/E12containcred.json
+    pilot_n: 1
+    n: 3   # per boot (2 boots), as E12contain
+  E9costcred:
+    spec: workflow/experiments/E9costcred.json
+    pilot_n: 1
+    n: 5   # per boot (2 boots), as E9cost
+
 # target relative precision (half-width of the 95% CI / mean) for sizing N
 precision_target: 0.05
