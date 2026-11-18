@@ -1,4 +1,4 @@
-preflight 2026-10-22T03:06:41Z host=hermes
+preflight 2026-11-18T16:53:21Z host=hermes
 PASS root
 PASS bpftrace
 PASS btf

@@ -1,10 +1,10 @@
-/home/ikki/projetos/agentnet/collector/fact.bt:38:3-20: WARNING: Return value discarded.
+/home/ikki/projetos/fact/collector/fact.bt:38:3-20: WARNING: Return value discarded.
         delete(@ctx[tid]);
         ~~~~~~~~~~~~~~~~~
-/home/ikki/projetos/agentnet/collector/fact.bt:59:2-19: WARNING: Return value discarded.
+/home/ikki/projetos/fact/collector/fact.bt:59:2-19: WARNING: Return value discarded.
     delete(@ctx[tid]);
     ~~~~~~~~~~~~~~~~~
-{"ev":"ready","ts":944665217710}
-{"ev":"fork","ts":946620063853,"ptid":2,"ctid":2070,"ppid":2,"cgroup":1,"ctx":""}
+{"ev":"ready","ts":57566742424099}
+{"ev":"fork","ts":57568767059834,"ptid":2,"ctid":21222,"ppid":2,"cgroup":1,"ctx":""}
 
 
