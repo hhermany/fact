@@ -90,11 +90,9 @@ g1 <- ggplot(e1, aes(cond, resolver, fill = share)) +
   scale_y_discrete(expand = c(0, 0), labels = c("FACT (Fused)" = expression(bold("FACT (Fused)")),
                                                  "Context Only" = "Context Only", "Lineage Only" = "Lineage Only",
                                                  "Cgroup Only" = "Cgroup Only")) +
-  guides(fill = guide_colourbar(barheight = unit(5, "pt"), barwidth = unit(60, "pt"),
-                                title.position = "left", title.vjust = 1)) +
   labs(x = "Execution Structure", y = NULL) + theme_paper() +
-  theme(legend.title = element_text(size = 7), panel.grid.major = element_blank())
-save_fig(g1, "fig_e1", 2.35)
+  theme(legend.position = "none", panel.grid.major = element_blank())
+save_fig(g1, "fig_e1", 2.1)
 
 #' ## E1: accounting decomposition
 #'
