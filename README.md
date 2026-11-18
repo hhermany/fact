@@ -49,6 +49,9 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | AgentProvenance in its own setting (E1ap) | `hermes-E1ap-confirmatory-*` | `analysis/agentprov_table.py --experiment E1ap` |
 | Policy on reused connections, per-send authorization (E6reuse); integrated configuration with the policy on every send (E9b) | `hermes-E6reuse-confirmatory-*`, `hermes-E9b-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_reuse_policy.py` |
 | Integrated configuration, every option available before budgets and the kernel-held credential (E9all) | `hermes-E9all-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
+| Kernel-held credential with budgets: concurrent budgets (E10conccred), selective containment (E12containcred), integrated cost with every option (E9costcred) | `hermes-E10conccred-confirmatory-*`, `hermes-E12containcred-confirmatory-*`, `hermes-E9costcred-confirmatory-*` | `analysis/credint_tables.py` |
+| Network-operations incident with LLM agents (E7net) | `hermes-E7net-confirmatory-*` | `analysis/e7net_summary.py` |
+| OBI v1.0.0 association test (no FACT) | `campaigns/obi-assoc-20261118/` | `bench/obi_assoc.py`, `scripts/run_obi_all.sh`, `scripts/run_obi_tools.sh` |
 | Session identity (E6sess), failure boundary (E5native), unmodified fetch server (E5fetch), UDP flows (E5udp), IPFIX export (E8ipfix) | `hermes-E6sess-confirmatory-*`, `hermes-E5native-confirmatory-*`, `hermes-E5fetch-confirmatory-*`, `hermes-E5udp-confirmatory-*`, `hermes-E8ipfix-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Second runtime: Node.js MCP server (E5node) | `hermes-E5node-confirmatory-*` | `analysis/presub_tables.py` |
 | Third-party clients (E5lib), connection reuse and bytes (E5reuse), spoofed markers (E6spoof), CPU cost under agents (E7rc) | `hermes-E5lib-confirmatory-*`, `hermes-E5reuse-confirmatory-*`, `hermes-E6spoof-confirmatory-*`, `hermes-E7rc-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_bytes.py` |
@@ -66,9 +69,9 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 | Fig. 3 (shared MCP server) | E5, E6 | `E5_framework.csv`, `E6_policy.csv` |
 | Fig. 4 (related mechanisms) | E1, E1ap, E5, E5ap, E5aps | `baselines.csv`, `E1ap_agentprov.csv`, `E5ap_agentprov.csv`, `E5aps_agentprov.csv` |
 | Sec. VI-B (faulty identities, native code) | E5f, E6f, E7f, E6L, E6Ls, E5native | `analysis/fault_tables.py`, `E5native_boundary.csv` |
-| Table III, Sec. VI-C (policy, reuse, bytes, budgets) | E6, E5reuse, E6reuse, E5partial, E5udp, E10budget, E10conc | `E6_policy.csv`, `E5reuse_bytes.csv`, `E6reuse_policy.csv`, `E5partial.csv`, `E5udp_flows.csv`, `E10budget.csv` |
-| Table IV, Sec. VI-D (selective containment) | E12contain | `contain_summary.json` |
-| Sec. VI-E (real agents, overhead) | E7, E7m, E7c, E7o, E7r, E3, E3net, E3send, E7rc, E9cost | `E7_*.csv`, `E3_overhead.csv`, `E3net_overhead.csv`, `E3send_cost.csv`, `E7rc_cost.csv`, `E9cost.csv`, `cost_stability.csv` |
+| Table III, Sec. VI-C (policy, reuse, bytes, budgets) | E6, E5reuse, E6reuse, E5partial, E5udp, E10budget, E10conc, E10conccred | `E6_policy.csv`, `E5reuse_bytes.csv`, `E6reuse_policy.csv`, `E5partial.csv`, `E5udp_flows.csv`, `E10budget.csv`, `credint_summary.json` |
+| Table IV, Sec. VI-D (selective containment) | E12contain, E12containcred | `contain_summary.json`, `credint_summary.json` |
+| Sec. VI-E (real agents, overhead) | E7, E7m, E7c, E7o, E7r, E7net, E3, E3net, E3send, E7rc, E9costcred, E9cost | `E7net_summary.json`, `credint_summary.json`, `E7_*.csv`, `E3_overhead.csv`, `E3net_overhead.csv`, `E3send_cost.csv`, `E7rc_cost.csv`, `E9cost.csv`, `cost_stability.csv` |
 | Kernel-held credential (Secs. IV-G, VII) | E3cred, E6cred, E6reusecred, E6spoofcred, E11file | `kcred_summary.json` |
 | Live accounting and IPFIX (Sec. IV-E) | E8ipfix, E9all | `E8ipfix_accounting.csv`, `E9all_ipfix.csv`, `factd_equiv.json` |
 | Structural conflicts (Sec. IV-D) | all confirmatory campaigns | `structural_conflicts.csv` |
@@ -92,14 +95,17 @@ Connection-level policy is the `cgroup/connect4` hook; per-send authorization ad
 | Sec. VI-C, Table III: budgets | E10budget, E10conc | markers + send binding | per-send | connections, bytes | no | shared MCP server, keep-alive pool |
 | Table IV (Sec. VI-D) | E12contain | markers + send binding | per-send | bytes (worker or runaway) | no | shared MCP server, keep-alive pool |
 | Sec. VI-E: real agents | E7, E7m, E7c, E7o | markers via `_meta` | connection-level, per tenant | no | no | LLM operations agents (health checks) |
+| Sec. VI-E: network-operations incident | E7net | markers via `_meta` | connection-level, per site | no | no | LLM operations agents (RESTCONF, telemetry, NETCONF) |
 | Sec. VI-E: kernel-held credential | E6cred, E6reusecred, E6spoofcred, E11file, E3cred | kernel-held (`prctl`) vs. markers (E3cred) | connection-level; per-send (E6reusecred) | no | no | shared MCP server; file writes; connect benchmark |
+| Sec. VI-E: kernel-held credential with budgets | E10conccred, E12containcred | kernel-held (`prctl`) + send binding | per-send | as E10conc, E12contain | no | as E10conc, E12contain |
 | Sec. VI-E: collector and per-send cost | E3, E3net, E3send | markers off/on (E3); none (E3send) | none, connection, per-send, budget (E3send) | E3send only | no | microbenchmarks (loopback, vmxnet3) |
 | Sec. VI-E: CPU at agent pace | E7rc | markers | connection-level | no | no | model-free replay of E7c/E7o runs |
-| Sec. VI-E: integrated cost | E9cost | markers, session-derived identity, clearing, send binding, datagram hooks, trusted runtime | per-send | no | yes | shared MCP server: DNS, HTTP, subprocess per call |
+| Sec. VI-E: integrated cost | E9costcred | kernel-held (`prctl`), session-derived identity, clearing, send binding, datagram hooks, trusted runtime | per-send | connections (limit not reached) | yes | as E9cost |
+| Integrated cost with markers (earlier version) | E9cost | markers, session-derived identity, clearing, send binding, datagram hooks, trusted runtime | per-send | no | yes | shared MCP server: DNS, HTTP, subprocess per call |
 | Sec. IV-E: live IPFIX | E8ipfix, E9all | markers (+ as in E9cost for E9all) | none (E8ipfix); connection-level (E9all) | no | yes | shared MCP server |
 
-No campaign combines the kernel-held credential with budgets; the integrated configurations (E9all, E9b,
-E9cost) predate both and use markers.
+E10conccred, E12containcred, and E9costcred combine the kernel-held credential with budgets; E9all, E9b, and
+E9cost predate both and use markers.
 
 ## Re-running the confirmatory campaigns
 
@@ -139,6 +145,8 @@ to use FACT or to run E1-E7. The items below exist only for the comparison and v
 | E5ap, E1ap | AgentProvenance v0.9.0 on the measured host | **comparison only**: a related system run next to FACT on the same rounds, to measure its attribution against the same reference |
 | E3net, E5net, E6net | second machine running `workload/remote_farm.py` | destinations outside loopback |
 | E7m | second machine with Ollama and GPU | larger local models |
+| E7net | Anthropic API key (as E7c) and local Ollama with qwen2.5:3b (as E7) | network-operations incident with commercial and local models |
+| OBI test | OBI v1.0.0 binary on the measured host (`~/obi/obi`) | **comparison only**: association of outgoing requests to incoming ones in the shared MCP server |
 | E7c | Anthropic API key in `/etc/fact/anthropic.key` (root, mode 600) | commercial models (Claude Opus 5.5, Haiku 5.5); cost and tokens are recorded per run |
 | E7r | only the recorded E7c and E7o campaigns, extracted under `campaigns/` (no API key, no model) | model-free replay of every recorded E7c/E7o run: same tool calls, arguments, labels and relative timing |
 | E7o | OpenAI API key in `/etc/fact/openai.key` (root, mode 600) | commercial models (gpt-6.1-sol, gpt-6-luna; Responses API, reasoning effort low); cost and tokens, including reasoning, are recorded per run |
