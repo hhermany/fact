@@ -1,0 +1,29 @@
+{
+ "campaign_seed": 51193,
+ "order": [
+  [
+   1,
+   "r0001-E12contain-c00-rep00"
+  ],
+  [
+   2,
+   "r0002-E12contain-c01-rep00"
+  ],
+  [
+   3,
+   "r0003-E12contain-c04-rep00"
+  ],
+  [
+   4,
+   "r0004-E12contain-c02-rep00"
+  ],
+  [
+   5,
+   "r0005-E12contain-c05-rep00"
+  ],
+  [
+   6,
+   "r0006-E12contain-c03-rep00"
+  ]
+ ]
+}
