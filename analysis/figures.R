@@ -37,13 +37,14 @@ if (!any(grepl(fam, system("fc-list : family", intern = TRUE), fixed = TRUE)))
 ours    <- "black"
 greys   <- c("grey78", "grey55", "grey35")
 theme_paper <- function() {
-  theme_bw(base_size = 8, base_family = fam) +
+  theme_bw(base_size = 9, base_family = fam) +
     theme(panel.grid.minor = element_blank(),
           panel.grid.major = element_line(colour = "grey92", linewidth = 0.3),
           panel.border = element_rect(colour = "black", linewidth = 0.4),
           strip.background = element_rect(fill = "grey92", colour = "black", linewidth = 0.4),
-          strip.text = element_text(size = 7.5, colour = "black"),
-          axis.text = element_text(colour = "black"),
+          strip.text = element_text(size = 8.5, colour = "black"),
+          axis.text = element_text(size = 7.5, colour = "black"),
+          legend.text = element_text(size = 7.5),
           axis.ticks = element_line(colour = "black", linewidth = 0.3),
           legend.position = "top", legend.title = element_blank(),
           legend.key.height = unit(8, "pt"), legend.margin = margin(0, 0, 0, 0),
@@ -81,7 +82,7 @@ e1 <- e1 |> mutate(resolver = factor(resolver, rev(levels(resolver))),
                    face = ifelse(resolver == "FACT (Fused)", "bold", "plain"))
 g1 <- ggplot(e1, aes(cond, resolver, fill = share)) +
   geom_tile(colour = "black", linewidth = 0.25) +
-  geom_text(aes(label = lab, colour = share > 0.5, fontface = face), size = 2.3, family = fam) +
+  geom_text(aes(label = lab, colour = share > 0.5, fontface = face), size = 2.8, family = fam) +
   facet_grid(metric ~ p) +
   scale_fill_gradient(low = "white", high = "grey25", limits = c(0, 1), labels = pct,
                       breaks = c(0, 0.5, 1), name = "Share of Connections") +
@@ -134,7 +135,7 @@ g3 <- ggplot(fw, aes(factor(K), value, colour = binding, shape = binding, linety
   geom_line(linewidth = 0.6) + geom_point(size = 1.7, stroke = 0.7) +
   geom_text(data = filter(fw, binding_mode == "manual", tool == "Asynchronous"),
             aes(label = pct(value), hjust = ifelse(K == 2, -0.15, 0.5)),
-            vjust = -0.8, size = 2.1, family = fam, colour = "black", show.legend = FALSE) +
+            vjust = -1.2, size = 2.6, family = fam, colour = "black", show.legend = FALSE) +
   facet_grid(metric ~ tool) +
   scale_y_continuous(labels = pct, limits = c(0, 1.12), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
   scale_colour_manual(values = c(greys[2], ours)) + scale_shape_manual(values = c(2, 16)) +
@@ -208,12 +209,13 @@ if (exists("bl")) {
   g4b <- ggplot(blc, aes(cell, correct, fill = mech)) +
     geom_col(position = position_dodge(width = 0.86), width = 0.82, colour = "black", linewidth = 0.25) +
     geom_text(aes(y = ifelse(is.na(correct), 0, correct), label = ifelse(is.na(correct), "n/a", round(100 * correct)), group = mech),
-              position = position_dodge(width = 0.86), vjust = -0.3, size = 1.7, family = fam) +
-    scale_y_continuous(labels = pct, limits = c(0, 1.16), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
+              position = position_dodge(width = 0.86), angle = 90, hjust = -0.15, vjust = 0.5, size = 2.3, family = fam) +
+    scale_y_continuous(labels = pct, limits = c(0, 1.3), breaks = c(0, 0.5, 1), expand = c(0, 0)) +
     scale_fill_manual(values = c(greys[1], greys[2], greys[3], "white", ours), drop = FALSE) +
     guides(fill = guide_legend(nrow = 3)) +
     labs(x = NULL, y = "Correctly Attributed") + theme_paper() +
-    theme(legend.text = element_text(size = 6), legend.key.width = unit(7, "pt"), legend.spacing.x = unit(2, "pt"))
+    theme(legend.text = element_text(size = 7), legend.key.width = unit(7, "pt"), legend.spacing.x = unit(1, "pt"),
+          legend.location = "plot", legend.justification = "left")
   save_fig(g4b, "fig_baselines2", 2.4)
 }
 
