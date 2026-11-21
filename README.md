@@ -42,7 +42,7 @@ snakemake --cores 1 figures              # figures of the paper (ggplot), from t
 | Fig. of related mechanisms | `hermes-E1-confirmatory-*`, `hermes-E5-confirmatory-*` | `analysis/baselines.py`, `analysis/figures.R` |
 | E7 | `hermes-E7-confirmatory-*` | `analysis/score_policy.py`, `analysis/analysis.R` |
 | Binding faults (E5f, E6f, E7f) and lineage-checked policy (E6L, E6Ls) | `hermes-E5f-confirmatory-*`, `hermes-E6f-confirmatory-*`, `hermes-E7f-confirmatory-*`, `hermes-E6L-confirmatory-*`, `hermes-E6Ls-confirmatory-*` | `analysis/fault_tables.py` |
-| Real network interface (E5net, E6net, E3net) | `hermes-E5net-confirmatory-*`, `hermes-E6net-confirmatory-*`, `hermes-E3net-confirmatory-*` | `analysis/analysis.R` |
+| Network interface between two VMs, vmxnet3 (E5net, E6net, E3net) | `hermes-E5net-confirmatory-*`, `hermes-E6net-confirmatory-*`, `hermes-E3net-confirmatory-*` | `analysis/analysis.R` |
 | AgentProvenance executed (E5ap); larger models (E7m) | `hermes-E5ap-confirmatory-*`, `hermes-E7m-confirmatory-*` | `analysis/agentprov_table.py`, `analysis/analysis.R`, `analysis/figures.R` |
 | Commercial models (E7c, E7o) and model-free replay (E7r) | `hermes-E7c-confirmatory-*`, `hermes-E7o-confirmatory-*`, `hermes-E7r-confirmatory-*` | `analysis/e7c_tokens.py`, `analysis/replay_compare.py`, `analysis/analysis.R` |
 | Live accounting (`factd`) | all confirmatory campaigns (`analysis/output/factd_equiv.json`) | `tests/test_factd_equiv.py` |
@@ -75,7 +75,7 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 | Kernel-held credential (Secs. IV-G, VII) | E3cred, E6cred, E6reusecred, E6spoofcred, E11file | `kcred_summary.json` |
 | Live accounting and IPFIX (Sec. IV-E) | E8ipfix, E9all | `E8ipfix_accounting.csv`, `E9all_ipfix.csv`, `factd_equiv.json` |
 | OBI measured (Sec. III) | OBI test (`campaigns/obi-assoc-20261118/`) | `obi_assoc.csv` |
-| Structural conflicts (Sec. IV-D) | all confirmatory campaigns | `structural_conflicts.csv` |
+| Structural conflicts (Sec. IV-D) | every recorded run, pilots included (campaigns assembled with `scripts/extract_campaigns.sh`) | `structural_conflicts.csv` |
 
 ### Configuration behind each result
 
@@ -108,9 +108,15 @@ Connection-level policy is the `cgroup/connect4` hook; per-send authorization ad
 E10conccred, E12containcred, and E9costcred combine the kernel-held credential with budgets; E9all, E9b, and
 E9cost predate both and use markers.
 
+In E7net, qwen2.5:3b wrote the host's other loopback address (127.0.1.1) in two calls of one run per boot. The
+reference is keyed to the listen address (127.0.0.1), so `score.json` leaves these four connections out (356
+scored); `analysis/e7net_summary.py` counts them separately (`conn_other_addr`), their labels match the owners
+of the ports, and the paper reports all 360 connections the policy allowed.
+
 ## Re-running the confirmatory campaigns
 
-Every confirmatory result in the paper comes from two boots of the same host. To repeat them:
+Every confirmatory result in the paper comes from two boots of the same host, except the scaling runs (E2,
+K up to 64), which ran in one boot (`workflow/config.yaml`). To repeat them:
 
 ```sh
 sudo scripts/run_confirmatory.sh          # boot 1: all experiments with N set in workflow/config.yaml
@@ -206,7 +212,14 @@ python3 -I analysis/collect_runs.py /tmp/all --out analysis/runs.csv --exclude-e
 python3 -I analysis/collect_overhead.py /tmp/all --out analysis/overhead.csv
 ```
 
-On 2026-10-18 this reproduced every row of the versioned files (5900 and 224 rows, no difference).
+On 2026-11-20, with the raw archives, this reproduced the versioned files (8492 and 224 rows): every count and
+measurement is identical; only the factor columns `listen_addr` and `model`, added to `collect_runs.py` after
+`runs.csv` was written, are filled in instead of empty. Campaigns recorded after that also appear in the
+regenerated file; their results come from their own scripts (table above). On the same day every other summarized
+result under `analysis/output/` (CSV, JSON, and TeX) was regenerated from the raw runs and was byte-identical,
+except `structural_conflicts.csv`, which then also covered the archived runs (3910 runs instead of 3199); the
+figures differed only in their creation date, and 360 runs drawn at random (8 per experiment) rescored with
+`analysis/score.py` reproduced their `score.json`.
 
 ## Data
 

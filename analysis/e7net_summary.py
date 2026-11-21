@@ -20,6 +20,28 @@ for man in sorted(glob.glob(os.path.join(a.campaigns, f"*-E7net-{a.label}-*", "m
         ps = f("policy_score.json")
         for x in ("N", "TA", "TD", "FA", "FD"):
             k["pol_" + x] += ps.get(x, 0)
+        # Connections to a planned port at another loopback address (127.0.1.1, written by the model in
+        # one qwen2.5:3b run per boot): the reference is keyed to the listen address, so score.json leaves
+        # them out. They are counted here, with whether their label is the port's owner.
+        pl, ef = f("plan.json"), os.path.join(rd, "events.jsonl")
+        dm = {int(x): v for x, v in (pl.get("dport_map") or {}).items()}
+        la = pl.get("listen_addr") or "127.0.0.1"
+        k["conn_other_addr"] += 0
+        k["conn_other_addr_label_ok"] += 0
+        if os.path.exists(ef):
+            for line in open(ef):
+                if '"connect"' not in line:
+                    continue
+                try:
+                    e = json.loads(line)
+                except ValueError:
+                    continue
+                if e.get("ev") != "connect" or e.get("dport") not in dm or e.get("daddr") == la:
+                    continue
+                own = dm[e["dport"]]
+                own = own[0] if isinstance(own, list) else own
+                k["conn_other_addr"] += 1
+                k["conn_other_addr_label_ok"] += int((e.get("ctx") or "").rsplit("/", 1)[-1] == own)
         s = f("e7_summary.json")
         for ag in s.get("agents", []):
             k["agents"] += 1

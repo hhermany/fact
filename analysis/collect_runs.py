@@ -61,7 +61,7 @@ def main():
             ps = os.path.join(rdir, "policy_score.json")
             if os.path.exists(ps):
                 pj = json.load(open(ps))
-                base.update({f"pol_{k}": pj[k] for k in ("N", "TA", "TD", "FA", "FD", "ND", "expected_allow")})
+                base.update({f"pol_{k}": pj.get(k) for k in ("N", "TA", "TD", "FA", "FD", "ND", "expected_allow")})   # budget and reuse scores have no expected_allow
                 base.update(pol_label_owner=pj["label"].get("owner", 0), pol_label_other=pj["label"].get("other", 0),
                             pol_label_none=pj["label"].get("none", 0))
             else:

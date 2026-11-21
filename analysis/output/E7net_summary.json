@@ -11,6 +11,8 @@
   "pol_TD": 24,
   "pol_FA": 0,
   "pol_FD": 0,
+  "conn_other_addr": 0,
+  "conn_other_addr_label_ok": 0,
   "agents": 48,
   "agents_final": 48,
   "agents_diag_congestion": 48
@@ -27,6 +29,8 @@
   "pol_TD": 24,
   "pol_FA": 0,
   "pol_FD": 0,
+  "conn_other_addr": 4,
+  "conn_other_addr_label_ok": 4,
   "agents": 48,
   "agents_final": 48,
   "agents_diag_congestion": 48
@@ -43,6 +47,8 @@
   "pol_TD": 12,
   "pol_FA": 0,
   "pol_FD": 0,
+  "conn_other_addr": 0,
+  "conn_other_addr_label_ok": 0,
   "agents": 24,
   "agents_final": 24,
   "agents_diag_congestion": 24
@@ -59,6 +65,8 @@
   "pol_TD": 12,
   "pol_FA": 0,
   "pol_FD": 0,
+  "conn_other_addr": 0,
+  "conn_other_addr_label_ok": 0,
   "agents": 24,
   "agents_final": 24,
   "agents_diag_congestion": 24
