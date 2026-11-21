@@ -115,8 +115,7 @@ of the ports, and the paper reports all 360 connections the policy allowed.
 
 ## Re-running the confirmatory campaigns
 
-Every confirmatory result in the paper comes from two boots of the same host, except the scaling runs (E2,
-K up to 64), which ran in one boot (`workflow/config.yaml`). To repeat them:
+Every confirmatory result in the paper comes from two boots of the same host. To repeat them:
 
 ```sh
 sudo scripts/run_confirmatory.sh          # boot 1: all experiments with N set in workflow/config.yaml
@@ -219,7 +218,9 @@ regenerated file; their results come from their own scripts (table above). On th
 result under `analysis/output/` (CSV, JSON, and TeX) was regenerated from the raw runs and was byte-identical,
 except `structural_conflicts.csv`, which then also covered the archived runs (3910 runs instead of 3199); the
 figures differed only in their creation date, and 360 runs drawn at random (8 per experiment) rescored with
-`analysis/score.py` reproduced their `score.json`.
+`analysis/score.py` reproduced their `score.json`. The second boot of E2 (scaling to K = 64), run afterwards on
+2026-11-21, added 480 rows to `runs.csv` (120 runs, no capture loss and no misattribution, as in the first boot),
+and `structural_conflicts.csv` now counts 4030 runs.
 
 ## Data
 

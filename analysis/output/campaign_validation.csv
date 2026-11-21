@@ -7,6 +7,7 @@ hermes-E1fast-confirmatory-20261012T165110Z,confirmatory,24,24,4800,4800,0,0,FAL
 hermes-E1fast-confirmatory-20261012T165535Z,confirmatory,0,24,4800,4800,0,0,FALSE
 hermes-E1fast-pilot-20261012T062306Z,pilot,0,24,4800,4800,0,0,FALSE
 hermes-E2-confirmatory-20261012T055911Z,confirmatory,0,120,50400,50400,0,0,FALSE
+hermes-E2-confirmatory-20261121T015834Z,confirmatory,0,120,50400,50400,0,0,FALSE
 hermes-E2-pilot-20261012T050414Z,pilot,85,35,2640,2640,0,0,TRUE
 hermes-E2-pilot-20261012T050905Z,pilot,0,120,50400,50400,0,0,TRUE
 hermes-E4-confirmatory-20261012T165837Z,confirmatory,0,40,3000,3000,0,400,FALSE

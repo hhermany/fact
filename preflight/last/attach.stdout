@@ -4,6 +4,7 @@
 /home/ikki/projetos/fact/collector/fact.bt:59:2-19: WARNING: Return value discarded.
     delete(@ctx[tid]);
     ~~~~~~~~~~~~~~~~~
-{"ev":"ready","ts":240740571167}
+{"ev":"ready","ts":8232787425028}
+{"ev":"fork","ts":8234723059381,"ptid":2,"ctid":12313,"ppid":2,"cgroup":1,"ctx":""}
 
 

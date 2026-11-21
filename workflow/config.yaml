@@ -11,7 +11,7 @@ experiments:
   E2:
     spec: workflow/experiments/E2.json
     pilot_n: 5
-    n: 5   # one boot
+    n: 5   # per boot (two boots; the second ran on 2026-11-21)
 
   E3:
     spec: workflow/experiments/E3.json
