@@ -71,7 +71,7 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 | Sec. VI-B (faulty identities, native code) | E5f, E6f, E7f, E6L, E6Ls, E5native | `analysis/fault_tables.py`, `E5native_boundary.csv` |
 | Table III, Sec. VI-C (policy, reuse, bytes, budgets) | E6, E5reuse, E6reuse, E5partial, E5udp, E10budget, E10conc, E10conccred | `E6_policy.csv`, `E5reuse_bytes.csv`, `E6reuse_policy.csv`, `E5partial.csv`, `E5udp_flows.csv`, `E10budget.csv`, `credint_summary.json` |
 | Table IV, Sec. VI-D (selective containment) | E12contain, E12containcred | `contain_summary.json`, `credint_summary.json` |
-| Sec. VI-E (real agents, overhead) | E7, E7m, E7c, E7o, E7r, E7net, E3, E3net, E3send, E7rc, E9costcred, E9cost | `E7net_summary.json`, `credint_summary.json`, `E7_*.csv`, `E3_overhead.csv`, `E3net_overhead.csv`, `E3send_cost.csv`, `E7rc_cost.csv`, `E9cost.csv`, `cost_stability.csv` |
+| Sec. VI-E (real agents, overhead) | E7, E7m, E7c, E7o, E7r, E7net, E3, E3net, E3send, E7rc, E9costcred, E9cost | `E7net_summary.json`, `credint_summary.json`, `E7_*.csv`, `E3_overhead.csv`, `E3net_overhead.csv`, `E3send_cost.csv`, `E7rc_cost.csv`, `E9cost.csv`, `cost_stability.csv` (every overhead figure in the text is a paired median from this file; the other files summarize each configuration, so differences of their medians can differ slightly) |
 | Kernel-held credential (Secs. IV-G, VII) | E3cred, E6cred, E6reusecred, E6spoofcred, E11file | `kcred_summary.json` |
 | Live accounting and IPFIX (Sec. IV-E) | E8ipfix, E9all | `E8ipfix_accounting.csv`, `E9all_ipfix.csv`, `factd_equiv.json` |
 | OBI measured (Sec. III) | OBI test (`campaigns/obi-assoc-20261118/`) | `obi_assoc.csv` |

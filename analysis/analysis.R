@@ -500,11 +500,14 @@ if (file.exists(ovh_csv)) {
       summarise(runs = n(), boots = n_distinct(boot_id), p50_us = mean(p50_ns) / 1000, p50_ic = ci95(p50_ns) / 1000,
                 p99_us = mean(p99_ns) / 1000, thr_k = mean(throughput_cps) / 1000, .groups = "drop")
     write_csv(t3n, file.path(outdir, "E3net_overhead.csv"))
-    b0 <- t3n$p50_us[t3n$instr == "none" & t3n$markers == 0]; c0 <- t3n$p50_us[t3n$instr == "collector" & t3n$markers == 0]
-    b1 <- t3n$p50_us[t3n$instr == "none" & t3n$markers == 1]; c1 <- t3n$p50_us[t3n$instr == "collector" & t3n$markers == 1]
+    # paired medians: runs of the four configurations that share a boot and a repetition index are paired
+    pr3n <- o3n |> filter(label == lab3n) |> mutate(rep = sub(".*rep([0-9]+).*", "\\1", run_id), cfg = paste0(instr, markers)) |>
+      select(boot_id, rep, cfg, p50_ns) |> pivot_wider(names_from = cfg, values_from = p50_ns)
+    b0 <- median(pr3n$none0) / 1000; d0 <- median(pr3n$collector0 - pr3n$none0) / 1000
+    d1 <- median(pr3n$collector1 - pr3n$none0) / 1000; r0 <- median(100 * (pr3n$collector0 / pr3n$none0 - 1))
     tex_meta <- c(tex_meta, sprintf("\\def\\EThreeNetLabel{%s}", lab3n), sprintf("\\def\\EThreeNetRuns{%d}", sum(t3n$runs)),
-                  sprintf("\\def\\EThreeNetBase{%.0f}", b0), sprintf("\\def\\EThreeNetAdd{%.1f}", c0 - b0),
-                  sprintf("\\def\\EThreeNetAddMk{%.1f}", c1 - b0), sprintf("\\def\\EThreeNetRel{%.0f}", 100 * (c0 / b0 - 1)))
+                  sprintf("\\def\\EThreeNetBase{%.0f}", b0), sprintf("\\def\\EThreeNetAdd{%.1f}", d0),
+                  sprintf("\\def\\EThreeNetAddMk{%.1f}", d1), sprintf("\\def\\EThreeNetRel{%.0f}", r0))
   }
 }
 apf <- file.path(outdir, "E5ap_agentprov.csv")

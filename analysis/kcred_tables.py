@@ -4,12 +4,15 @@
 
 Writes analysis/output/kcred_summary.json and, for the paper, a LaTeX file of macros
 (\\KcConnAdd, \\KcConnAddMk, \\KcOpenAdd, \\KcOpenAddMk, \\KcRows and the counts).
+The E3cred costs are paired medians: runs of the three interfaces that share a boot and
+a repetition index are paired, and the macro is the median of the per-pair differences.
 
 Usage: kcred_tables.py CAMPAIGNS_DIR OUT_TEX
 """
 import glob
 import json
 import os
+import re
 import statistics
 import sys
 from collections import Counter
@@ -77,20 +80,24 @@ def main(cdir, out_tex):
         exact += f["abs_err"] == 0 and f["other_credentials_bytes"] == 0; total += f["bytes_ref"]; err += f["abs_err"]
     s["E11file"] = {"runs": nr, "boots": len(boots), "exact_runs": exact, "bytes": total, "abs_err": err}
     # E3cred: medians over runs of the per-run median latencies
-    lat = {}
+    lat, pair = {}, {}
     nr, boots = 0, set()
     for rd, prm, boot in runs(cdir, "E3cred"):
         nr += 1; boots.add(boot)
         o = load(os.path.join(rd, "overhead.json"))
         lat.setdefault(o["iface"], {"connect": [], "open": []})
         lat[o["iface"]]["connect"].append(o["connect"]["p50_ns"]); lat[o["iface"]]["open"].append(o["open"]["p50_ns"])
+        pair.setdefault((boot, re.search(r"rep(\d+)", rd).group(1)), {})[o["iface"]] = (o["connect"]["p50_ns"], o["open"]["p50_ns"])
     med = {i: {k: statistics.median(v) for k, v in d.items()} for i, d in lat.items()}
-    s["E3cred"] = {"runs": nr, "boots": len(boots), "median_ns": med}
+    pmed = {i: {k: statistics.median(v[i][j] - v["none"][j] for v in pair.values() if i in v and "none" in v)
+                for j, k in enumerate(("connect", "open"))} for i in ("prctl", "openat")}
+    s["E3cred"] = {"runs": nr, "boots": len(boots), "pairs": sum("none" in v for v in pair.values()),
+                   "median_ns": med, "paired_median_delta_ns": pmed}
     os.makedirs("analysis/output", exist_ok=True)
     json.dump(s, open("analysis/output/kcred_summary.json", "w"), indent=1)
 
     m = s["E3cred"]["median_ns"]
-    add = lambda i, k: (m[i][k] - m["none"][k]) / 1000.0
+    add = lambda i, k: s["E3cred"]["paired_median_delta_ns"][i][k] / 1000.0
     a, pol = s["E6cred"]["attr"], s["E6cred"]["policy"]
     rp, sp = s["E6reusecred"], s["E6spoofcred"]["trust"]
     forb = rp["policy"]["TD"] + rp["policy"]["FA"]

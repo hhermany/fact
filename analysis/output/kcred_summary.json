@@ -64,6 +64,7 @@
  "E3cred": {
   "runs": 30,
   "boots": 2,
+  "pairs": 10,
   "median_ns": {
    "prctl": {
     "connect": 43353.5,
@@ -76,6 +77,16 @@
    "openat": {
     "connect": 50452.0,
     "open": 1990.0
+   }
+  },
+  "paired_median_delta_ns": {
+   "prctl": {
+    "connect": 13405.5,
+    "open": 27.0
+   },
+   "openat": {
+    "connect": 20743.0,
+    "open": 522.5
    }
   }
  }
