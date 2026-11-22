@@ -20,8 +20,12 @@ import errno
 import json
 import os
 import socket
+import sys
 import threading
 import time
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workload"))
+from netfam import LOOPBACK, af  # noqa: E402  (127.0.0.1, or ::1 with FACT_FAMILY=6)
 
 
 def main():
@@ -31,10 +35,10 @@ def main():
     ap.add_argument("--total", type=int, default=8_000_000)
     ap.add_argument("--chunk", type=int, default=65536)
     a = ap.parse_args()
-    ls = socket.socket()
+    ls = socket.socket(af(LOOPBACK))
     ls.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     ls.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
-    ls.bind(("127.0.0.1", a.port))
+    ls.bind((LOOPBACK, a.port))
     ls.listen(1)
     got = [0]
 
@@ -50,9 +54,9 @@ def main():
 
     t = threading.Thread(target=rx)
     t.start()
-    s = socket.socket()
+    s = socket.socket(af(LOOPBACK))
     s.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 8192)
-    s.connect(("127.0.0.1", a.port))
+    s.connect((LOOPBACK, a.port))
     s.setblocking(False)
     try:   # identity of the sending thread, as the runtime hands it over
         os.close(os.open("/run/agentctx/begin/E01", os.O_RDONLY))

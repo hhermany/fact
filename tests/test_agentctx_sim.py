@@ -17,6 +17,8 @@ import threading
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fact_rt import agentctx  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workload"))
+from netfam import LOOPBACK, af  # noqa: E402  (FACT_FAMILY=6: the same test over IPv6)
 
 SIM = {}            # tid -> context (simulation of the collector's @ctx map)
 LOG = []            # (dport, ctx at connect time)
@@ -38,7 +40,7 @@ _real_exec = agentctx._orig["execute_child"]
 
 
 def rec_connect(self, address):
-    if self.family == socket.AF_INET and address[1] >= 20000:
+    if self.family in (socket.AF_INET, socket.AF_INET6) and address[1] >= 20000:
         LOG.append((address[1], SIM.get(threading.get_native_id())))
     return _real_connect(self, address)
 
@@ -67,9 +69,9 @@ def build_server():
     SUB = "import sys;sys.exit(0)"
 
     def blocking(port):
-        s = socket.socket()
+        s = socket.socket(af(LOOPBACK))
         s.settimeout(2)
-        s.connect(("127.0.0.1", port))
+        s.connect((LOOPBACK, port))
         s.close()
         return "ok"
 
@@ -107,7 +109,7 @@ def build_server():
         mark(exec_id)
         try:
             await asyncio.sleep(random.uniform(0, 0.005))
-            r, w = await asyncio.open_connection("127.0.0.1", port)
+            r, w = await asyncio.open_connection(LOOPBACK, port)
             w.close()
             await w.wait_closed()
             return "ok"
@@ -124,7 +126,7 @@ async def run(mode, tool, K=4, ops=25):
     srv = build_server()
     if mode == "auto":
         instrument(srv)
-    servers = [await asyncio.start_server(lambda r, w: w.close(), "127.0.0.1", 0) for _ in range(K)]
+    servers = [await asyncio.start_server(lambda r, w: w.close(), LOOPBACK, 0) for _ in range(K)]
     ports = {s.sockets[0].getsockname()[1]: f"E{i:02d}" for i, s in enumerate(servers)}
     LOG.clear()
     SIM.clear()

@@ -1,44 +1,56 @@
 #!/usr/bin/env python3
-# Destination for the coverage test: logs every tag it receives, per listener (outside the policed cgroup).
+# Destination of the coverage test (outside the policed cgroup): logs every newline-terminated
+# tag it receives (and its size), with the listener and the peer's address, and answers each TCP tag with "r\n"
+# (received bytes, charged in credential mode). One dual-stack socket per port serves IPv4,
+# IPv6 and IPv4-mapped clients: TCP on base+1, UDP on base+2 and base+3,
+# with base 62000, 62010 and 62020 for the families v4, v6 and v4mapped of client.py.
 import json, socket, sys, threading
 out = open(sys.argv[1], "a", buffering=1)
-def log(listener, data):
-    for t in data.decode(errors="replace").split("\n"):
-        if t.strip():
-            out.write(json.dumps({"listener": listener, "tag": t.strip()}) + "\n")
-def tcp(fam, addr, port, name, v6only=1):
-    s = socket.socket(fam, socket.SOCK_STREAM)
+lock = threading.Lock()
+def log(line, listener, peer):
+    with lock:   # tags are padded to 48 bytes: n = bytes received, newline included
+        out.write(json.dumps({"tag": line.decode(errors="replace").strip(), "n": len(line) + 1,
+                              "listener": listener, "peer": peer}) + "\n")
+def dual(kind, port):
+    s = socket.socket(socket.AF_INET6, kind)
+    s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    if fam == socket.AF_INET6:
-        s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, v6only)
-    s.bind((addr, port)); s.listen(64)
-    def serve(c):
+    s.bind(("::", port))
+    return s
+def tcp(port):
+    s = dual(socket.SOCK_STREAM, port); s.listen(64)
+    def conn(c, peer):
         buf = b""
         while True:
-            d = c.recv(65536)
-            if not d:
+            b = c.recv(65536)
+            if not b:
                 break
-            buf += d
-            if b"\n" in buf:
-                head, _, buf = buf.rpartition(b"\n")
-                log(name, head)
-        if buf:
-            log(name, buf)
-    while True:
-        c, _ = s.accept()
-        threading.Thread(target=serve, args=(c,), daemon=True).start()
-def udp(fam, addr, port, name):
-    s = socket.socket(fam, socket.SOCK_DGRAM)
-    if fam == socket.AF_INET6:
-        s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
-    s.bind((addr, port))
-    while True:
-        d, _ = s.recvfrom(65536)
-        log(name, d)
-for args in [(socket.AF_INET, "127.0.0.1", 62001, "tcp4"), (socket.AF_INET6, "::1", 62001, "tcp6"),
-             (socket.AF_INET6, "::", 62003, "tcp6_dualstack", 0)]:
-    threading.Thread(target=tcp, args=args, daemon=True).start()
-for args in [(socket.AF_INET, "127.0.0.1", 62002, "udp4"), (socket.AF_INET6, "::1", 62002, "udp6")]:
-    threading.Thread(target=udp, args=args, daemon=True).start()
+            buf += b
+            while b"\n" in buf:
+                line, buf = buf.split(b"\n", 1)
+                log(line, f"tcp{port}", peer)
+                try:
+                    c.sendall(b"r\n")
+                except OSError:
+                    pass
+        c.close()
+    def acc():
+        while True:
+            c, a = s.accept()
+            threading.Thread(target=conn, args=(c, a[0]), daemon=True).start()
+    threading.Thread(target=acc, daemon=True).start()
+def udp(port):
+    s = dual(socket.SOCK_DGRAM, port)
+    def rx():
+        while True:
+            b, a = s.recvfrom(65536)
+            for line in b.split(b"\n"):
+                if line:
+                    log(line, f"udp{port}", a[0])
+    threading.Thread(target=rx, daemon=True).start()
+for base in (62000, 62010, 62020):
+    tcp(base + 1)
+    udp(base + 2)
+    udp(base + 3)
 print("ready", flush=True)
 threading.Event().wait()

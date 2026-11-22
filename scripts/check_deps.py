@@ -99,7 +99,7 @@ def check_models(spec):
 def check_dest_hosts(spec):
     out = []
     for host in values(spec, "dest_host"):
-        if host in ("127.0.0.1", "localhost"):
+        if host in ("127.0.0.1", "::1", "localhost"):
             continue
         for port in REMOTE_FARM_PORTS:
             try:

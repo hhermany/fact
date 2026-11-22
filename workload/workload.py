@@ -40,10 +40,13 @@ import sys
 import threading
 import time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from netfam import LOOPBACK, SOCKET_FOR_ARGV1, af  # noqa: E402
+
 CG_ROOT = "/sys/fs/cgroup/fact"
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
-LISTEN_ADDR = "127.0.0.1"
+LISTEN_ADDR = LOOPBACK        # 127.0.0.1, or ::1 with FACT_FAMILY=6 (workload/netfam.py)
 EXECS = ["A", "B"]          # redefined in main() according to --execs
 
 
@@ -87,7 +90,7 @@ class Listener(threading.Thread):
         self.sel = selectors.DefaultSelector()
         self.socks = []
         for p in ports:
-            s = socket.socket()
+            s = socket.socket(af(LISTEN_ADDR))
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind((LISTEN_ADDR, p))
             s.listen(64)
@@ -108,7 +111,7 @@ class Listener(threading.Thread):
 
 # ---------------------------------------------------------------- operations
 SUBPROC_CODE = (
-    "import socket,sys;s=socket.socket();s.settimeout(2);"
+    "import socket,sys;s=" + SOCKET_FOR_ARGV1 + ";s.settimeout(2);"
     "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)"
 )
 
@@ -120,7 +123,7 @@ def do_op(op, mode, log, lock):
         r = subprocess.run([sys.executable, "-I", "-c", SUBPROC_CODE, LISTEN_ADDR, str(op["dport"])])
         ok = r.returncode == 0
     else:
-        s = socket.socket()
+        s = socket.socket(af(LISTEN_ADDR))
         s.settimeout(2)
         ok = s.connect_ex((LISTEN_ADDR, op["dport"])) == 0
         s.close()

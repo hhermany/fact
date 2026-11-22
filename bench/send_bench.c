@@ -65,27 +65,42 @@ int main(int argc, char **argv) {
     int tcp = !strcmp(proto, "tcp"), udpu = !strcmp(proto, "udpu");
     if (!tcp && !udpu && strcmp(proto, "udp")) { fprintf(stderr, "unknown proto %s\n", proto); return 2; }
 
-    struct sockaddr_in addr = {0};
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    // IPv4 (127.0.0.1) by default; IPv6 (::1) with FACT_FAMILY=6
+    const char *famenv = getenv("FACT_FAMILY");
+    int fam = famenv && !strcmp(famenv, "6") ? AF_INET6 : AF_INET;
+    struct sockaddr_storage ss = {0};
+    socklen_t alen;
+    if (fam == AF_INET6) {
+        struct sockaddr_in6 *a6 = (struct sockaddr_in6 *)&ss;
+        a6->sin6_family = AF_INET6;
+        a6->sin6_port = htons(port);
+        a6->sin6_addr = in6addr_loopback;
+        alen = sizeof *a6;
+    } else {
+        struct sockaddr_in *a4 = (struct sockaddr_in *)&ss;
+        a4->sin_family = AF_INET;
+        a4->sin_port = htons(port);
+        a4->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        alen = sizeof *a4;
+    }
+    struct sockaddr *addr = (struct sockaddr *)&ss;
     int one = 1, rfd, s;
     if (tcp) {
-        int ls = socket(AF_INET, SOCK_STREAM, 0);
+        int ls = socket(fam, SOCK_STREAM, 0);
         setsockopt(ls, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
-        if (bind(ls, (struct sockaddr *)&addr, sizeof addr) || listen(ls, 1)) { perror("bind/listen"); return 1; }
-        s = socket(AF_INET, SOCK_STREAM, 0);
-        if (connect(s, (struct sockaddr *)&addr, sizeof addr)) { perror("connect"); return 1; }
+        if (bind(ls, addr, alen) || listen(ls, 1)) { perror("bind/listen"); return 1; }
+        s = socket(fam, SOCK_STREAM, 0);
+        if (connect(s, addr, alen)) { perror("connect"); return 1; }
         rfd = accept(ls, NULL, NULL);
         close(ls);
         setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &one, sizeof one);
     } else {
-        rfd = socket(AF_INET, SOCK_DGRAM, 0);
+        rfd = socket(fam, SOCK_DGRAM, 0);
         int big = 8 << 20;
         setsockopt(rfd, SOL_SOCKET, SO_RCVBUF, &big, sizeof big);
-        if (bind(rfd, (struct sockaddr *)&addr, sizeof addr)) { perror("bind"); return 1; }
-        s = socket(AF_INET, SOCK_DGRAM, 0);
-        if (!udpu && connect(s, (struct sockaddr *)&addr, sizeof addr)) { perror("connect"); return 1; }
+        if (bind(rfd, addr, alen)) { perror("bind"); return 1; }
+        s = socket(fam, SOCK_DGRAM, 0);
+        if (!udpu && connect(s, addr, alen)) { perror("connect"); return 1; }
     }
     pthread_t th;
     pthread_create(&th, NULL, drain, &rfd);
@@ -101,7 +116,7 @@ int main(int argc, char **argv) {
     for (long i = -warmup; i < n; i++) {
         if (i == 0) t_start = now_ns();
         uint64_t t0 = now_ns();
-        ssize_t r = udpu ? sendto(s, msg, (size_t)size, 0, (struct sockaddr *)&addr, sizeof addr)
+        ssize_t r = udpu ? sendto(s, msg, (size_t)size, 0, addr, alen)
                          : send(s, msg, (size_t)size, 0);
         uint64_t t1 = now_ns();
         if (r != size) failures++;

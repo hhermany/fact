@@ -20,7 +20,7 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 mkdir -p "$OUT"
 BIN="$HERE/bench/connect_bench"
-[ -x "$BIN" ] || gcc -O2 -Wall -o "$BIN" "$HERE/bench/connect_bench.c"
+[ -x "$BIN" ] && [ "$BIN" -nt "$HERE/bench/connect_bench.c" ] || gcc -O2 -Wall -o "$BIN" "$HERE/bench/connect_bench.c"
 cat /proc/loadavg > "$OUT/loadavg-start.txt"
 bpftrace -B line "$HERE/collector/$COL" > "$OUT/events.jsonl" 2> "$OUT/collector.err" &
 BPID=$!

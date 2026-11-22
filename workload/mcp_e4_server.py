@@ -65,11 +65,14 @@ import time
 import anyio
 from mcp.server.fastmcp import FastMCP
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from netfam import LOOPBACK, SOCKET_FOR_ARGV1, af, url_host  # noqa: E402
+
 CTX_BEGIN = "/run/agentctx/begin/"
 CTX_END = "/run/agentctx/end"
-LISTEN = "127.0.0.1"                                  # MCP server listening address
-TARGET = os.environ.get("FACT_DEST", "127.0.0.1")   # destination of the tools (loopback or another machine)
-SUB = ("import socket,sys;s=socket.socket();s.settimeout(2);"
+LISTEN = LOOPBACK                                     # MCP server listening address (127.0.0.1 or ::1)
+TARGET = os.environ.get("FACT_DEST", LOOPBACK)      # destination of the tools (loopback or another machine)
+SUB = ("import socket,sys;s=" + SOCKET_FOR_ARGV1 + ";s.settimeout(2);"
        "r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close();sys.exit(0 if r==0 else 1)")
 # E6spoof: a misbehaving tool whose child process emits a marker claiming another
 # execution's identity before connecting (argv[3] = claimed identity)
@@ -80,7 +83,7 @@ SPOOF = ("import os,socket,sys,ctypes\n"
          "l=ctypes.CDLL('libc.so.6',use_errno=True)\n"
          "l.prctl.argtypes=[ctypes.c_int,ctypes.c_ulong,ctypes.c_char_p,ctypes.c_ulong,ctypes.c_ulong]\n"
          "l.prctl(0x46414354,1,sys.argv[3].encode(),0,0)\n"
-         "s=socket.socket();s.settimeout(2);r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close()\n"
+         "s=" + SOCKET_FOR_ARGV1 + ";s.settimeout(2);r=s.connect_ex((sys.argv[1],int(sys.argv[2])));s.close()\n"
          "sys.exit(0 if r==0 else 1)")
 
 
@@ -97,7 +100,7 @@ def mark(path):
 
 
 def blocking_connect(port):
-    s = socket.socket()
+    s = socket.socket(af(TARGET))
     s.settimeout(2)
     ok = s.connect_ex((TARGET, port)) == 0
     s.close()
@@ -112,14 +115,24 @@ class _SockaddrIn(ctypes.Structure):
                 ("sin_addr", ctypes.c_uint32), ("sin_zero", ctypes.c_char * 8)]
 
 
+class _SockaddrIn6(ctypes.Structure):
+    _fields_ = [("sin6_family", ctypes.c_ushort), ("sin6_port", ctypes.c_uint16),
+                ("sin6_flowinfo", ctypes.c_uint32), ("sin6_addr", ctypes.c_char * 16),
+                ("sin6_scope_id", ctypes.c_uint32)]
+
+
 def native_connect(port):
     """socket(2) + connect(2) + close(2) through libc, bypassing Python's socket module."""
-    fd = _libc.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+    fam = af(TARGET)
+    fd = _libc.socket(fam, socket.SOCK_STREAM, 0)
     if fd < 0:
         return False
     try:
-        sa = _SockaddrIn(socket.AF_INET, socket.htons(port),
-                         int.from_bytes(socket.inet_aton(TARGET), "little"), b"\0" * 8)
+        if fam == socket.AF_INET6:
+            sa = _SockaddrIn6(socket.AF_INET6, socket.htons(port), 0, socket.inet_pton(socket.AF_INET6, TARGET), 0)
+        else:
+            sa = _SockaddrIn(socket.AF_INET, socket.htons(port),
+                             int.from_bytes(socket.inet_aton(TARGET), "little"), b"\0" * 8)
         return _libc.connect(fd, ctypes.byref(sa), ctypes.sizeof(sa)) == 0
     finally:
         _libc.close(fd)
@@ -235,7 +248,7 @@ def main():
         try:
             await asyncio.sleep(random.uniform(0, 0.005))
             loop = asyncio.get_running_loop()
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s = socket.socket(af(TARGET), socket.SOCK_DGRAM)
             s.setblocking(False)
             try:
                 s.connect((TARGET, port))
@@ -276,7 +289,7 @@ def main():
             pass
         try:
             async with httpx.AsyncClient(timeout=5) as c:
-                ok += (await c.get(f"http://{TARGET}:{port}/")).status_code == 200
+                ok += (await c.get(f"http://{url_host(TARGET)}:{port}/")).status_code == 200
         except Exception:   # noqa: BLE001
             pass
         p = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", SUB, TARGET, str(port))

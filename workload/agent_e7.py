@@ -39,6 +39,7 @@ sys.path.insert(0, os.path.dirname(HERE))
 from workload import cg_create, cg_move  # noqa: E402
 from fact_rt.mcp import call_tool_with_exec  # noqa: E402
 from mcp_e4 import wait_port  # noqa: E402
+from netfam import FAMILY, LOOPBACK, url_host  # noqa: E402
 
 SYSTEM = ("You are an operations agent. Use the provided tools to check services; never guess a result. "
           "Call one tool per service, exactly as instructed. When all checks are done, reply with one line "
@@ -60,6 +61,26 @@ NETOPS_TASK = ("Incident at site {e}: users report slow access through the uplin
                "3. Check that the NETCONF service of core switch {e}-s1 is reachable at host 127.0.0.1 port {p2}"
                " - use the tcp_check tool.\n"
                "Report each result and your diagnosis.")
+
+
+def to_family(text):
+    """The prompts name the services at 127.0.0.1; with FACT_FAMILY=6 at ::1 (workload/netfam.py)."""
+    if FAMILY != 6:
+        return text
+    return text.replace("http://127.0.0.1:", f"http://{url_host(LOOPBACK)}:").replace("host 127.0.0.1 ", f"host {LOOPBACK} ")
+
+
+def args_to_family(args):
+    """Recorded tool arguments (replay) addressed to 127.0.0.1, moved to ::1 with FACT_FAMILY=6;
+    other addresses (e.g., 127.0.1.1 written by a model) are kept."""
+    if FAMILY != 6:
+        return args
+    out = dict(args)
+    if isinstance(out.get("url"), str):
+        out["url"] = out["url"].replace("http://127.0.0.1:", f"http://{url_host(LOOPBACK)}:")
+    if out.get("host") in ("127.0.0.1", "localhost"):
+        out["host"] = LOOPBACK
+    return out
 
 
 def farm_reply(req):
@@ -99,7 +120,7 @@ class ServiceFarm(threading.Thread):
 
         async def start():
             for p in self.ports:
-                await asyncio.start_server(handle, "127.0.0.1", p, backlog=256)
+                await asyncio.start_server(handle, LOOPBACK, p, backlog=256)
             self.ready.set()
         loop.run_until_complete(start())
         loop.run_forever()
@@ -374,7 +395,7 @@ async def replay_agent(url, exec_id, ops, t0_rec, t0, log, plan_ports, rec):
                     await asyncio.sleep(delay)
                 t1 = time.time_ns()
                 try:
-                    res = await call_tool_with_exec(s, o["tool"], o["args"], o.get("label", exec_id))
+                    res = await call_tool_with_exec(s, o["tool"], args_to_family(o["args"]), o.get("label", exec_id))
                     text = "".join(getattr(x, "text", "") for x in res.content)
                 except Exception as e:  # noqa: BLE001
                     text = f"error: {e}"
@@ -385,7 +406,7 @@ async def replay_agent(url, exec_id, ops, t0_rec, t0, log, plan_ports, rec):
                 if dport not in plan_ports:
                     rec["off_plan_ports"] += 1
                 op = {"exec_id": exec_id, "op_id": f"{exec_id}-{rec['tool_calls']:03d}", "tool": o["tool"],
-                      "args": o["args"], "t_start": t1, "t_end": t2, "result": text[:120],
+                      "args": args_to_family(o["args"]), "t_start": t1, "t_end": t2, "result": text[:120],
                       "label": o.get("label", exec_id), "replay_of": o["op_id"]}
                 if dport is not None:
                     op["dport"] = dport
@@ -447,7 +468,7 @@ def main():
     own = {e: ports[3 * i:3 * i + 3] for i, e in enumerate(execs)}
     if a.scenario == "netops":   # network operations incident instead of the health check
         globals().update(SYSTEM=NETOPS_SYSTEM, TASK=NETOPS_TASK)
-    tasks = {e: TASK.format(e=e, p0=own[e][0], p1=own[e][1], p2=own[e][2]) for e in execs}
+    tasks = {e: to_family(TASK.format(e=e, p0=own[e][0], p1=own[e][1], p2=own[e][2])) for e in execs}
     # binding faults: round(p * 3) of each agent's first three calls carry another
     # agent's identity in _meta (the agent decides how many calls it makes)
     n_wrong = round(a.wrong_label * 3)
@@ -458,7 +479,7 @@ def main():
     plan = {"cond": a.cond, "mode": "agent", "tool": "llm", "binding": True, "binding_mode": "auto",
             "seed": a.seed, "ops_per_exec": 3, "execs": len(execs), "exec_ids": execs, "wrong_label": a.wrong_label,
             "wrong_calls": a.wrong_calls,
-            "listen_addr": "127.0.0.1", "mcp_version": version("mcp"), "model": a.model, "num_predict": a.num_predict,
+            "listen_addr": LOOPBACK, "mcp_version": version("mcp"), "model": a.model, "num_predict": a.num_predict,
             "dport_map": {str(p): [e, f"{e}-svc{j}"] for e in execs for j, p in enumerate(own[e])},
             "tasks": tasks, "scenario": a.scenario}
     if a.policy:
@@ -498,7 +519,7 @@ def main():
             sys.exit("MCP server did not start (see server.log)")
         with open(os.path.join(a.out, "ops.jsonl"), "w") as log:
             runner = run_replay if a.replay_from else run_agents
-            recs = asyncio.run(runner(f"http://127.0.0.1:{a.server_port}/sse", tasks, a, log, set(ports)))
+            recs = asyncio.run(runner(f"http://{url_host(LOOPBACK)}:{a.server_port}/sse", tasks, a, log, set(ports)))
     finally:
         srv.terminate()
         try:

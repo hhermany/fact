@@ -7,6 +7,7 @@ on the destination machine (not instrumented); the measured host connects to it
 through the workloads' --dest-host. Does not need root (ports above 1024).
 
 Usage: python3 remote_farm.py --addr 0.0.0.0 --ranges 61000-61999 65000-65499
+       (--addr :: serves IPv4 and IPv6 on the same ports)
 """
 import argparse
 import resource
@@ -31,8 +32,10 @@ def main():
         resource.setrlimit(resource.RLIMIT_NOFILE, (want, hard))
     sel = selectors.DefaultSelector()
     for p in ports:
-        s = socket.socket()
+        s = socket.socket(socket.AF_INET6 if ":" in a.addr else socket.AF_INET)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if a.addr == "::":   # both families on one socket
+            s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
         s.bind((a.addr, p))
         s.listen(1024)
         s.setblocking(False)

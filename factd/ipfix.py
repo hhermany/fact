@@ -74,8 +74,9 @@ def encode_unc(t0_ms, t1_ms, status, cand, conns, sent, recv):
 
 class Exporter:
     def __init__(self, host, port, domain=1):
+        host = str(host).strip("[]")   # IPv6 literal, possibly in brackets
         self.addr = (host, int(port))
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock = socket.socket(socket.AF_INET6 if ":" in host else socket.AF_INET, socket.SOCK_DGRAM)
         self.domain = domain
         self.seq = 0            # data records sent before this message (RFC 7011 Sec. 3.1)
         self.messages = 0

@@ -77,11 +77,31 @@ def main():
     ap.add_argument("--label", required=True, choices=["smoke", "pilot", "validation", "confirmatory"])
     ap.add_argument("--campaigns-dir", default=os.path.join(HERE, "campaigns"))
     ap.add_argument("--preflight", help="directory of a preflight PASS (required for confirmatory)")
+    ap.add_argument("--family", choices=["4", "6"], default="4",
+                    help="address family of the workloads: 4 = IPv4 (127.0.0.1, the recorded campaigns), "
+                         "6 = IPv6 (::1); every run gets FACT_FAMILY (workload/netfam.py)")
+    ap.add_argument("--set", action="append", default=[], metavar="KEY=VALUE",
+                    help="overrides a fixed parameter of the spec (e.g., dest_host=<IPv6 address of the second machine>)")
     a = ap.parse_args()
 
     if os.geteuid() != 0:
         sys.exit("run as root")
     spec = json.load(open(a.spec))
+    overrides = {}
+    for kv in a.set:
+        k, v = kv.split("=", 1)
+        try:
+            overrides[k] = json.loads(v)
+        except ValueError:
+            overrides[k] = v
+    if overrides:
+        spec.setdefault("fixed", {}).update(overrides)
+    spec_path = a.spec
+    if overrides:   # the dependency check sees the parameters actually used
+        import tempfile
+        fd, spec_path = tempfile.mkstemp(suffix=".json")
+        with os.fdopen(fd, "w") as f:
+            json.dump(spec, f)
     git = git_info()
     if a.label == "confirmatory":
         if git["dirty"] is not False:
@@ -91,14 +111,15 @@ def main():
 
     # external dependencies (models, second machine, AgentProvenance): checked before
     # creating the campaign; if any is missing, no run is executed
-    chk = subprocess.run([sys.executable, os.path.join(HERE, "scripts", "check_deps.py"), a.spec],
+    chk = subprocess.run([sys.executable, os.path.join(HERE, "scripts", "check_deps.py"), spec_path],
                          capture_output=True, text=True)
     print(chk.stdout, end="", flush=True)
     if chk.returncode != 0:
         sys.exit("external dependencies unavailable (above): campaign not started\n" + chk.stderr[-2000:])
 
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    cid = f"{socket.gethostname()}-{spec['experiment']}-{a.label}-{stamp}"
+    fam = "-ipv6" if a.family == "6" else ""
+    cid = f"{socket.gethostname()}-{spec['experiment']}{fam}-{a.label}-{stamp}"
     cdir = os.path.join(a.campaigns_dir, cid)
     os.makedirs(cdir, exist_ok=False)
     with open(os.path.join(cdir, "deps_check.txt"), "w") as f:
@@ -172,6 +193,7 @@ def main():
             if p.get("binding") is False:
                 cmd.append("--no-binding")
         env = dict(os.environ)
+        env["FACT_FAMILY"] = a.family
         if p.get("collector"):
             env["COLLECTOR"] = str(p["collector"])
         if p.get("workload"):
@@ -218,6 +240,7 @@ def main():
         "started_utc": stamp, "duration_s": round(time.time() - t0, 1),
         "runs_ok": sum(r["status"] == "OK" for r in runs), "runs_failed": sum(r["status"] != "OK" for r in runs),
         "git": git, "environment": env, "preflight": a.preflight,
+        "family": int(a.family), "overrides": overrides,
         "unavailable_note": "UNAVAILABLE items in environment/ could not be observed",
         "runs": runs,
     }

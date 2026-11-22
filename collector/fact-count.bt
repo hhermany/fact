@@ -42,13 +42,13 @@ tracepoint:sched:sched_process_exit
 kprobe:tcp_connect
 {
 	$sk = (struct sock *)arg0;
-	if ($sk->__sk_common.skc_family == 2) {
+	if ($sk->__sk_common.skc_family == 2 || $sk->__sk_common.skc_family == 10) {   /* AF_INET, AF_INET6 */
 		@n["connect"] = count();
 	}
 }
 
 tracepoint:sock:inet_sock_set_state
-/ args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
+/ args->protocol == 6 && (args->family == 2 || args->family == 10) && args->oldstate == 2 /
 {
 	@n["tcp_state"] = count();
 }

@@ -9,10 +9,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 import ipfix  # noqa: E402
 
 
-def main():
-    rx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    rx.bind(("127.0.0.1", 0))
-    ex = ipfix.Exporter("127.0.0.1", rx.getsockname()[1])
+def round_trip(host):
+    rx = socket.socket(socket.AF_INET6 if ":" in host else socket.AF_INET, socket.SOCK_DGRAM)
+    rx.bind((host, 0))
+    ex = ipfix.Exporter(f"[{host}]" if ":" in host else host, rx.getsockname()[1])
     ex.send([ipfix.encode_exec(1, 2, "E01", 5, 4, 1, 3, 1000, 2000),
              ipfix.encode_exec(1, 2, "x" * 300, 1, 1, 0, 1, 0, 0)],
             [ipfix.encode_unc(1, 2, "ambiguous", "E01|E02", 2, 10, 20),
@@ -26,7 +26,19 @@ def main():
     assert (u[0]["status"], u[0]["candidates"], u[0]["octets_received"]) == (2, "E01|E02", 20), u
     assert (u[1]["status"], u[1]["candidates"]) == (3, ""), u
     assert ex.seq == 4
-    print("ipfix round trip: OK")
+
+
+def main():
+    """Over IPv4 and IPv6 (export to 127.0.0.1 and to [::1])."""
+    for host in ("127.0.0.1", "::1"):
+        try:
+            round_trip(host)
+        except OSError as e:
+            if host == "::1" and e.errno == 97:   # EAFNOSUPPORT: the host has no IPv6
+                print("ipfix round trip (::1): SKIPPED, no IPv6 on this host")
+                continue
+            raise
+        print(f"ipfix round trip ({host}): OK")
 
 
 if __name__ == "__main__":

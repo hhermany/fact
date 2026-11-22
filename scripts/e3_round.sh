@@ -24,7 +24,7 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 [ "$(id -u)" -eq 0 ] || { echo "run as root"; exit 1; }
 mkdir -p "$OUT"
 BIN="$HERE/bench/connect_bench"
-[ -x "$BIN" ] || gcc -O2 -Wall -o "$BIN" "$HERE/bench/connect_bench.c"
+[ -x "$BIN" ] && [ "$BIN" -nt "$HERE/bench/connect_bench.c" ] || gcc -O2 -Wall -o "$BIN" "$HERE/bench/connect_bench.c"
 PORT=$(( 65000 + SEED % 500 ))   # outside the default ephemeral range (32768-60999)
 cat /proc/loadavg > "$OUT/loadavg-start.txt"
 cat /proc/sys/net/ipv4/ip_local_port_range > "$OUT/ip_local_port_range.txt"
@@ -52,7 +52,8 @@ if [ -n "$BT" ]; then
 fi
 
 CPU0=$(awk '{print $14+$15}' /proc/$BPID/stat 2>/dev/null || echo 0)
-echo "${HOST:-127.0.0.1}" > "$OUT/dest_host.txt"
+if [ "${FACT_FAMILY:-4}" = 6 ]; then LOOP="::1"; else LOOP="127.0.0.1"; fi   # connect_bench follows FACT_FAMILY
+echo "${HOST:-$LOOP}" > "$OUT/dest_host.txt"
 "$BIN" --n "$N" --warmup "$WARMUP" --port "$PORT" --markers "$MARKERS" --out "$OUT/latencies.csv" ${HOST:+--host "$HOST"} > "$OUT/bench.json"
 
 if [ -n "$BPID" ]; then

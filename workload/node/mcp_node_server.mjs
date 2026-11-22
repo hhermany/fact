@@ -31,8 +31,9 @@ import * as agentctx from "../../fact_rt_node/agentctx.mjs";
 
 const CTX_BEGIN = "/run/agentctx/begin/";
 const CTX_END = "/run/agentctx/end";
-const LISTEN = "127.0.0.1";
-const TARGET = process.env.FACT_DEST || "127.0.0.1";
+// 127.0.0.1, or ::1 with FACT_FAMILY=6 (as workload/netfam.py)
+const LISTEN = process.env.FACT_FAMILY === "6" ? "::1" : "127.0.0.1";
+const TARGET = process.env.FACT_DEST || LISTEN;
 const SUB =
   "const s=require('net').connect({host:process.argv[1],port:+process.argv[2]});" +
   "s.setTimeout(2000,()=>process.exit(1));s.on('connect',()=>{s.destroy();process.exit(0)});" +

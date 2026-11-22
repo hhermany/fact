@@ -44,16 +44,20 @@ tracepoint:sched:sched_process_exit
 fentry:tcp_connect
 {
 	$sk = args->sk;
-	if ($sk->__sk_common.skc_family == 2) {
+	if ($sk->__sk_common.skc_family == 2 || $sk->__sk_common.skc_family == 10) {   /* AF_INET, AF_INET6 */
 		$dp = $sk->__sk_common.skc_dport;
+		$da = ntop(2, $sk->__sk_common.skc_daddr);
+		if ($sk->__sk_common.skc_family == 10) {
+			$da = ntop(10, $sk->__sk_common.skc_v6_daddr.in6_u.u6_addr8);
+		}
 		printf("{\"ev\":\"connect\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"sk\":%llu,\"ctx\":\"%s\",\"daddr\":\"%s\",\"dport\":%d}\n",
 		       nsecs, pid, tid, cgroup, (uint64)$sk, @ctx[tid],
-		       ntop(2, $sk->__sk_common.skc_daddr), (($dp & 0xff) << 8) | (($dp >> 8) & 0xff));
+		       $da, (($dp & 0xff) << 8) | (($dp >> 8) & 0xff));
 	}
 }
 
 tracepoint:sock:inet_sock_set_state
-/ args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
+/ args->protocol == 6 && (args->family == 2 || args->family == 10) && args->oldstate == 2 /
 {
 	printf("{\"ev\":\"tcp_state\",\"ts\":%llu,\"sk\":%llu,\"old\":%d,\"new\":%d}\n",
 	       nsecs, (uint64)args->skaddr, args->oldstate, args->newstate);

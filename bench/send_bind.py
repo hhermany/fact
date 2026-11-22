@@ -29,6 +29,8 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fact_rt import agentctx  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workload"))
+from netfam import LOOPBACK, af  # noqa: E402  (127.0.0.1, or ::1 with FACT_FAMILY=6)
 
 HOOK = None
 
@@ -40,12 +42,12 @@ def server(lsock):
 
 
 def run(mode, n, size, batches):
-    lsock = socket.socket()
-    lsock.bind(("127.0.0.1", 0))
+    lsock = socket.socket(af(LOOPBACK))
+    lsock.bind((LOOPBACK, 0))
     lsock.listen(1)
     threading.Thread(target=server, args=(lsock,), daemon=True).start()
-    s = socket.socket()
-    s.connect(lsock.getsockname())
+    s = socket.socket(af(LOOPBACK))
+    s.connect(lsock.getsockname()[:2])
     s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     msg = b"x" * size
     socket.socket.send = agentctx._orig["send"] if mode == "off" else HOOK

@@ -26,10 +26,12 @@ def main():
     ap.add_argument("--binding", default="auto")       # accepted for symmetry with the other servers
     a = ap.parse_args()
     import mcp_server_fetch.server as fetch_server
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from netfam import LOOPBACK
     from fact_rt import mcp as fact_mcp
     fact_mcp.serve_stdio_server(fetch_server,
                                 lambda: fetch_server.serve(custom_user_agent="FACT-E5fetch"),
-                                json.load(open(a.tokens)), port=a.port)
+                                json.load(open(a.tokens)), host=LOOPBACK, port=a.port)
 
 
 if __name__ == "__main__":

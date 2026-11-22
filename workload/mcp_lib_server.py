@@ -41,8 +41,11 @@ import urllib.request
 
 from mcp.server.fastmcp import FastMCP
 
-LISTEN = "127.0.0.1"                                  # MCP server listening address
-TARGET = os.environ.get("FACT_DEST", "127.0.0.1")   # destination of the tools (loopback or another machine)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from netfam import LOOPBACK, url_host  # noqa: E402
+
+LISTEN = LOOPBACK                                     # MCP server listening address (127.0.0.1 or ::1)
+TARGET = os.environ.get("FACT_DEST", LOOPBACK)      # destination of the tools (loopback or another machine)
 TIMEOUT = 5
 
 
@@ -50,7 +53,7 @@ POOL = 4                                            # connections in the shared 
 
 
 def url_of(port, op=""):
-    return f"http://{TARGET}:{int(port)}/{op}"
+    return f"http://{url_host(TARGET)}:{int(port)}/{op}"
 
 
 def main():

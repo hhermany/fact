@@ -6,6 +6,9 @@ import os
 import random
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workload"))
+from netfam import LOOPBACK  # noqa: E402
+
 CTX = "/run/agentctx/begin/"
 
 
@@ -35,7 +38,7 @@ def gen(cond, out, ops=20, mode="mixed", binding=True, seed=0, conflict=False):
     def connect(pid, tid, cg, port):
         sk[0] += 64
         ev.append({"ev": "connect", "ts": t(), "pid": pid, "tid": tid, "cgroup": cg, "comm": "python3",
-                   "sk": sk[0], "ctx": ctx.get(tid, ""), "daddr": "127.0.0.1", "dport": port})
+                   "sk": sk[0], "ctx": ctx.get(tid, ""), "daddr": LOOPBACK, "dport": port})
         ev.append({"ev": "tcp_state", "ts": t(), "sk": sk[0], "old": 2, "new": 1})
 
     def fork(ptid, ppid, cg):
@@ -89,7 +92,7 @@ def gen(cond, out, ops=20, mode="mixed", binding=True, seed=0, conflict=False):
                 break
 
     json.dump({"cond": cond, "mode": mode, "binding": binding, "seed": seed, "ops_per_exec": ops,
-               "listen_addr": "127.0.0.1", "dport_map": dmap}, open(f"{out}/plan.json", "w"))
+               "listen_addr": LOOPBACK, "dport_map": dmap}, open(f"{out}/plan.json", "w"))
     json.dump(reg, open(f"{out}/registry.json", "w"))
     with open(f"{out}/events.jsonl", "w") as f:
         f.write('{"ev":"ready","ts":0}\n')

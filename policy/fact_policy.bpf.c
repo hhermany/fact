@@ -58,7 +58,8 @@
 #define ID_LEN 48
 
 struct task_struct { int pid; int tgid; } __attribute__((preserve_access_index));
-struct sock_common { unsigned short skc_family; __be16 skc_dport; __be32 skc_daddr; } __attribute__((preserve_access_index));
+struct in6_addr { union { __u32 u6_addr32[4]; } in6_u; } __attribute__((preserve_access_index));
+struct sock_common { unsigned short skc_family; __be16 skc_dport; __be32 skc_daddr; struct in6_addr skc_v6_daddr; } __attribute__((preserve_access_index));
 struct sock { struct sock_common __sk_common; } __attribute__((preserve_access_index));
 struct socket { struct sock *sk; } __attribute__((preserve_access_index));
 struct msghdr { void *msg_name; } __attribute__((preserve_access_index));
@@ -71,6 +72,7 @@ struct file { struct inode *f_inode; } __attribute__((preserve_access_index));
 #define E_INVAL 22
 #define E_ALREADY 114
 struct fact_sin { unsigned short family; __be16 port; __be32 addr; };
+struct fact_sin6 { unsigned short family; __be16 port; __u32 flowinfo; __u32 addr[4]; };
 
 struct ident { char id[ID_LEN]; };
 struct pkey { char id[ID_LEN]; __u32 dport; };
@@ -82,6 +84,7 @@ struct skcred { struct ident opener; struct ident last; };
 struct decision {
 	__u64 ts; __u32 pid; __u32 tid; __u32 dport; __u32 daddr;
 	__u8 verdict; __u8 has_ctx; __u8 pad[6]; char id[ID_LEN];
+	__u32 daddr6[4];   /* IPv6 destination (pad[5] = 1), network byte order */
 };
 
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
@@ -131,7 +134,7 @@ int on_openat(struct openat_args *a)
 	if (bpf_map_lookup_elem(&trust_map, &on) && !bpf_map_lookup_elem(&trust_map, &tgid)) {
 		struct decision *d = bpf_ringbuf_reserve(&events, sizeof(*d), 0);
 		if (d) {   /* marker from an untrusted process: ignored, logged */
-			d->ts = bpf_ktime_get_ns(); d->pid = tgid; d->tid = tid; d->dport = 0; d->daddr = 0;
+			d->ts = bpf_ktime_get_ns(); d->pid = tgid; d->tid = tid; d->dport = 0; d->daddr = 0; __builtin_memset(d->daddr6, 0, sizeof(d->daddr6));
 			d->verdict = 0; d->has_ctx = 0;
 			__builtin_memset(d->pad, 0, sizeof(d->pad));
 			d->pad[2] = 1;
@@ -230,7 +233,7 @@ int BPF_PROG(on_prctl, int option, unsigned long arg2, unsigned long arg3, unsig
 	if (bpf_map_lookup_elem(&trust_map, &on) && !bpf_map_lookup_elem(&trust_map, &tgid)) {
 		struct decision *d = bpf_ringbuf_reserve(&events, sizeof(*d), 0);
 		if (d) {   /* switch refused: the caller is not a trusted runtime process */
-			d->ts = bpf_ktime_get_ns(); d->pid = tgid; d->tid = tid; d->dport = 0; d->daddr = 0;
+			d->ts = bpf_ktime_get_ns(); d->pid = tgid; d->tid = tid; d->dport = 0; d->daddr = 0; __builtin_memset(d->daddr6, 0, sizeof(d->daddr6));
 			d->verdict = 0; d->has_ctx = 0;
 			__builtin_memset(d->pad, 0, sizeof(d->pad));
 			d->pad[2] = 2;
@@ -265,10 +268,11 @@ static __always_inline int id_eq(const char *a, const char *b)
 }
 
 /* kind: 0 = connect (cgroup/connect4), 1 = unconnected datagram (cgroup/sendmsg4),
- * 2 = send on an existing socket (LSM socket_sendmsg); v6 = 1 for an IPv6 socket or address (daddr is then 0). Per-datagram and per-send
+ * 2 = send on an existing socket (LSM socket_sendmsg); v6 = 1 for an IPv6 socket or address, whose
+ * destination is a6 (daddr is then 0). Per-datagram and per-send
  * decisions log only denials: logging every allowed datagram costs microseconds per
  * send (E3send pilot), while a connect is logged whatever the verdict. */
-static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 kind, __u8 v6)
+static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, const __u32 *a6, __u8 kind, __u8 v6)
 {
 	__u64 pt = bpf_get_current_pid_tgid();
 	__u32 tid = (__u32)pt;
@@ -328,6 +332,8 @@ static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 
 	if (d) {
 		d->ts = bpf_ktime_get_ns(); d->pid = pt >> 32; d->tid = tid;
 		d->dport = dport; d->daddr = daddr; d->verdict = verdict;
+		if (a6) { d->daddr6[0] = a6[0]; d->daddr6[1] = a6[1]; d->daddr6[2] = a6[2]; d->daddr6[3] = a6[3]; }
+		else __builtin_memset(d->daddr6, 0, sizeof(d->daddr6));
 		d->has_ctx = v ? 1 : 0;
 		__builtin_memset(d->pad, 0, sizeof(d->pad));
 		d->pad[0] = conflict; d->pad[1] = from_lineage; d->pad[3] = kind; d->pad[4] = over; d->pad[5] = v6;
@@ -350,7 +356,7 @@ static __always_inline void stamp_opener(struct bpf_sock *sk)
 	}
 }
 
-static __always_inline int on_connect(struct bpf_sock_addr *sa, __u32 daddr, __u8 v6)
+static __always_inline int on_connect(struct bpf_sock_addr *sa, __u32 daddr, const __u32 *a6, __u8 v6)
 {
 	__u32 k0 = 0;
 	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
@@ -359,13 +365,13 @@ static __always_inline int on_connect(struct bpf_sock_addr *sa, __u32 daddr, __u
 	__u32 dport = bpf_ntohs((__u16)sa->user_port);
 	if (dport < c->lo || dport > c->hi)
 		return 1;
-	int verdict = decide(c, dport, daddr, 0, v6);
+	int verdict = decide(c, dport, daddr, a6, 0, v6);
 	if (verdict && c->cred && sa->sk)
 		stamp_opener(sa->sk);
 	return verdict;
 }
 
-static __always_inline int on_dgram(struct bpf_sock_addr *sa, __u32 daddr, __u8 v6)
+static __always_inline int on_dgram(struct bpf_sock_addr *sa, __u32 daddr, const __u32 *a6, __u8 v6)
 {
 	__u32 k0 = 0;
 	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
@@ -374,32 +380,34 @@ static __always_inline int on_dgram(struct bpf_sock_addr *sa, __u32 daddr, __u8 
 	__u32 dport = bpf_ntohs((__u16)sa->user_port);
 	if (dport < c->lo || dport > c->hi)
 		return 1;
-	return decide(c, dport, daddr, 1, v6);
+	return decide(c, dport, daddr, a6, 1, v6);
 }
 
 SEC("cgroup/connect4")
 int on_connect4(struct bpf_sock_addr *sa)
 {
-	return on_connect(sa, sa->user_ip4, 0);
+	return on_connect(sa, sa->user_ip4, 0, 0);
 }
 
 /* IPv6, including IPv4-mapped addresses on IPv6 sockets (decided like IPv4: by port) */
 SEC("cgroup/connect6")
 int on_connect6(struct bpf_sock_addr *sa)
 {
-	return on_connect(sa, 0, 1);
+	__u32 a6[4] = {sa->user_ip6[0], sa->user_ip6[1], sa->user_ip6[2], sa->user_ip6[3]};
+	return on_connect(sa, 0, a6, 1);
 }
 
 SEC("cgroup/sendmsg4")
 int on_sendmsg4(struct bpf_sock_addr *sa)
 {
-	return on_dgram(sa, sa->user_ip4, 0);
+	return on_dgram(sa, sa->user_ip4, 0, 0);
 }
 
 SEC("cgroup/sendmsg6")
 int on_sendmsg6(struct bpf_sock_addr *sa)
 {
-	return on_dgram(sa, 0, 1);
+	__u32 a6[4] = {sa->user_ip6[0], sa->user_ip6[1], sa->user_ip6[2], sa->user_ip6[3]};
+	return on_dgram(sa, 0, a6, 1);
 }
 
 SEC("lsm/socket_sendmsg")
@@ -419,17 +427,26 @@ int BPF_PROG(on_sock_sendmsg, struct socket *sock, struct msghdr *msg, int size,
 		return 0;
 	__be16 port = BPF_CORE_READ(sk, __sk_common.skc_dport);
 	__be32 addr = fam == 2 ? BPF_CORE_READ(sk, __sk_common.skc_daddr) : 0;
+	__u32 a6[4] = {};
+	__u8 v6 = fam == 10;
+	if (v6)
+		BPF_CORE_READ_INTO(&a6, sk, __sk_common.skc_v6_daddr.in6_u.u6_addr32);
 	void *name = BPF_CORE_READ(msg, msg_name);
 	if (name) {   /* unconnected datagram: the destination is in the message */
-		struct fact_sin sin = {};   /* sockaddr_in and sockaddr_in6 share family and port */
-		bpf_probe_read_kernel(&sin, sizeof(sin), name);
-		if (sin.family == 2) { port = sin.port; addr = sin.addr; }
-		else if (sin.family == 10) { port = sin.port; addr = 0; }
+		struct fact_sin6 sin = {};   /* sockaddr_in and sockaddr_in6 share family and port */
+		bpf_probe_read_kernel(&sin, sizeof(struct fact_sin), name);
+		if (sin.family == 2) {
+			port = sin.port; addr = ((struct fact_sin *)&sin)->addr; v6 = 0;
+		} else if (sin.family == 10) {
+			bpf_probe_read_kernel(&sin, sizeof(sin), name);
+			port = sin.port; addr = 0; v6 = 1;
+			a6[0] = sin.addr[0]; a6[1] = sin.addr[1]; a6[2] = sin.addr[2]; a6[3] = sin.addr[3];
+		}
 	}
 	__u32 dport = bpf_ntohs(port);
 	if (dport < c->lo || dport > c->hi)
 		return 0;
-	return decide(c, dport, addr, 2, fam == 10) ? 0 : -1;   /* -EPERM */
+	return decide(c, dport, addr, v6 ? a6 : 0, 2, v6) ? 0 : -1;   /* -EPERM */
 }
 
 /* Budget accounting: bytes accepted by the kernel (return value), charged to the

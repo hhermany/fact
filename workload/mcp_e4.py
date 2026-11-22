@@ -30,6 +30,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from workload import Listener, cg_create, cg_move  # noqa: E402
 from http_farm import HttpListener, KeepAliveHttpListener, UdpDnsListener  # noqa: E402
 from fact_rt.mcp import call_tool_with_exec  # noqa: E402
+from netfam import LOOPBACK, af, url_host  # noqa: E402
 
 TOOLS = {"sync": "sync_get", "thread": "thread_get", "subproc": "subproc_get", "async": "async_get"}
 # E5lib: tools whose request is made by third-party client code (workload/mcp_lib_server.py)
@@ -80,9 +81,9 @@ REUSE_PORTS = 2      # shared destination ports in E5reuse
 def wait_port(port, timeout=20.0):
     t0 = time.time()
     while time.time() - t0 < timeout:
-        s = socket.socket()
+        s = socket.socket(af(LOOPBACK))
         try:
-            if s.connect_ex(("127.0.0.1", port)) == 0:
+            if s.connect_ex((LOOPBACK, port)) == 0:
                 return True
         finally:
             s.close()
@@ -110,7 +111,7 @@ async def session(url, tool, exec_id, ops, log, binding, token=None):
                 t0 = time.time_ns()
                 args = {"exec_id": exec_id, "port": op["dport"]}
                 if tool == "fetch_server":   # the fetch server's own arguments
-                    args = {"url": f"http://{op['dest']}:{op['dport']}/", "raw": True}
+                    args = {"url": f"http://{url_host(op['dest'])}:{op['dport']}/", "raw": True}
                 if tool in REUSE_TOOLS:
                     args["op"] = op["op_id"]
                 if "size" in op:
@@ -170,7 +171,7 @@ def main():
                     help="E12contain: bytes per second the destination serves, one request at a time")
     ap.add_argument("--allow-all", type=int, default=0,
                     help="1 with --policy 1: every execution may reach all its destinations (E9cost)")
-    ap.add_argument("--dest-host", default="127.0.0.1",
+    ap.add_argument("--dest-host", default=LOOPBACK,
                     help="destination of the tools; outside loopback, the services run on another machine (workload/remote_farm.py)")
     ap.add_argument("--policy", type=int, default=0,
                     help="1: loads the per-execution policy (requires fact_policy running)")
@@ -329,12 +330,12 @@ def main():
         with os.fdopen(fd, "w") as f:
             json.dump({t: e for e, t in tokens.items()}, f)
 
-    remote = a.dest_host != "127.0.0.1"
+    remote = a.dest_host not in ("127.0.0.1", "::1")
     if remote:   # services on the other machine: check that the planned range answers before measuring
         # with the policy active, planned ports (61000-64998) without identity are denied
         # already here; so check a remote_farm port outside the policed range
         for p in ((65000,) if a.policy else (min(ports), max(ports))):
-            s = socket.socket()
+            s = socket.socket(af(a.dest_host))
             s.settimeout(2)
             try:
                 if s.connect_ex((a.dest_host, p)) != 0:
@@ -388,7 +389,7 @@ def main():
         if not wait_port(a.server_port):
             sys.exit("MCP server did not start (see server.log)")
         with open(os.path.join(a.out, "ops.jsonl"), "w") as log:
-            lats = asyncio.run(run_clients(f"http://127.0.0.1:{a.server_port}/sse", a.tool, ops_by_exec, log,
+            lats = asyncio.run(run_clients(f"http://{url_host(LOOPBACK)}:{a.server_port}/sse", a.tool, ops_by_exec, log,
                                            a.binding_mode, tokens))
     finally:
         srv.terminate()

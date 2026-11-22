@@ -26,6 +26,7 @@ struct cfg { unsigned lo, hi, no_ctx_allow, lineage, per_send, budget, cred; };
 struct decision {
 	unsigned long long ts; unsigned pid, tid, dport, daddr;
 	unsigned char verdict, has_ctx, pad[6]; char id[ID_LEN];
+	unsigned daddr6[4];   /* IPv6 destination when pad[5] = 1 */
 };
 
 static volatile int stop;
@@ -35,8 +36,9 @@ static int on_event(void *ctx, void *data, size_t sz)
 {
 	(void)ctx; (void)sz;
 	const struct decision *d = data;
-	char ip[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &d->daddr, ip, sizeof(ip));
+	char ip[INET6_ADDRSTRLEN];
+	if (d->pad[5]) inet_ntop(AF_INET6, d->daddr6, ip, sizeof(ip));
+	else inet_ntop(AF_INET, &d->daddr, ip, sizeof(ip));
 	char id[ID_LEN + 1];
 	memcpy(id, d->id, ID_LEN); id[ID_LEN] = 0;
 	if (d->pad[2] == 2) {   /* credential switch refused: caller outside the trusted runtime */
@@ -52,7 +54,7 @@ static int on_event(void *ctx, void *data, size_t sz)
 	static const char *kinds[] = {"connect", "sendto", "send"};
 	printf("{\"ev\":\"decision\",\"ts\":%llu,\"pid\":%u,\"tid\":%u,\"daddr\":\"%s\",\"dport\":%u,"
 	       "\"verdict\":\"%s\",\"has_ctx\":%u,\"ctx\":\"%s\",\"conflict\":%u,\"from_lineage\":%u,\"kind\":\"%s\",\"budget\":%u,\"ip\":%u}\n",
-	       d->ts, d->pid, d->tid, d->pad[5] ? "::" : ip, d->dport, d->verdict ? "allow" : "deny", d->has_ctx, id,
+	       d->ts, d->pid, d->tid, ip, d->dport, d->verdict ? "allow" : "deny", d->has_ctx, id,
 	       d->pad[0], d->pad[1], kinds[d->pad[3] < 3 ? d->pad[3] : 0], d->pad[4], d->pad[5] ? 6 : 4);
 	return 0;
 }

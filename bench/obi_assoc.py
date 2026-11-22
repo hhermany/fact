@@ -24,12 +24,17 @@ Usage: python3 obi_assoc.py --mode mcp-sse --execs 4 --calls 25 --out DIR
 """
 import argparse, asyncio, hashlib, json, os, random, subprocess, sys, time
 
+H = "::1" if os.environ.get("FACT_FAMILY") == "6" else "127.0.0.1"   # IPv6 with FACT_FAMILY=6
+U = f"[{H}]" if ":" in H else H
+
 TOOL = r'''
-import asyncio, random, sys, httpx
+import asyncio, os, random, sys, httpx
+H = "::1" if os.environ.get("FACT_FAMILY") == "6" else "127.0.0.1"   # IPv6 with FACT_FAMILY=6
+U = f"[{H}]" if ":" in H else H
 MODE, PORT, KIND = sys.argv[1], int(sys.argv[2]), (sys.argv[3] if len(sys.argv) > 3 else "async")
 async def out(p):
     await asyncio.sleep(random.uniform(0, 0.02))
-    url = f"http://127.0.0.1:{p}/item"
+    url = f"http://{U}:{p}/item"
     if KIND == "thread":     # worker thread (asyncio.to_thread), blocking client
         code = (await asyncio.to_thread(httpx.get, url)).status_code
     elif KIND == "subproc":  # child process doing the request
@@ -48,10 +53,10 @@ if MODE == "direct":
     from starlette.routing import Route
     async def fetch(req):
         return PlainTextResponse(await out(int(req.query_params["port"])))
-    uvicorn.run(Starlette(routes=[Route("/fetch", fetch)]), host="127.0.0.1", port=PORT, log_level="warning")
+    uvicorn.run(Starlette(routes=[Route("/fetch", fetch)]), host=H, port=PORT, log_level="warning")
 else:
     from mcp.server.fastmcp import FastMCP
-    m = FastMCP("obi", host="127.0.0.1", port=PORT, log_level="WARNING")
+    m = FastMCP("obi", host=H, port=PORT, log_level="WARNING")
     @m.tool()
     async def fetch(port: int) -> str:
         """GET an item from a service port."""
@@ -93,11 +98,11 @@ async def main():
         w.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok")
         await w.drain(); w.close()
 
-    servers = [await asyncio.start_server(handle, "127.0.0.1", p) for p in port_of.values()]
+    servers = [await asyncio.start_server(handle, H, p) for p in port_of.values()]
     srv = subprocess.Popen([sys.executable, "-c", TOOL, a.mode, str(a.port), a.tool])
     for _ in range(100):
         try:
-            _, w = await asyncio.open_connection("127.0.0.1", a.port); w.close(); break
+            _, w = await asyncio.open_connection(H, a.port); w.close(); break
         except OSError:
             await asyncio.sleep(0.1)
     with open(os.path.join(a.out, "ready"), "w") as f:
@@ -109,17 +114,17 @@ async def main():
     async def run_direct(e):
         async with httpx.AsyncClient() as c:
             for i in range(a.calls):
-                await c.get(f"http://127.0.0.1:{a.port}/fetch", params={"port": port_of[e]},
+                await c.get(f"http://{U}:{a.port}/fetch", params={"port": port_of[e]},
                             headers={"traceparent": tp(e, i)})
 
     async def run_mcp(e):
         from mcp import ClientSession
         if a.mode == "mcp-sse":
             from mcp.client.sse import sse_client as cl
-            url = f"http://127.0.0.1:{a.port}/sse"
+            url = f"http://{U}:{a.port}/sse"
         else:
             from mcp.client.streamable_http import streamablehttp_client as cl
-            url = f"http://127.0.0.1:{a.port}/mcp"
+            url = f"http://{U}:{a.port}/mcp"
         async def once():   # SSE session opening can hang with simultaneous sessions (as in E7): deadline + retry
             async with cl(url, headers={"traceparent": tp(e, 0)}) as streams:
                 async with ClientSession(streams[0], streams[1]) as s:

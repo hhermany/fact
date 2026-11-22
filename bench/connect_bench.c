@@ -67,20 +67,36 @@ int main(int argc, char **argv) {
         else { fprintf(stderr, "unknown argument: %s\n", argv[i]); return 2; }
     }
 
-    struct sockaddr_in addr = {0};
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    // IPv4 (127.0.0.1) by default; IPv6 (::1) with FACT_FAMILY=6 or an IPv6 --host
+    const char *famenv = getenv("FACT_FAMILY");
+    int fam = (host ? strchr(host, ':') != NULL : (famenv && !strcmp(famenv, "6"))) ? AF_INET6 : AF_INET;
+    struct sockaddr_storage ss = {0};
+    struct sockaddr_in *a4 = (struct sockaddr_in *)&ss;
+    struct sockaddr_in6 *a6 = (struct sockaddr_in6 *)&ss;
+    socklen_t alen;
+    if (fam == AF_INET6) {
+        a6->sin6_family = AF_INET6;
+        a6->sin6_port = htons(port);
+        a6->sin6_addr = in6addr_loopback;
+        alen = sizeof *a6;
+    } else {
+        a4->sin_family = AF_INET;
+        a4->sin_port = htons(port);
+        a4->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        alen = sizeof *a4;
+    }
+    struct sockaddr *addr = (struct sockaddr *)&ss;
     pid_t child = -1;
     if (host) {
-        if (inet_pton(AF_INET, host, &addr.sin_addr) != 1) { fprintf(stderr, "invalid host: %s\n", host); return 2; }
+        void *dst = fam == AF_INET6 ? (void *)&a6->sin6_addr : (void *)&a4->sin_addr;
+        if (inet_pton(fam, host, dst) != 1) { fprintf(stderr, "invalid host: %s\n", host); return 2; }
         goto measure;
     }
 
-    int ls = socket(AF_INET, SOCK_STREAM, 0);
+    int ls = socket(fam, SOCK_STREAM, 0);
     int one = 1;
     setsockopt(ls, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one);
-    if (bind(ls, (struct sockaddr *)&addr, sizeof addr) || listen(ls, 4096)) {
+    if (bind(ls, addr, alen) || listen(ls, 4096)) {
         perror("bind/listen");
         return 1;
     }
@@ -102,12 +118,12 @@ measure:;
         uint64_t t0 = now_ns();
         if (markers == 1) marker("/run/agentctx/begin/BENCH");
         else if (markers == 2) cred(1);
-        int s = socket(AF_INET, SOCK_STREAM, 0);
+        int s = socket(fam, SOCK_STREAM, 0);
         // abortive close (RST): avoids accumulating TIME_WAIT and exhausting
         // ephemeral ports between runs; recorded as a measurement decision.
         struct linger lg = {1, 0};
         setsockopt(s, SOL_SOCKET, SO_LINGER, &lg, sizeof lg);
-        int r = connect(s, (struct sockaddr *)&addr, sizeof addr);
+        int r = connect(s, addr, alen);
         close(s);
         if (markers == 1) marker("/run/agentctx/end");
         else if (markers == 2) cred(0);

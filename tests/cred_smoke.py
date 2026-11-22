@@ -22,6 +22,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fact_rt import agentctx  # noqa: E402
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "policy"))
 import policyctl  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workload"))
+from netfam import LOOPBACK, af  # noqa: E402  (FACT_FAMILY=6: the same test over IPv6)
 
 LOG = sys.argv[1] if len(sys.argv) > 1 else "/tmp/p.log"
 fails = 0
@@ -44,12 +46,12 @@ def decisions(port):
 
 
 def try_connect(port, native=False):
-    s = socket.socket()
+    s = socket.socket(af(LOOPBACK))
     s.settimeout(1)
     if native:   # bypasses the runtime's hook, as code in a native library would
-        r = agentctx._orig["connect_ex"](s, ("127.0.0.1", port))
+        r = agentctx._orig["connect_ex"](s, (LOOPBACK, port))
     else:
-        r = s.connect_ex(("127.0.0.1", port))
+        r = s.connect_ex((LOOPBACK, port))
     s.close()
     return r
 
@@ -74,7 +76,7 @@ with agentctx.bind("exA"):
     t = threading.Thread(target=try_connect, args=(61019,))
     t.start(); t.join()
     subprocess.run([sys.executable, "-I", "-c",
-                    "import socket;s=socket.socket();s.settimeout(1);s.connect_ex(('127.0.0.1',61012));s.close()"])
+                    "import socket;s=socket.socket(%d);s.settimeout(1);s.connect_ex(('%s',61012));s.close()" % (af(LOOPBACK), LOOPBACK)])
 time.sleep(0.5)
 for port, what in ((61010, "calling thread"), (61011, "new thread"), (61012, "child process")):
     d = decisions(port)
@@ -101,9 +103,9 @@ check("openat marker not accepted", len(d) == 1 and d[0]["has_ctx"] == 0, [x["ct
 
 # accounting: an echo server on a policed port; exA is allowed to it
 policyctl.allow("exA", [61020])
-srv = socket.socket()
+srv = socket.socket(af(LOOPBACK))
 srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-srv.bind(("127.0.0.1", 61020)); srv.listen(1)
+srv.bind((LOOPBACK, 61020)); srv.listen(1)
 
 
 def echo():
@@ -118,7 +120,7 @@ def echo():
 threading.Thread(target=echo, daemon=True).start()
 with agentctx.bind("exA"):
     agentctx.sync_kernel()
-    s = socket.create_connection(("127.0.0.1", 61020))
+    s = socket.create_connection((LOOPBACK, 61020))
     agentctx.sync_kernel()
     s.sendall(b"x" * 1000)
     got = b""

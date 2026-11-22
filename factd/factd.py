@@ -211,7 +211,7 @@ def main():
     ap.add_argument("--out")
     ap.add_argument("--interval", type=float, default=1.0)
     ap.add_argument("--reorder-ms", type=float, default=100.0)
-    ap.add_argument("--ipfix", help="HOST:PORT of an IPFIX collector (UDP)")
+    ap.add_argument("--ipfix", help="HOST:PORT of an IPFIX collector (UDP); IPv6 as [ADDR]:PORT")
     ap.add_argument("--follow", help="follow a growing collector stream file (live); SIGTERM ends it")
     a = ap.parse_args()
     out = open(a.out, "w") if a.out else sys.stdout

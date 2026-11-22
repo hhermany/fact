@@ -22,6 +22,9 @@ from urllib.parse import urlparse
 import anyio
 from mcp.server.fastmcp import FastMCP
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from netfam import LOOPBACK, af, url_host  # noqa: E402
+
 FETCH = ("import sys,urllib.request\n"
          "try:\n"
          "  r=urllib.request.urlopen(sys.argv[1],timeout=3); print(r.status, r.read(200).decode(errors='replace'))\n"
@@ -34,7 +37,7 @@ def main():
     ap.add_argument("--port", type=int, default=64999)
     ap.add_argument("--binding", choices=["auto", "none"], default="auto")
     a = ap.parse_args()
-    mcp = FastMCP("netops", host="127.0.0.1", port=a.port, log_level="WARNING")
+    mcp = FastMCP("netops", host=LOOPBACK, port=a.port, log_level="WARNING")
 
     @mcp.tool()
     async def http_get(url: str) -> str:
@@ -42,7 +45,7 @@ def main():
         u = urlparse(url)
         try:
             r, w = await asyncio.wait_for(asyncio.open_connection(u.hostname, u.port or 80), 3)
-            w.write(f"GET {u.path or '/'} HTTP/1.0\r\nHost: {u.hostname}\r\n\r\n".encode())
+            w.write(f"GET {u.path or '/'} HTTP/1.0\r\nHost: {url_host(u.hostname)}\r\n\r\n".encode())
             await w.drain()
             data = await asyncio.wait_for(r.read(400), 3)
             w.close()
@@ -59,7 +62,7 @@ def main():
         return out.decode(errors="replace")[:400]
 
     def _tcp(host, port):
-        s = socket.socket()
+        s = socket.socket(af(host))
         s.settimeout(3)
         try:
             r = s.connect_ex((host, int(port)))

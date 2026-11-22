@@ -13,6 +13,7 @@ As a script, on the second machine (not instrumented, no root needed):
   python3 http_farm.py --addr 0.0.0.0 --ranges 61000-61999
 """
 import argparse
+import os
 import resource
 import selectors
 import signal
@@ -20,6 +21,9 @@ import socket
 import sys
 import threading
 import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from netfam import LOOPBACK, af  # noqa: E402
 
 RESPONSE = (b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n"
             b"Connection: close\r\n\r\nok")
@@ -45,7 +49,7 @@ def _serve(conn):
 class HttpListener(threading.Thread):
     """Answers every connection on every planned port with a short HTTP response."""
 
-    def __init__(self, ports, addr="127.0.0.1"):
+    def __init__(self, ports, addr=LOOPBACK):
         super().__init__(daemon=True)
         soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
         want = min(hard, len(ports) + 1024)
@@ -53,8 +57,10 @@ class HttpListener(threading.Thread):
             resource.setrlimit(resource.RLIMIT_NOFILE, (want, hard))
         self.sel = selectors.DefaultSelector()
         for p in ports:
-            s = socket.socket()
+            s = socket.socket(af(addr))
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if addr == "::":   # both families on one socket (second machine)
+                s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
             s.bind((addr, p))
             s.listen(256)
             s.setblocking(False)
@@ -130,7 +136,7 @@ class KeepAliveHttpListener(HttpListener):
     """Like HttpListener, but keeps connections open across requests (so a client
     pool can reuse them) and records every request's byte ranges (E5reuse)."""
 
-    def __init__(self, ports, addr="127.0.0.1", rate=0):
+    def __init__(self, ports, addr=LOOPBACK, rate=0):
         super().__init__(ports, addr)
         self.log, self.lock = [], threading.Lock()
         SERVICE["rate"] = rate
@@ -157,7 +163,7 @@ class KeepAliveHttpListener(HttpListener):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--addr", default="0.0.0.0")
+    ap.add_argument("--addr", default="0.0.0.0", help=":: serves IPv4 and IPv6")
     ap.add_argument("--ranges", nargs="+", default=["61000-61999"])
     a = ap.parse_args()
     ports = []
@@ -178,7 +184,7 @@ class UdpDnsListener(threading.Thread):
     """Answers every DNS-format datagram on every planned UDP port with the same
     message flagged as a response (QR=1, RCODE=0, no answers) (E5udp)."""
 
-    def __init__(self, ports, addr="127.0.0.1"):
+    def __init__(self, ports, addr=LOOPBACK):
         super().__init__(daemon=True)
         soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
         want = min(hard, len(ports) + 1024)
@@ -186,7 +192,9 @@ class UdpDnsListener(threading.Thread):
             resource.setrlimit(resource.RLIMIT_NOFILE, (want, hard))
         self.sel = selectors.DefaultSelector()
         for p in ports:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s = socket.socket(af(addr), socket.SOCK_DGRAM)
+            if addr == "::":
+                s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
             s.bind((addr, p))
             s.setblocking(False)
             self.sel.register(s, selectors.EVENT_READ)

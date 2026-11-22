@@ -70,9 +70,10 @@ fi
 
 # Live accounting exported over IPFIX (optional): IPFIX=1. factd follows the
 # collector's stream while the workload runs and exports IPFIX over UDP to
-# 127.0.0.1:4739, where tshark captures it (analysis/score_ipfix.py decodes the
+# 127.0.0.1:4739 ([::1]:4739 with FACT_FAMILY=6), where tshark captures it (analysis/score_ipfix.py decodes the
 # capture with Wireshark's IPFIX dissector and compares it with the reference).
 FPID=""; TPID=""
+if [ "${FACT_FAMILY:-4}" = 6 ]; then IPFIX_DEST="[::1]:4739"; else IPFIX_DEST="127.0.0.1:4739"; fi
 if [ "${IPFIX:-0}" = 1 ]; then
   [ -f "$OUT/registry.json" ] || echo '{"roots":{},"cgroups":{}}' > "$OUT/registry.json"
   # dumpcap may not write into the repository's directories: capture to /tmp, move afterwards
@@ -86,7 +87,7 @@ if [ "${IPFIX:-0}" = 1 ]; then
   sleep 0.5
   grep -q "Capturing on" "$OUT/tshark.log" && kill -0 "$TPID" 2>/dev/null || { echo "tshark did not start"; cat "$OUT/tshark.log"; exit 1; }
   "${FACT_PYTHON:-python3}" -I "$HERE/factd/factd.py" --follow "$OUT/events.jsonl" --registry "$OUT/registry.json" \
-      --ipfix 127.0.0.1:4739 --out "$OUT/factd_live.jsonl" 2> "$OUT/factd.err" &
+      --ipfix "$IPFIX_DEST" --out "$OUT/factd_live.jsonl" 2> "$OUT/factd.err" &
   FPID=$!
   trap 'kill -INT "$BPID" $PPOL $APID 2>/dev/null || true; kill $FPID $TPID 2>/dev/null || true; wait "$BPID" $PPOL $APID $FPID $TPID 2>/dev/null || true' EXIT
 fi
