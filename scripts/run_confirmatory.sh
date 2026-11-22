@@ -41,9 +41,11 @@ grep -q "RESULT PASS" preflight/last/preflight.txt || { echo "PREFLIGHT FAILED";
 echo "preflight PASS"
 
 case " $EXPS " in *" E7"*)
-  if ! curl -s --max-time 3 127.0.0.1:11434/api/tags > /dev/null; then
-    nohup ollama serve > /tmp/ollama.log 2>&1 &
-    for i in $(seq 1 60); do curl -s --max-time 2 127.0.0.1:11434/api/tags > /dev/null && break; sleep 1; done
+  # Ollama on both families ([::]:11434 is dual-stack), so E7 runs over IPv4 or IPv6 (FACT_FAMILY)
+  if ! curl -sg --max-time 3 "http://[::1]:11434/api/tags" > /dev/null; then
+    pkill -x ollama 2>/dev/null && sleep 2   # -x: the command line of this script also contains "ollama serve"
+    OLLAMA_HOST="[::]:11434" nohup ollama serve > /tmp/ollama.log 2>&1 &
+    for i in $(seq 1 60); do curl -sg --max-time 2 "http://[::1]:11434/api/tags" > /dev/null && break; sleep 1; done
   fi
   ollama list | grep -q "qwen2.5:3b" || ollama pull qwen2.5:3b
   ;;

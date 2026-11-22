@@ -112,7 +112,7 @@ def main():
     # external dependencies (models, second machine, AgentProvenance): checked before
     # creating the campaign; if any is missing, no run is executed
     chk = subprocess.run([sys.executable, os.path.join(HERE, "scripts", "check_deps.py"), spec_path],
-                         capture_output=True, text=True)
+                         capture_output=True, text=True, env=dict(os.environ, FACT_FAMILY=a.family))
     print(chk.stdout, end="", flush=True)
     if chk.returncode != 0:
         sys.exit("external dependencies unavailable (above): campaign not started\n" + chk.stderr[-2000:])

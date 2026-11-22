@@ -9,6 +9,13 @@ key names a time, a latency, a rate, a CPU measure, an id of the host or an addr
 when every other value matches. With --runs-csv and --recorded it also compares each family with
 the recorded confirmatory campaigns, as scripts/compare_runs.py does.
 
+Every difference is classified: "unplanned" (connections outside the plan, e.g. the MCP transport
+or other processes of the host, which the collector also sees: capture/excluded), "variable cell"
+(a cell whose recorded confirmatory runs already differ between boots, e.g. manual markers with
+asynchronous tools; needs --recorded), "performance" (capacity under saturation, E2b), "baseline"
+(AgentProvenance's own outputs), or "outcome" (anything else). Parity holds when no run has an
+outcome difference.
+
 Usage: compare_families.py CAMPAIGNS_DIR [--out OUT.json] [--runs-csv RUNS.csv --recorded analysis/runs.csv]
 """
 import argparse
@@ -21,6 +28,8 @@ import re
 import sys
 
 SKIP_FILES = {"plan.json", "registry.json", "tokens.json", "registry.json.tmp"}
+SKIP_RE = re.compile(r"(^|/)bpf_prog_[^/]*\.json$|^agentprov/(events|correlations)\.json$")   # program ids and load times; AgentProvenance's raw data
+CELL = ["cond", "wrong_label", "mode", "execs", "jitter", "tool", "binding_mode", "model", "seed"]
 # key-name segments of values that are not outcomes: times, latencies, rates, CPU, host ids, addresses
 VOLATILE = {"ms", "ns", "us", "s", "lat", "latency", "latencies", "time", "times", "wall", "cpu", "throughput",
             "cps", "sps", "rate", "ts", "t", "start", "end", "p50", "p90", "p99", "mean", "median", "max", "min",
@@ -62,7 +71,7 @@ def outputs(rdir):
     res = {}
     for p in sorted(glob.glob(os.path.join(rdir, "**", "*.json"), recursive=True)):
         name = os.path.relpath(p, rdir)
-        if os.path.basename(p) in SKIP_FILES:
+        if os.path.basename(p) in SKIP_FILES or SKIP_RE.search(name):
             continue
         try:
             data = json.load(open(p))
@@ -72,6 +81,33 @@ def outputs(rdir):
             if not volatile(path):
                 res[(name,) + path] = v
     return res
+
+
+def classify(exp, key, variable):
+    if "/excluded/" in key or key.endswith("/excluded"):
+        return "unplanned"
+    if key.startswith("agentprov") or "agentprov" in key:
+        return "baseline"
+    if exp == "E2b" or key.startswith("capacity.json"):
+        return "performance"
+    if variable and key.startswith("score.json/resolvers"):
+        return "variable cell"
+    return "outcome"
+
+
+def variable_cells(recorded):
+    """Cells (experiment + plan factors + seed) whose recorded confirmatory runs differ between boots."""
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+    import compare_runs as cr
+    vals = collections.defaultdict(set)
+    for r in cr.load(recorded, "confirmatory"):
+        vals[tuple(r.get(k, "") for k in ["experiment"] + CELL + ["resolver"])].add(cr.vals(r))
+    return {k[:-1] for k, v in vals.items() if len(v) > 1}
+
+
+def cell_of(exp, plan, seed):
+    p = dict(plan, seed=seed)
+    return tuple([exp] + ["" if p.get(k) is None else str(p.get(k)) for k in CELL])
 
 
 def campaigns(cdir):
@@ -115,6 +151,7 @@ def main():
     ap.add_argument("--recorded")
     a = ap.parse_args()
     camps = campaigns(a.campaigns)
+    varcells = variable_cells(a.recorded) if a.recorded else set()
     report = {"experiments": {}}
     for exp in sorted({e for e, _ in camps}):
         if (exp, 4) not in camps or (exp, 6) not in camps:
@@ -124,21 +161,32 @@ def main():
         d4, d6 = (os.path.join(camps[(exp, f)], "runs") for f in (4, 6))
         r4 = {os.path.basename(p) for p in glob.glob(os.path.join(d4, "*")) if os.path.isdir(p)}
         r6 = {os.path.basename(p) for p in glob.glob(os.path.join(d6, "*")) if os.path.isdir(p)}
-        same, diff = 0, []
+        same, diff, cats = 0, [], collections.Counter()
         for run in sorted(r4 & r6):
             o4, o6 = outputs(os.path.join(d4, run)), outputs(os.path.join(d6, run))
             keys = set(o4) | set(o6)
             bad = sorted(k for k in keys if o4.get(k, "<absent>") != o6.get(k, "<absent>"))
             if bad:
-                diff.append({"run": run, "differences": len(bad),
+                try:
+                    plan = json.load(open(os.path.join(d4, run, "plan.json")))
+                    variable = cell_of(exp, plan, plan.get("seed")) in varcells
+                except (OSError, ValueError):
+                    variable = False
+                kinds = collections.Counter(classify(exp, "/".join(map(str, k)), variable) for k in bad)
+                cats.update(kinds.keys())
+                diff.append({"run": run, "differences": len(bad), "kinds": dict(kinds),
+                             "outcome_keys": ["/".join(map(str, k)) for k in bad
+                                              if classify(exp, "/".join(map(str, k)), variable) == "outcome"][:20],
                              "examples": [{"key": "/".join(map(str, k)), "ipv4": o4.get(k, "<absent>"),
                                            "ipv6": o6.get(k, "<absent>")} for k in bad[:12]]})
             else:
                 same += 1
+        outcome = [d["run"] for d in diff if d["kinds"].get("outcome")]
         report["experiments"][exp] = {"runs_ipv4": len(r4), "runs_ipv6": len(r6), "compared": len(r4 & r6),
-                                      "identical": same, "different": diff}
+                                      "identical": same, "outcome_differences": outcome, "different": diff}
         print(f"{exp}: runs {len(r4)}/{len(r6)}, identical {same}/{len(r4 & r6)}"
-              + (f", different: {', '.join(d['run'] for d in diff)}" if diff else ""))
+              + (f"; other runs differ only in: {dict(c for c in cats.items() if c[0] != 'outcome')}" if diff else "")
+              + (f"; OUTCOME DIFFERENCES: {', '.join(outcome)}" if outcome else ""))
     if a.runs_csv and a.recorded:
         report["recorded"] = compare_recorded(a.runs_csv, a.recorded)
         for k, v in report["recorded"].items():

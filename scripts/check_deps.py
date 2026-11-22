@@ -30,7 +30,7 @@ import urllib.request
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(HERE, "workload"))
 
-DEFAULT_OLLAMA = "127.0.0.1:11434"
+DEFAULT_OLLAMA = "[::1]:11434" if os.environ.get("FACT_FAMILY") == "6" else "127.0.0.1:11434"   # as agent_e7.py
 DEFAULT_E7_MODEL = "qwen2.5:3b"          # default of workload/agent_e7.py (E7, E7f)
 REMOTE_FARM_PORTS = (61000, 65000)       # one port from each range of remote_farm.py
 AGENTPROV_VERSION = "0.9.0"

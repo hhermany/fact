@@ -126,6 +126,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -166,70 +173,14 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336
+      "A": 288
      },
      "received": {
-      "A": 336
+      "A": 288
      },
      "accounting_exact": true,
      "rx_exact": true,
@@ -240,19 +191,19 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "S": {
+      "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "R": {
+      "A": {
+       "bytes": 288,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "S": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -270,18 +221,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 12,
-      "fact-cred": 15,
-      "fact-udp": 9,
-      "fact-all": 15
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 9,
+      "fact-cred": 12,
+      "fact-udp": 7,
+      "fact-all": 12
      },
-     "decisions": 27
+     "decisions": 20
     },
     "v6": {
      "tests": [
@@ -391,6 +342,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -431,82 +389,26 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336
+      "A": 288
      },
      "received": {
-      "A": 336
+      "A": 288
      },
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "Q": {
+      "B": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
       "A": {
-       "bytes": 336,
+       "bytes": 288,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -517,7 +419,7 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "B": {
+      "Q": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -535,18 +437,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 12,
-      "fact-cred": 15,
-      "fact-udp": 9,
-      "fact-all": 15
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 9,
+      "fact-cred": 12,
+      "fact-udp": 7,
+      "fact-all": 12
      },
-     "decisions": 27
+     "decisions": 20
     },
     "v4mapped": {
      "tests": [
@@ -656,6 +558,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -696,81 +605,31 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336
+      "A": 288
      },
      "received": {
-      "A": 336
+      "A": 288
      },
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "S": {
+      "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "B": {
+      "A": {
+       "bytes": 288,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "S": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -782,14 +641,8 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "R": {
+      "B": {
        "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "A": {
-       "bytes": 336,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -800,18 +653,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 12,
-      "fact-cred": 15,
-      "fact-udp": 9,
-      "fact-all": 15
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 9,
+      "fact-cred": 12,
+      "fact-udp": 7,
+      "fact-all": 12
      },
-     "decisions": 27
+     "decisions": 20
     }
    }
   },
@@ -831,12 +684,7 @@
     },
     "fact_count": true
    },
-   "known_family_difference": {
-    "connect/v4mapped/B_udp_connected_send": {
-     "expected": "blocked",
-     "observed": "blocked"
-    }
-   },
+   "known_family_difference": {},
    "families": {
     "v4": {
      "tests": [
@@ -946,6 +794,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -986,84 +841,28 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336,
-      "B": 768
+      "B": 576,
+      "A": 288
      },
      "received": {
-      "A": 336,
-      "B": 768
+      "A": 288,
+      "B": 576
      },
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "A": {
-       "bytes": 336,
+      "B": {
+       "bytes": 576,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "B": {
-       "bytes": 768,
+      "A": {
+       "bytes": 288,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1092,18 +891,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 30,
-      "fact-cred": 33,
-      "fact-udp": 9,
-      "fact-all": 33
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 20,
+      "fact-cred": 24,
+      "fact-udp": 8,
+      "fact-all": 24
      },
-     "decisions": 7
+     "decisions": 8
     },
     "v6": {
      "tests": [
@@ -1213,6 +1012,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -1253,84 +1059,28 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "B": 768,
-      "A": 336
+      "A": 288,
+      "B": 576
      },
      "received": {
-      "A": 336,
-      "B": 768
+      "A": 288,
+      "B": 576
      },
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "S": {
-       "bytes": 0,
+      "A": {
+       "bytes": 288,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
       "B": {
-       "bytes": 768,
+       "bytes": 576,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1341,14 +1091,14 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "Q": {
+      "S": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "A": {
-       "bytes": 336,
+      "Q": {
+       "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1359,18 +1109,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 30,
-      "fact-cred": 33,
-      "fact-udp": 9,
-      "fact-all": 33
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 20,
+      "fact-cred": 24,
+      "fact-udp": 8,
+      "fact-all": 24
      },
-     "decisions": 7
+     "decisions": 8
     },
     "v4mapped": {
      "tests": [
@@ -1474,6 +1224,13 @@
       },
       {
        "test": "B_udp_connected_send",
+       "errno": 0,
+       "expected": "delivered",
+       "observed": "delivered",
+       "pass": true
+      },
+      {
+       "test": "B_udp_sendto_peer_connected",
        "errno": "EPERM",
        "expected": "blocked",
        "observed": "blocked",
@@ -1520,72 +1277,16 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "B": 720,
-      "A": 336
+      "B": 576,
+      "A": 288
      },
      "received": {
-      "A": 336,
-      "B": 720
+      "A": 288,
+      "B": 576
      },
      "accounting_exact": true,
      "rx_exact": true,
@@ -1597,7 +1298,7 @@
        "rx_bytes": 0
       },
       "B": {
-       "bytes": 720,
+       "bytes": 576,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1608,14 +1309,14 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "Q": {
-       "bytes": 0,
+      "A": {
+       "bytes": 288,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "A": {
-       "bytes": 336,
+      "Q": {
+       "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1627,18 +1328,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 30,
-      "fact-cred": 33,
-      "fact-udp": 9,
-      "fact-all": 33
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 20,
+      "fact-cred": 24,
+      "fact-udp": 8,
+      "fact-all": 24
      },
-     "decisions": 7
+     "decisions": 8
     }
    }
   },
@@ -1768,6 +1469,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -1808,86 +1516,18 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336
+      "A": 288
      },
      "received": {
-      "A": 336
+      "A": 288
      },
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "B": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "Q": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "S": {
        "bytes": 0,
        "conns": 0,
@@ -1900,8 +1540,20 @@
        "denied": 0,
        "rx_bytes": 0
       },
+      "B": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "Q": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "A": {
-       "bytes": 336,
+       "bytes": 288,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 6
@@ -1912,18 +1564,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 12,
-      "fact-cred": 15,
-      "fact-udp": 9,
-      "fact-all": 15
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 9,
+      "fact-cred": 12,
+      "fact-udp": 7,
+      "fact-all": 12
      },
-     "decisions": 27
+     "decisions": 20
     },
     "v6": {
      "tests": [
@@ -2033,6 +1685,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -2073,75 +1732,19 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336
+      "A": 288
      },
      "received": {
-      "A": 336
+      "A": 288
      },
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "Q": {
+      "S": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -2153,19 +1756,19 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 6
-      },
       "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "S": {
+      "A": {
+       "bytes": 288,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 6
+      },
+      "Q": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -2177,18 +1780,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 12,
-      "fact-cred": 15,
-      "fact-udp": 9,
-      "fact-all": 15
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 9,
+      "fact-cred": 12,
+      "fact-udp": 7,
+      "fact-all": 12
      },
-     "decisions": 27
+     "decisions": 20
     },
     "v4mapped": {
      "tests": [
@@ -2298,6 +1901,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -2338,74 +1948,36 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336
+      "A": 288
      },
      "received": {
-      "A": 336
+      "A": 288
      },
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
+      "R": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "A": {
+       "bytes": 288,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 6
+      },
+      "B": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "S": {
        "bytes": 0,
        "conns": 0,
@@ -2417,24 +1989,6 @@
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
-      },
-      "B": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 6
-      },
-      "R": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
       }
      },
      "decision_daddrs": [
@@ -2442,18 +1996,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 3,
-      "tcp_state": 3
+      "connect": 2,
+      "tcp_state": 2
      },
      "collector_events": {
-      "fact": 6,
-      "fact-fast": 6,
-      "fact-bytes": 12,
-      "fact-cred": 15,
-      "fact-udp": 9,
-      "fact-all": 15
+      "fact": 4,
+      "fact-fast": 4,
+      "fact-bytes": 9,
+      "fact-cred": 12,
+      "fact-udp": 7,
+      "fact-all": 12
      },
-     "decisions": 27
+     "decisions": 20
     }
    }
   },
@@ -2583,6 +2137,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -2735,73 +2296,17 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
-      "A": 336,
       "Q": 144,
-      "R": 144,
-      "S": 96
+      "A": 288,
+      "S": 96,
+      "R": 144
      },
      "received": {
-      "A": 336,
+      "A": 288,
       "Q": 144,
       "R": 144,
       "S": 96
@@ -2809,8 +2314,8 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "A": {
-       "bytes": 336,
+      "B": {
+       "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -2821,22 +2326,22 @@
        "denied": 1,
        "rx_bytes": 0
       },
-      "B": {
-       "bytes": 0,
+      "A": {
+       "bytes": 288,
        "conns": 0,
        "denied": 0,
-       "rx_bytes": 0
-      },
-      "R": {
-       "bytes": 144,
-       "conns": 0,
-       "denied": 5,
        "rx_bytes": 0
       },
       "S": {
        "bytes": 96,
        "conns": 0,
        "denied": 2,
+       "rx_bytes": 0
+      },
+      "R": {
+       "bytes": 144,
+       "conns": 0,
+       "denied": 5,
        "rx_bytes": 0
       }
      },
@@ -2845,18 +2350,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 7,
-      "tcp_state": 7
+      "connect": 6,
+      "tcp_state": 6
      },
      "collector_events": {
-      "fact": 14,
-      "fact-fast": 14,
-      "fact-bytes": 26,
-      "fact-cred": 30,
-      "fact-udp": 18,
-      "fact-all": 30
+      "fact": 12,
+      "fact-fast": 12,
+      "fact-bytes": 23,
+      "fact-cred": 27,
+      "fact-udp": 16,
+      "fact-all": 27
      },
-     "decisions": 39
+     "decisions": 32
     },
     "v6": {
      "tests": [
@@ -2966,6 +2471,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -3118,73 +2630,17 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
       "Q": 144,
-      "S": 96,
+      "A": 288,
       "R": 144,
-      "A": 336
+      "S": 96
      },
      "received": {
-      "A": 336,
+      "A": 288,
       "Q": 144,
       "R": 144,
       "S": 96
@@ -3198,10 +2654,10 @@
        "denied": 1,
        "rx_bytes": 0
       },
-      "S": {
-       "bytes": 96,
+      "A": {
+       "bytes": 288,
        "conns": 0,
-       "denied": 2,
+       "denied": 0,
        "rx_bytes": 0
       },
       "R": {
@@ -3210,10 +2666,10 @@
        "denied": 5,
        "rx_bytes": 0
       },
-      "A": {
-       "bytes": 336,
+      "S": {
+       "bytes": 96,
        "conns": 0,
-       "denied": 0,
+       "denied": 2,
        "rx_bytes": 0
       },
       "B": {
@@ -3228,18 +2684,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 7,
-      "tcp_state": 7
+      "connect": 6,
+      "tcp_state": 6
      },
      "collector_events": {
-      "fact": 14,
-      "fact-fast": 14,
-      "fact-bytes": 26,
-      "fact-cred": 30,
-      "fact-udp": 18,
-      "fact-all": 30
+      "fact": 12,
+      "fact-fast": 12,
+      "fact-bytes": 23,
+      "fact-cred": 27,
+      "fact-udp": 16,
+      "fact-all": 27
      },
-     "decisions": 39
+     "decisions": 32
     },
     "v4mapped": {
      "tests": [
@@ -3349,6 +2805,13 @@
        "pass": true
       },
       {
+       "test": "B_udp_sendto_peer_connected",
+       "errno": "EPERM",
+       "expected": "blocked",
+       "observed": "blocked",
+       "pass": true
+      },
+      {
        "test": "B_udp_unconnected_sendto",
        "errno": "EPERM",
        "expected": "blocked",
@@ -3501,73 +2964,17 @@
        "expected": "blocked",
        "observed": "blocked",
        "pass": true
-      },
-      {
-       "test": "U_A_send_inline_control",
-       "errno": 0,
-       "expected": "delivered",
-       "observed": "delivered",
-       "pass": true
-      },
-      {
-       "test": "U_A_send_async_control",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_inline",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_send_zc",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_write_async",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
-      },
-      {
-       "test": "U_B_sendmsg",
-       "errno": 1,
-       "expected": "blocked",
-       "observed": "blocked",
-       "pass": true
       }
      ],
      "pass": true,
      "charged": {
+      "A": 288,
       "Q": 144,
       "S": 96,
-      "A": 336,
       "R": 144
      },
      "received": {
-      "A": 336,
+      "A": 288,
       "Q": 144,
       "R": 144,
       "S": 96
@@ -3575,28 +2982,28 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
+      "A": {
+       "bytes": 288,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "Q": {
        "bytes": 144,
        "conns": 4,
        "denied": 1,
        "rx_bytes": 0
       },
-      "S": {
-       "bytes": 96,
-       "conns": 0,
-       "denied": 2,
-       "rx_bytes": 0
-      },
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "B": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
+       "rx_bytes": 0
+      },
+      "S": {
+       "bytes": 96,
+       "conns": 0,
+       "denied": 2,
        "rx_bytes": 0
       },
       "R": {
@@ -3611,18 +3018,18 @@
      ],
      "decision_daddr_ok": true,
      "fact_count": {
-      "connect": 7,
-      "tcp_state": 7
+      "connect": 6,
+      "tcp_state": 6
      },
      "collector_events": {
-      "fact": 14,
-      "fact-fast": 14,
-      "fact-bytes": 26,
-      "fact-cred": 30,
-      "fact-udp": 18,
-      "fact-all": 30
+      "fact": 12,
+      "fact-fast": 12,
+      "fact-bytes": 23,
+      "fact-cred": 27,
+      "fact-udp": 16,
+      "fact-all": 27
      },
-     "decisions": 39
+     "decisions": 32
     }
    }
   }

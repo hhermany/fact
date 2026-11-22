@@ -16,7 +16,7 @@ models via the Anthropic and OpenAI APIs).
 Outputs in score.py's format (plan.json, registry.json, ops.jsonl), plus
 e7_summary.json with the agents' behavior and transcript.jsonl with every model step.
 
-Usage (root, nix develop, collector active, ollama serving on 127.0.0.1:11434):
+Usage (root, nix develop, collector active, ollama serving on 127.0.0.1:11434, or [::1]:11434 with FACT_FAMILY=6):
   python3 agent_e7.py --execs 4 --seed 1 --model qwen2.5:3b --out runs/x
 """
 import argparse
@@ -441,7 +441,8 @@ def main():
     ap.add_argument("--execs", type=int, default=4)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--model", default="qwen2.5:3b")
-    ap.add_argument("--ollama", default="127.0.0.1:11434")
+    ap.add_argument("--ollama", default=f"{url_host(LOOPBACK)}:11434",
+                    help="HOST:PORT of the Ollama server (127.0.0.1, or [::1] with FACT_FAMILY=6)")
     ap.add_argument("--max-steps", type=int, default=6)
     ap.add_argument("--num-predict", type=int, default=0,
                     help="maximum tokens per model answer (0: no limit, as in E7)")
