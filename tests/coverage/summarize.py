@@ -22,14 +22,13 @@ B_ON_A_SOCKET = {"B_send", "B_sendall", "B_sendto_connected", "B_sendmsg", "B_se
 
 
 
-# The one place where the families differ by kernel design: for an IPv4-mapped destination,
-# udpv6_sendmsg hands every datagram to udp_sendmsg WITH the destination address, even on a
-# connected socket, so cgroup/sendmsg4 runs for each datagram and connection-level mode
-# re-authorizes them (stricter than IPv4 and IPv6, where the connected send is not checked again).
-# client.py sends that datagram on its own port (base+3); parity in connect mode is checked on
-# everything else, and this case is reported separately.
-KNOWN = {("connect", "v4mapped", "B_udp_connected_send"): "blocked"}
-PORT3_TAGS = {"A_udp3_connected_send_control", "B_udp_connected_send"}
+# Differences between families expected by design, reported separately and left out of the parity
+# checks: none. (For an IPv4-mapped destination, udpv6_sendmsg hands even a connected send to
+# udp_sendmsg with the destination in the message, so cgroup/sendmsg4 runs for it; the policy
+# recognizes that case (fentry on udpv6_sendmsg) and, as on IPv4, does not decide it again.
+# B_udp_connected_send and B_udp_sendto_peer_connected, on their own port base+3, test both cases.)
+KNOWN = {}
+PORT3_TAGS = {"A_udp3_connected_send_control", "B_udp_connected_send", "B_udp_sendto_peer_connected"}
 
 
 def expected(mode, name, fam):
@@ -130,7 +129,7 @@ for mode in ("persend", "connect", "cred", "budget"):
             if "_async" not in name:   # io-wq work carries no identity: charged to nobody
                 recv[who(name)] += sum(ns)
         charged = {k: v["bytes"] for k, v in usage.items() if v["bytes"]}
-        skip = (3,) if mode == "connect" else ()            # the KNOWN difference's port
+        skip = (3,) if any(k[0] == mode for k in KNOWN) else ()   # port of a KNOWN difference
         p3 = collections.Counter()                          # bytes of that port, left out of parity
         if skip:
             for name, ns in got.items():

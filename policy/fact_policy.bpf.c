@@ -110,7 +110,9 @@ struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
 	 __type(key, struct ident); __type(value, struct usage); } usage_map SEC(".maps");
 struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 4096);
-	 __type(key, struct ident); __type(value, __u64); } file_usage SEC(".maps");   /* bytes written to files, per credential */
+	 __type(key, struct ident); __type(value, __u64); } file_usage SEC(".maps");
+struct { __uint(type, BPF_MAP_TYPE_HASH); __uint(max_entries, 65536);
+	 __type(key, __u32); __type(value, __u8); } v6_named SEC(".maps");   /* tid -> datagram had an address */   /* bytes written to files, per credential */
 
 /* syscalls:sys_enter_openat (format: __syscall_nr at 8, dfd at 16, filename at 24) */
 struct openat_args { __u64 common; int nr; int pad; long dfd; const char *filename; long flags; long mode; };
@@ -397,9 +399,31 @@ int on_connect6(struct bpf_sock_addr *sa)
 	return on_connect(sa, 0, a6, 1);
 }
 
+/* IPv4-mapped destinations on IPv6 sockets: udpv6_sendmsg hands the datagram to udp_sendmsg with
+ * the destination in the message even when the application sent on a connected socket without
+ * one, so cgroup/sendmsg4 would run for connected sends, which it never does on IPv4 sockets.
+ * on_udp6_entry records, per thread, whether the application's message carried an address; a
+ * datagram without one is a send on a connected socket and, as on IPv4, is not decided again
+ * here (it was decided at connect; per-send authorization, if on, has decided it at the LSM). */
+SEC("fentry/udpv6_sendmsg")
+int BPF_PROG(on_udp6_entry, struct sock *sk, struct msghdr *msg, __u64 len)
+{
+	__u32 tid = (__u32)bpf_get_current_pid_tgid();
+	__u8 named = BPF_CORE_READ(msg, msg_name) ? 1 : 0;
+	bpf_map_update_elem(&v6_named, &tid, &named, BPF_ANY);
+	return 0;
+}
+
 SEC("cgroup/sendmsg4")
 int on_sendmsg4(struct bpf_sock_addr *sa)
 {
+	struct bpf_sock *sk = sa->sk;
+	if (sk && sk->family == 10) {   /* IPv4-mapped destination on an IPv6 socket */
+		__u32 tid = (__u32)bpf_get_current_pid_tgid();
+		__u8 *named = bpf_map_lookup_elem(&v6_named, &tid);
+		if (named && !*named)
+			return 1;   /* connected send: as on IPv4, not decided again */
+	}
 	return on_dgram(sa, sa->user_ip4, 0, 0);
 }
 

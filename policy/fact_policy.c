@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 	int k0 = 0;
 	bpf_map__update_elem(bpf_object__find_map_by_name(obj, "cfg_map"), &k0, sizeof(k0), &c, sizeof(c), BPF_ANY);
 
-	struct bpf_link *links[16] = {0};
+	struct bpf_link *links[24] = {0};
 	int nl = 0;
 	const char *tps[] = {"on_fork", "on_exit", "on_exec", "on_openat"};
 	for (int i = 0; i < (cred ? 3 : 4); i++) {   /* with the credential, openat markers are not accepted */
@@ -117,6 +117,10 @@ int main(int argc, char **argv)
 	nl++;
 	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_sendmsg4"), cg);
 	if (!links[nl]) { fprintf(stderr, "attach cgroup/sendmsg4 failed\n"); return 1; }
+	nl++;
+	/* IPv4-mapped datagrams: whether the application's message carried an address (see the BPF code) */
+	links[nl] = bpf_program__attach(bpf_object__find_program_by_name(obj, "on_udp6_entry"));
+	if (!links[nl]) { fprintf(stderr, "attach fentry/udpv6_sendmsg failed\n"); return 1; }
 	nl++;
 	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_connect6"), cg);
 	if (!links[nl]) { fprintf(stderr, "attach cgroup/connect6 failed\n"); return 1; }

@@ -42,7 +42,9 @@ def main():
     rdir = sys.argv[1]
     plan = json.load(open(os.path.join(rdir, "plan.json")))
     ref = {int(p): v for p, v in plan["dport_map"].items()}
-    ev = json.load(open(os.path.join(rdir, "agentprov", "events.json")))["events"]
+    # AgentProvenance writes "events": null when it observed nothing (e.g., in-process IPv6
+    # connections, which it does not capture): no events, every operation scored as such
+    ev = json.load(open(os.path.join(rdir, "agentprov", "events.json")))["events"] or []
     ops = {json.loads(l)["op_id"]: json.loads(l)["exec_id"] for l in open(os.path.join(rdir, "ops.jsonl"))}
     by_port = collections.defaultdict(list)
     types = collections.Counter(e["event_type"] for e in ev)
