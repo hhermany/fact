@@ -128,7 +128,11 @@ addresses, and io_uring, on sockets execution A opened and on its own; the desti
 the kernel's usage map what each identity was charged. On 2026-11-22 all 34 checks passed: nothing of B's
 arrived, all of A's did, and A was charged exactly the bytes the destination received. Sends that io_uring
 defers to its kernel worker (`IOSQE_ASYNC`) carry no credential and fall to the default action (deny), even
-for A.
+for A. As an IPv4 regression of this policy, E6, E6reuse and E6reusecred were re-run with `--n 1` and the
+paper's seed (28 runs; see "Re-running the confirmatory campaigns"): every E6 resolver row of FACT's automatic binding and of the
+deterministic cells matched the recorded runs (56 identical); the 8 others are the two cells with manual markers
+and asynchronous tools, whose outcomes vary between boots. With per-send authorization, none of the 144
+forbidden requests of E6reuse and of E6reusecred reached the destination, and every permitted one did.
 
 In E7net, qwen2.5:3b wrote the host's other loopback address (127.0.1.1) in two calls of one run per boot. The
 reference is keyed to the listen address (127.0.0.1), so `score.json` leaves these four connections out (356
@@ -148,8 +152,8 @@ nix --extra-experimental-features 'nix-command flakes' develop -c \
 ```
 
 To check a re-execution against the recorded results, run any experiment with the paper's seed and compare
-run by run (cells with manual markers and asynchronous tools are nondeterministic and are checked against the
-recorded range):
+run by run (cells with manual markers and asynchronous tools are nondeterministic: compare them with the recorded
+range, which two boots do not bound):
 
 ```sh
 python3 scripts/campaign.py --spec workflow/experiments/E5.json --n 1 --seed 51193 --label pilot --campaigns-dir /tmp/rerun
