@@ -70,17 +70,21 @@ tracepoint:sched:sched_process_exit
 kprobe:tcp_connect
 {
 	$sk = (struct sock *)arg0;
-	if ($sk->__sk_common.skc_family == 2) {   /* AF_INET */
+	if ($sk->__sk_common.skc_family == 2 || $sk->__sk_common.skc_family == 10) {   /* AF_INET, AF_INET6 */
+		$da = ntop(2, $sk->__sk_common.skc_daddr);
+		if ($sk->__sk_common.skc_family == 10) {
+			$da = ntop(10, $sk->__sk_common.skc_v6_daddr.in6_u.u6_addr8);
+		}
 		$dp = $sk->__sk_common.skc_dport;
 		$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
 		printf("{\"ev\":\"connect\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"comm\":\"%s\",\"sk\":%llu,\"ctx\":\"%s\",\"daddr\":\"%s\",\"dport\":%d}\n",
 		       nsecs, pid, tid, cgroup, comm, (uint64)$sk, @ctx[tid],
-		       ntop(2, $sk->__sk_common.skc_daddr), $dport);
+		       $da, $dport);
 	}
 }
 
 tracepoint:sock:inet_sock_set_state
-/ args->protocol == 6 && args->family == 2 && args->oldstate == 2 /
+/ args->protocol == 6 && (args->family == 2 || args->family == 10) && args->oldstate == 2 /
 {
 	/* Leaving SYN_SENT: 1 = ESTABLISHED (success), 7 = CLOSE (failure).
 	 * May run in softirq: pid/tid here are NOT used for attribution. */
@@ -110,6 +114,28 @@ kprobe:udp_sendmsg
 			printf("{\"ev\":\"connect\",\"proto\":\"udp\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"comm\":\"%s\",\"sk\":%llu,\"ctx\":\"%s\",\"daddr\":\"%s\",\"dport\":%d}\n",
 			       nsecs, pid, tid, cgroup, comm, (uint64)$sk, @ctx[tid], ntop(2, $da), $dport);
 		}
+	}
+}
+
+/* IPv6 datagrams (including IPv4-mapped destinations, for which udpv6_sendmsg calls
+ * udp_sendmsg on the same IPv6 socket; the AF_INET probe above skips that socket) */
+kprobe:udpv6_sendmsg
+{
+	$sk = (struct sock *)arg0;
+	$msg = (struct msghdr *)arg1;
+	$dp = $sk->__sk_common.skc_dport;
+	$da = ntop(10, $sk->__sk_common.skc_v6_daddr.in6_u.u6_addr8);
+	if ($msg->msg_name != 0) {
+		$sin6 = (struct sockaddr_in6 *)$msg->msg_name;
+		$dp = $sin6->sin6_port;
+		$da = ntop(10, $sin6->sin6_addr.in6_u.u6_addr8);
+	}
+	$key = (uint64)$dp | ((uint64)1 << 63);
+	if (@udp_last[(uint64)$sk] != $key) {
+		@udp_last[(uint64)$sk] = $key;
+		$dport = (($dp & 0xff) << 8) | (($dp >> 8) & 0xff);
+		printf("{\"ev\":\"connect\",\"proto\":\"udp\",\"ts\":%llu,\"pid\":%d,\"tid\":%d,\"cgroup\":%llu,\"comm\":\"%s\",\"sk\":%llu,\"ctx\":\"%s\",\"daddr\":\"%s\",\"dport\":%d}\n",
+		       nsecs, pid, tid, cgroup, comm, (uint64)$sk, @ctx[tid], $da, $dport);
 	}
 }
 

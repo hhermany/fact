@@ -5,8 +5,9 @@
  * Same identity as the collector: the runtime hands the execution identity to
  * the kernel via openat on /run/agentctx/begin/<id> (or /run/agentctx/end); the
  * identity is kept in a per-thread map and inherited when threads and processes
- * are created. On IPv4 connect() (cgroup/connect4), the decision is taken by the
- * identity of the connecting thread:
+ * are created. On connect() (cgroup/connect4 and cgroup/connect6, so IPv4, IPv6 and
+ * IPv4-mapped IPv6 addresses), the decision is taken by the identity of the
+ * connecting thread:
  *   - with identity: allow if (id, port) is in the allow-list;
  *     otherwise deny (EPERM);
  *   - without identity: configurable default action (cfg.no_ctx_allow).
@@ -17,14 +18,15 @@
  * Without a label, it decides by the tree owner. Roots shared by several
  * executions (a shared worker) are not registered: there lineage does not
  * separate executions and the decision follows the label, as before.
+ * Destinations are identified by port: the allow-list holds (execution, port) pairs.
  * Only ports in the policed range [cfg.lo, cfg.hi] are evaluated; the others
  * pass (so as not to affect SSH, DNS, etc. on the test host).
  * Every decision is logged to a ring buffer (auditing and evaluation).
- * Datagrams (cgroup/sendmsg4): an unconnected UDP send (sendto with an address)
+ * Datagrams (cgroup/sendmsg4 and cgroup/sendmsg6): an unconnected UDP send (sendto with an address)
  * is decided like a connect, by the identity of the sending thread (only denials
  * are logged).
  * Per-send authorization (cfg.per_send, BPF LSM socket_sendmsg): every send on an
- * IPv4 TCP or UDP socket to a policed port is decided again by the identity of the
+ * IPv4 or IPv6 TCP or UDP socket to a policed port is decided again by the identity of the
  * SENDING thread, so a connection opened by one execution and reused by another
  * (e.g., a shared keep-alive pool) carries only the sends its current user is
  * allowed to make. It needs the BPF LSM enabled (lsm=...,bpf) and send binding in
@@ -37,7 +39,7 @@
  * and the fork tracepoint copies it to every new thread and process. Markers via
  * openat are not accepted in this mode. Sockets are stamped with the credential of
  * their opener and of their last sender (socket-local storage), and the kernel
- * keeps per-credential usage: bytes accepted by tcp_sendmsg/udp_sendmsg (charged to
+ * keeps per-credential usage: bytes accepted by tcp_sendmsg/udp_sendmsg/udpv6_sendmsg (charged to
  * the sending task) and bytes returned by tcp_recvmsg (charged to the socket's last
  * sender), for policed destinations.
  * Trusted runtime (optional, E6spoof): when user space sets the key TRUST_ON in
@@ -263,10 +265,10 @@ static __always_inline int id_eq(const char *a, const char *b)
 }
 
 /* kind: 0 = connect (cgroup/connect4), 1 = unconnected datagram (cgroup/sendmsg4),
- * 2 = send on an existing socket (LSM socket_sendmsg). Per-datagram and per-send
+ * 2 = send on an existing socket (LSM socket_sendmsg); v6 = 1 for an IPv6 socket or address (daddr is then 0). Per-datagram and per-send
  * decisions log only denials: logging every allowed datagram costs microseconds per
  * send (E3send pilot), while a connect is logged whatever the verdict. */
-static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 kind)
+static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 kind, __u8 v6)
 {
 	__u64 pt = bpf_get_current_pid_tgid();
 	__u32 tid = (__u32)pt;
@@ -328,15 +330,27 @@ static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, __u8 
 		d->dport = dport; d->daddr = daddr; d->verdict = verdict;
 		d->has_ctx = v ? 1 : 0;
 		__builtin_memset(d->pad, 0, sizeof(d->pad));
-		d->pad[0] = conflict; d->pad[1] = from_lineage; d->pad[3] = kind; d->pad[4] = over;
+		d->pad[0] = conflict; d->pad[1] = from_lineage; d->pad[3] = kind; d->pad[4] = over; d->pad[5] = v6;
 		if (v) __builtin_memcpy(d->id, v->id, ID_LEN); else __builtin_memset(d->id, 0, ID_LEN);
 		bpf_ringbuf_submit(d, 0);
 	}
 	return verdict;
 }
 
-SEC("cgroup/connect4")
-int on_connect4(struct bpf_sock_addr *sa)
+/* stamp the socket with its opener's credential (credential mode) */
+static __always_inline void stamp_opener(struct bpf_sock *sk)
+{
+	__u32 tid = (__u32)bpf_get_current_pid_tgid();
+	struct ident *v = bpf_map_lookup_elem(&ctx_map, &tid);
+	struct skcred *s = bpf_sk_storage_get(&sk_cred, sk, 0, BPF_SK_STORAGE_GET_F_CREATE);
+	if (s) {
+		if (v) __builtin_memcpy(s->opener.id, v->id, ID_LEN);
+		else __builtin_memset(s->opener.id, 0, ID_LEN);
+		__builtin_memcpy(&s->last, &s->opener, sizeof(s->last));
+	}
+}
+
+static __always_inline int on_connect(struct bpf_sock_addr *sa, __u32 daddr, __u8 v6)
 {
 	__u32 k0 = 0;
 	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
@@ -345,31 +359,47 @@ int on_connect4(struct bpf_sock_addr *sa)
 	__u32 dport = bpf_ntohs((__u16)sa->user_port);
 	if (dport < c->lo || dport > c->hi)
 		return 1;
-	int verdict = decide(c, dport, sa->user_ip4, 0);
-	if (verdict && c->cred && sa->sk) {   /* stamp the socket with its opener's credential */
-		__u32 tid = (__u32)bpf_get_current_pid_tgid();
-		struct ident *v = bpf_map_lookup_elem(&ctx_map, &tid);
-		struct skcred *s = bpf_sk_storage_get(&sk_cred, sa->sk, 0, BPF_SK_STORAGE_GET_F_CREATE);
-		if (s) {
-			if (v) __builtin_memcpy(s->opener.id, v->id, ID_LEN);
-			else __builtin_memset(s->opener.id, 0, ID_LEN);
-			__builtin_memcpy(&s->last, &s->opener, sizeof(s->last));
-		}
-	}
+	int verdict = decide(c, dport, daddr, 0, v6);
+	if (verdict && c->cred && sa->sk)
+		stamp_opener(sa->sk);
 	return verdict;
+}
+
+static __always_inline int on_dgram(struct bpf_sock_addr *sa, __u32 daddr, __u8 v6)
+{
+	__u32 k0 = 0;
+	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
+	if (!c)
+		return 1;
+	__u32 dport = bpf_ntohs((__u16)sa->user_port);
+	if (dport < c->lo || dport > c->hi)
+		return 1;
+	return decide(c, dport, daddr, 1, v6);
+}
+
+SEC("cgroup/connect4")
+int on_connect4(struct bpf_sock_addr *sa)
+{
+	return on_connect(sa, sa->user_ip4, 0);
+}
+
+/* IPv6, including IPv4-mapped addresses on IPv6 sockets (decided like IPv4: by port) */
+SEC("cgroup/connect6")
+int on_connect6(struct bpf_sock_addr *sa)
+{
+	return on_connect(sa, 0, 1);
 }
 
 SEC("cgroup/sendmsg4")
 int on_sendmsg4(struct bpf_sock_addr *sa)
 {
-	__u32 k0 = 0;
-	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
-	if (!c)
-		return 1;
-	__u32 dport = bpf_ntohs((__u16)sa->user_port);
-	if (dport < c->lo || dport > c->hi)
-		return 1;
-	return decide(c, dport, sa->user_ip4, 1);
+	return on_dgram(sa, sa->user_ip4, 0);
+}
+
+SEC("cgroup/sendmsg6")
+int on_sendmsg6(struct bpf_sock_addr *sa)
+{
+	return on_dgram(sa, 0, 1);
 }
 
 SEC("lsm/socket_sendmsg")
@@ -382,20 +412,24 @@ int BPF_PROG(on_sock_sendmsg, struct socket *sock, struct msghdr *msg, int size,
 	if (!c || !c->per_send)
 		return 0;
 	struct sock *sk = BPF_CORE_READ(sock, sk);
-	if (!sk || BPF_CORE_READ(sk, __sk_common.skc_family) != 2)   /* AF_INET */
+	if (!sk)
+		return 0;
+	unsigned short fam = BPF_CORE_READ(sk, __sk_common.skc_family);
+	if (fam != 2 && fam != 10)   /* AF_INET, AF_INET6 */
 		return 0;
 	__be16 port = BPF_CORE_READ(sk, __sk_common.skc_dport);
-	__be32 addr = BPF_CORE_READ(sk, __sk_common.skc_daddr);
+	__be32 addr = fam == 2 ? BPF_CORE_READ(sk, __sk_common.skc_daddr) : 0;
 	void *name = BPF_CORE_READ(msg, msg_name);
 	if (name) {   /* unconnected datagram: the destination is in the message */
-		struct fact_sin sin = {};
+		struct fact_sin sin = {};   /* sockaddr_in and sockaddr_in6 share family and port */
 		bpf_probe_read_kernel(&sin, sizeof(sin), name);
 		if (sin.family == 2) { port = sin.port; addr = sin.addr; }
+		else if (sin.family == 10) { port = sin.port; addr = 0; }
 	}
 	__u32 dport = bpf_ntohs(port);
 	if (dport < c->lo || dport > c->hi)
 		return 0;
-	return decide(c, dport, addr, 2) ? 0 : -1;   /* -EPERM */
+	return decide(c, dport, addr, 2, fam == 10) ? 0 : -1;   /* -EPERM */
 }
 
 /* Budget accounting: bytes accepted by the kernel (return value), charged to the
@@ -406,14 +440,17 @@ static __always_inline void charge(struct sock *sk, struct msghdr *msg, int ret)
 		return;
 	__u32 k0 = 0;
 	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
-	if (!c || !(c->budget || c->cred) || !sk || BPF_CORE_READ(sk, __sk_common.skc_family) != 2)
+	if (!c || !(c->budget || c->cred) || !sk)
+		return;
+	unsigned short fam = BPF_CORE_READ(sk, __sk_common.skc_family);
+	if (fam != 2 && fam != 10)   /* AF_INET, AF_INET6 */
 		return;
 	__be16 port = BPF_CORE_READ(sk, __sk_common.skc_dport);
 	void *name = BPF_CORE_READ(msg, msg_name);
 	if (name) {
 		struct fact_sin sin = {};
 		bpf_probe_read_kernel(&sin, sizeof(sin), name);
-		if (sin.family == 2) port = sin.port;
+		if (sin.family == 2 || sin.family == 10) port = sin.port;
 	}
 	__u32 dport = bpf_ntohs(port);
 	if (dport < c->lo || dport > c->hi)
@@ -454,7 +491,10 @@ int BPF_PROG(on_tcp_recv, struct sock *sk, struct msghdr *msg, __u64 len, int fl
 		return 0;
 	__u32 k0 = 0;
 	struct cfg *c = bpf_map_lookup_elem(&cfg_map, &k0);
-	if (!c || !c->cred || BPF_CORE_READ(sk, __sk_common.skc_family) != 2)
+	if (!c || !c->cred)
+		return 0;
+	unsigned short fam = BPF_CORE_READ(sk, __sk_common.skc_family);
+	if (fam != 2 && fam != 10)
 		return 0;
 	__u32 dport = bpf_ntohs(BPF_CORE_READ(sk, __sk_common.skc_dport));
 	if (dport < c->lo || dport > c->hi)
@@ -482,6 +522,17 @@ int BPF_PROG(on_tcp_sent, struct sock *sk, struct msghdr *msg, __u64 size, int r
 
 SEC("fexit/udp_sendmsg")
 int BPF_PROG(on_udp_sent, struct sock *sk, struct msghdr *msg, __u64 size, int ret)
+{
+	/* on an IPv6 socket, udp_sendmsg runs only inside udpv6_sendmsg (IPv4-mapped
+	 * destination), whose fexit charges the same bytes */
+	if (sk && BPF_CORE_READ(sk, __sk_common.skc_family) == 10)
+		return 0;
+	charge(sk, msg, ret);
+	return 0;
+}
+
+SEC("fexit/udpv6_sendmsg")
+int BPF_PROG(on_udp6_sent, struct sock *sk, struct msghdr *msg, __u64 size, int ret)
 {
 	charge(sk, msg, ret);
 	return 0;

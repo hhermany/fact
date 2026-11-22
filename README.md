@@ -10,7 +10,7 @@ Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 |---|---|
 | `collector/` | bpftrace collectors (`fact.bt` full, `fact-fast.bt` optimized, `fact-count.bt` ablation, `fact-bytes.bt` with per-send/receive byte events) |
 | `fact_rt/` | Runtime binding: execution identity follows the task (Python `contextvars`) and is handed to the kernel right before each `connect`/process creation (optionally also before each `send`, for connections reused by several tasks); FastMCP integration via `_meta` |
-| `policy/` | Per-execution egress policy: `cgroup/connect4` and `cgroup/sendmsg4` eBPF programs, optional per-send authorization (BPF LSM `socket_sendmsg`) (libbpf) + loader + `policyctl.py`; optional trusted-runtime mode (markers accepted only from registered runtime processes) |
+| `policy/` | Per-execution egress policy: `cgroup/connect4`/`connect6` and `cgroup/sendmsg4`/`sendmsg6` eBPF programs (IPv4, IPv6, IPv4-mapped), optional per-send authorization (BPF LSM `socket_sendmsg`) (libbpf) + loader + `policyctl.py`; optional trusted-runtime mode (markers accepted only from registered runtime processes) |
 | `factd/` | Live attribution and per-execution accounting daemon |
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper, and `figures.R`, a literate R script (knitr::spin) that draws every figure with ggplot from the summarized CSVs; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
 | `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents (E7, E7m); `remote_farm.py` serves the destinations on a second machine (E3net, E5net, E6net) |
@@ -76,6 +76,9 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 | Live accounting and IPFIX (Sec. IV-E) | E8ipfix, E9all | `E8ipfix_accounting.csv`, `E9all_ipfix.csv`, `factd_equiv.json` |
 | OBI measured (Sec. III) | OBI test (`campaigns/obi-assoc-20261118/`) | `obi_assoc.csv` |
 | Structural conflicts (Sec. IV-D) | every recorded run, pilots included (campaigns assembled with `scripts/extract_campaigns.sh`) | `structural_conflicts.csv` |
+| Policy outcomes per class, reach of denied connects (Secs. V-C, VI-C) | every confirmatory run with a policy | `policy_matrix.csv`, `policy_reach.csv` (`analysis/policy_matrix.py`) |
+| Connection reuse by opener and sender (Sec. VI-C) | E6reuse, E6reusecred | `reuse_matrix.csv` (`analysis/reuse_matrix.py`) |
+| Send-path coverage over IPv4 and IPv6 (Secs. IV-F, VII) | directed test `tests/coverage/run.sh` | `coverage_test.json` |
 
 ### Configuration behind each result
 
@@ -107,6 +110,25 @@ Connection-level policy is the `cgroup/connect4` hook; per-send authorization ad
 
 E10conccred, E12containcred, and E9costcred combine the kernel-held credential with budgets; E9all, E9b, and
 E9cost predate both and use markers.
+
+Every operation's expected policy decision follows the allow-list of the execution that owns it (exclusive
+port), not its class: restricted executions issue both permitted and forbidden operations, and
+`policy_matrix.csv` gives the outcomes per class with their denominators. In `reuse_matrix.csv`, each request of
+E6reuse/E6reusecred is classified by the execution that opened its connection and the one that sent it; with
+per-send authorization, none of the 864 forbidden requests reached the destination (411 were denied at the LSM
+on connections a permissive execution had opened), and every permitted one did, whoever opened the connection.
+
+IPv6. The policy (`cgroup/connect6`, `cgroup/sendmsg6`, the LSM program and the accounting fexits, including
+`udpv6_sendmsg`) and the collectors cover IPv6 and IPv4-mapped addresses since 2026-11-22, after the campaigns;
+their IPv4 code paths are unchanged, and the workload experiments use IPv4. Destinations are identified by
+port, over either family. `tests/coverage/run.sh` (root, BPF LSM) checks the send paths: execution B, which may
+not reach the destination, tries send, sendall, sendto, sendmsg, sendmmsg, write, writev, sendfile, splice,
+MSG_ZEROCOPY, a duplicated descriptor, connected and unconnected UDP, new connections, IPv6 and IPv4-mapped
+addresses, and io_uring, on sockets execution A opened and on its own; the destination logs what arrives, and
+the kernel's usage map what each identity was charged. On 2026-11-22 all 34 checks passed: nothing of B's
+arrived, all of A's did, and A was charged exactly the bytes the destination received. Sends that io_uring
+defers to its kernel worker (`IOSQE_ASYNC`) carry no credential and fall to the default action (deny), even
+for A.
 
 In E7net, qwen2.5:3b wrote the host's other loopback address (127.0.1.1) in two calls of one run per boot. The
 reference is keyed to the listen address (127.0.0.1), so `score.json` leaves these four connections out (356

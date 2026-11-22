@@ -175,7 +175,7 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
   - the session-derived identity is implemented for the Python SDK (SSE transport) and assumes each execution's token is known only to its own client;
   - E5node hooks Node's internal libuv binding (`tcp_wrap`), not a public API: the hook may need updating across Node major versions, and connections opened by native addons or worker threads that do not load `fact_rt_node` are outside it;
   - E5lib runs the official MCP fetch server's `fetch_url` inside the shared server, not that server as a whole;
-  - IPv4 only; the second machine is reached through a virtual switch.
+  - the workload experiments use IPv4 only (IPv6 enforcement and accounting, added on 2026-11-22, are checked by the directed test `tests/coverage/run.sh`); the second machine is reached through a virtual switch.
 - **Conclusion:**
   - dependence among events of a run (handled with the run as the unit);
   - common random numbers, stated;

@@ -1,7 +1,8 @@
 // fact_policy: loads the BPF program, pins the maps at /sys/fs/bpf/fact,
 // attaches it to the given cgroup, and prints each decision as one JSON line.
 // Usage: fact_policy <cgroup_path> <port_lo> <port_hi> <no_ctx_allow 0|1> [obj] [lineage 0|1|2] [per_send 0|1] [budget 0|1|2] [cred 0|1]
-// Attaches cgroup/connect4 and cgroup/sendmsg4 (unconnected UDP); with per_send=1 also the BPF LSM
+// Attaches cgroup/connect4/connect6 and cgroup/sendmsg4/sendmsg6 (unconnected UDP; IPv6 and IPv4-mapped
+// addresses are decided like IPv4, by port); with per_send=1 also the BPF LSM
 // program on socket_sendmsg (needs lsm=...,bpf), which re-authorizes every send; with budget=1 (enforce)
 // or 2 (count only) also the fexit programs on tcp_sendmsg/udp_sendmsg that charge accepted bytes to per-execution budgets.
 // With cred=1 the identity is an execution credential switched by prctl(PR_FACT, ...) and authorized by the BPF LSM
@@ -50,9 +51,9 @@ static int on_event(void *ctx, void *data, size_t sz)
 	}
 	static const char *kinds[] = {"connect", "sendto", "send"};
 	printf("{\"ev\":\"decision\",\"ts\":%llu,\"pid\":%u,\"tid\":%u,\"daddr\":\"%s\",\"dport\":%u,"
-	       "\"verdict\":\"%s\",\"has_ctx\":%u,\"ctx\":\"%s\",\"conflict\":%u,\"from_lineage\":%u,\"kind\":\"%s\",\"budget\":%u}\n",
-	       d->ts, d->pid, d->tid, ip, d->dport, d->verdict ? "allow" : "deny", d->has_ctx, id,
-	       d->pad[0], d->pad[1], kinds[d->pad[3] < 3 ? d->pad[3] : 0], d->pad[4]);
+	       "\"verdict\":\"%s\",\"has_ctx\":%u,\"ctx\":\"%s\",\"conflict\":%u,\"from_lineage\":%u,\"kind\":\"%s\",\"budget\":%u,\"ip\":%u}\n",
+	       d->ts, d->pid, d->tid, d->pad[5] ? "::" : ip, d->dport, d->verdict ? "allow" : "deny", d->has_ctx, id,
+	       d->pad[0], d->pad[1], kinds[d->pad[3] < 3 ? d->pad[3] : 0], d->pad[4], d->pad[5] ? 6 : 4);
 	return 0;
 }
 
@@ -76,6 +77,7 @@ int main(int argc, char **argv)
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_sock_sendmsg"), per_send ? true : false);
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_tcp_sent"), (budget || cred) ? true : false);
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_udp_sent"), (budget || cred) ? true : false);
+	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_udp6_sent"), (budget || cred) ? true : false);
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_tcp_recv"), cred ? true : false);
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_prctl"), cred ? true : false);
 	bpf_program__set_autoload(bpf_object__find_program_by_name(obj, "on_openat"), cred ? false : true);
@@ -114,14 +116,20 @@ int main(int argc, char **argv)
 	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_sendmsg4"), cg);
 	if (!links[nl]) { fprintf(stderr, "attach cgroup/sendmsg4 failed\n"); return 1; }
 	nl++;
+	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_connect6"), cg);
+	if (!links[nl]) { fprintf(stderr, "attach cgroup/connect6 failed\n"); return 1; }
+	nl++;
+	links[nl] = bpf_program__attach_cgroup(bpf_object__find_program_by_name(obj, "on_sendmsg6"), cg);
+	if (!links[nl]) { fprintf(stderr, "attach cgroup/sendmsg6 failed\n"); return 1; }
+	nl++;
 	if (c.cred) {   /* the credential switch, authorized by the BPF LSM */
 		links[nl] = bpf_program__attach_lsm(bpf_object__find_program_by_name(obj, "on_prctl"));
 		if (!links[nl]) { fprintf(stderr, "attach lsm/task_prctl failed (is the BPF LSM enabled?)\n"); return 1; }
 		nl++;
 	}
 	if (c.budget || c.cred) {   /* charge accepted (and, with cred, received) bytes */
-		const char *fx[] = {"on_tcp_sent", "on_udp_sent", "on_tcp_recv"};
-		for (int i = 0; i < (c.cred ? 3 : 2); i++) {
+		const char *fx[] = {"on_tcp_sent", "on_udp_sent", "on_udp6_sent", "on_tcp_recv"};
+		for (int i = 0; i < (c.cred ? 4 : 3); i++) {
 			links[nl] = bpf_program__attach(bpf_object__find_program_by_name(obj, fx[i]));
 			if (!links[nl]) { fprintf(stderr, "attach %s failed\n", fx[i]); return 1; }
 			nl++;
