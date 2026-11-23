@@ -1,0 +1,55 @@
+{
+ "total": {
+  "N": 4,
+  "C": 4,
+  "A": 0,
+  "M": 0,
+  "I": 0
+ },
+ "connections": [
+  {
+   "campaign": "hermes-E7net-confirmatory-20261118T175334Z",
+   "run": "r0011-E7net-c03-rep02",
+   "daddr": "127.0.1.1",
+   "dport": 62265,
+   "reference": "T07",
+   "fused": [
+    "T07"
+   ],
+   "outcome": "C"
+  },
+  {
+   "campaign": "hermes-E7net-confirmatory-20261118T175334Z",
+   "run": "r0011-E7net-c03-rep02",
+   "daddr": "127.0.1.1",
+   "dport": 61811,
+   "reference": "T04",
+   "fused": [
+    "T04"
+   ],
+   "outcome": "C"
+  },
+  {
+   "campaign": "hermes-E7net-confirmatory-20261118T185135Z",
+   "run": "r0011-E7net-c03-rep02",
+   "daddr": "127.0.1.1",
+   "dport": 62265,
+   "reference": "T07",
+   "fused": [
+    "T07"
+   ],
+   "outcome": "C"
+  },
+  {
+   "campaign": "hermes-E7net-confirmatory-20261118T185135Z",
+   "run": "r0011-E7net-c03-rep02",
+   "daddr": "127.0.1.1",
+   "dport": 61811,
+   "reference": "T04",
+   "fused": [
+    "T04"
+   ],
+   "outcome": "C"
+  }
+ ]
+}

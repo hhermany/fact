@@ -72,7 +72,7 @@ data" below maps the paper's figures, tables, and sections to them.
 | Policy on reused connections, per-send authorization (E6reuse); integrated configuration with the policy on every send (E9b) | `hermes-E6reuse-confirmatory-*`, `hermes-E9b-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_reuse_policy.py` |
 | Integrated configuration, every option available before budgets and the kernel-held credential (E9all) | `hermes-E9all-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Kernel-held credential with budgets: concurrent budgets (E10conccred), selective containment (E12containcred), integrated cost with every option (E9costcred) | `hermes-E10conccred-confirmatory-*`, `hermes-E12containcred-confirmatory-*`, `hermes-E9costcred-confirmatory-*` | `analysis/credint_tables.py` |
-| Network-operations incident with LLM agents (E7net) | `hermes-E7net-confirmatory-*` | `analysis/e7net_summary.py` |
+| Network-operations incident with LLM agents (E7net) | `hermes-E7net-confirmatory-*` | `analysis/e7net_summary.py`, `analysis/e7net_other_addr.py` |
 | OBI v1.0.0 association test (no FACT) | `campaigns/obi-assoc-20261118/` | `bench/obi_assoc.py`, `scripts/run_obi_all.sh`, `scripts/run_obi_tools.sh`, `analysis/obi_summary.py` |
 | Session identity (E6sess), failure boundary (E5native), unmodified fetch server (E5fetch), UDP flows (E5udp), IPFIX export (E8ipfix) | `hermes-E6sess-confirmatory-*`, `hermes-E5native-confirmatory-*`, `hermes-E5fetch-confirmatory-*`, `hermes-E5udp-confirmatory-*`, `hermes-E8ipfix-confirmatory-*` | `analysis/presub_tables.py`, `analysis/score_ipfix.py` |
 | Second runtime: Node.js MCP server (E5node) | `hermes-E5node-confirmatory-*` | `analysis/presub_tables.py` |
@@ -93,7 +93,7 @@ and figures generated from them under `analysis/output/tex/` and `analysis/outpu
 | Sec. VI-B (faulty identities, native code) | E5f, E6f, E7f, E6L, E6Ls, E5native | `analysis/fault_tables.py`, `E5native_boundary.csv` |
 | Table III, Sec. VI-C (policy, reuse, bytes, budgets) | E6, E5reuse, E6reuse, E5partial, E5udp, E10budget, E10conc, E10conccred | `E6_policy.csv`, `E5reuse_bytes.csv`, `E6reuse_policy.csv`, `E5partial.csv`, `E5udp_flows.csv`, `E10budget.csv`, `credint_summary.json` |
 | Table IV, Sec. VI-D (selective containment) | E12contain, E12containcred | `contain_summary.json`, `credint_summary.json` |
-| Sec. VI-E (real agents, overhead) | E7, E7m, E7c, E7o, E7r, E7net, E3, E3net, E3send, E7rc, E9costcred, E9cost | `E7net_summary.json`, `credint_summary.json`, `E7_*.csv`, `E3_overhead.csv`, `E3net_overhead.csv`, `E3send_cost.csv`, `E7rc_cost.csv`, `E9cost.csv`, `cost_stability.csv` (every overhead figure in the text is a paired median from this file, except those of the integrated workload, E9costcred, which are paired medians in `credint_summary.json`; the 0.2% of host CPU at the agents' pace is `fact_pct_of_host_median` in `E7rc_cost.csv`; the other files summarize each configuration, so differences of their medians can differ slightly) |
+| Sec. VI-E (real agents, overhead) | E7, E7m, E7c, E7o, E7r, E7net, E3, E3net, E3send, E7rc, E9costcred, E9cost | `E7net_summary.json`, `E7net_other_addr.json`, `credint_summary.json`, `E7_*.csv`, `E3_overhead.csv`, `E3net_overhead.csv`, `E3send_cost.csv`, `E7rc_cost.csv`, `E9cost.csv`, `cost_stability.csv` (every overhead figure in the text is a paired median from this file, except those of the integrated workload, E9costcred, which are paired medians in `credint_summary.json`; the 0.2% of host CPU at the agents' pace is `fact_pct_of_host_median` in `E7rc_cost.csv`; the other files summarize each configuration, so differences of their medians can differ slightly) |
 | Kernel-held credential (Secs. IV-G, VII) | E3cred, E6cred, E6reusecred, E6spoofcred, E11file | `kcred_summary.json` |
 | Live accounting and IPFIX (Sec. IV-E) | E8ipfix, E9all | `E8ipfix_accounting.csv`, `E9all_ipfix.csv`, `factd_equiv.json` |
 | OBI measured (Sec. III) | OBI test (`campaigns/obi-assoc-20261118/`) | `obi_assoc.csv` |
@@ -226,8 +226,10 @@ records the process events of subprocesses). Its results in the paper are over I
 
 In E7net, qwen2.5:3b wrote the host's other loopback address (127.0.1.1) in two calls of one run per boot. The
 reference is keyed to the listen address (127.0.0.1), so `score.json` leaves these four connections out (356
-scored); `analysis/e7net_summary.py` counts them separately (`conn_other_addr`), their labels match the owners
-of the ports, and the paper reports all 360 connections the policy allowed.
+scored); `analysis/e7net_summary.py` counts them separately (`conn_other_addr`), and their labels match the
+owners of the ports. `analysis/e7net_other_addr.py` scores them with the same fused resolver against the same
+port-owner reference (`E7net_other_addr.json`: 4 of 4 correct, none ambiguous, missing or wrong), so the paper
+reports all 360 connections as correctly attributed.
 
 ## Re-running the confirmatory campaigns
 
