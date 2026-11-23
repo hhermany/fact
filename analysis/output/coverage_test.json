@@ -248,19 +248,7 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "B": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "W": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "Q": {
+      "S": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -278,7 +266,13 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "S": {
+      "B": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "W": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -286,6 +280,12 @@
       },
       "A": {
        "bytes": 336,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "Q": {
+       "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -539,12 +539,6 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "Q": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "S": {
        "bytes": 0,
        "conns": 0,
@@ -557,19 +551,25 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "R": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "V": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
+      "Q": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "B": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -830,25 +830,13 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "Q": {
+      "W": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
       "V": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "S": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "W": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -866,7 +854,19 @@
        "denied": 0,
        "rx_bytes": 0
       },
+      "S": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "R": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "Q": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -1143,26 +1143,8 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "S": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "B": {
        "bytes": 816,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "Q": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "R": {
-       "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1179,8 +1161,26 @@
        "denied": 0,
        "rx_bytes": 0
       },
+      "S": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "R": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "A": {
        "bytes": 336,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "Q": {
+       "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1436,20 +1436,8 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "B": {
-       "bytes": 816,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "V": {
+      "S": {
        "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "A": {
-       "bytes": 336,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1466,14 +1454,26 @@
        "denied": 0,
        "rx_bytes": 0
       },
+      "V": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "B": {
+       "bytes": 816,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "W": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "S": {
-       "bytes": 0,
+      "A": {
+       "bytes": 336,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -1719,8 +1719,8 @@
      ],
      "pass": true,
      "charged": {
-      "B": 816,
-      "A": 336
+      "A": 336,
+      "B": 816
      },
      "received": {
       "A": 336,
@@ -1729,7 +1729,25 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "R": {
+      "A": {
+       "bytes": 336,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "S": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "Q": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "W": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -1741,31 +1759,13 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "Q": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "V": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "S": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "W": {
+      "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -2041,31 +2041,13 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "B": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "S": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 6
-      },
       "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "V": {
+      "B": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -2077,7 +2059,25 @@
        "denied": 0,
        "rx_bytes": 0
       },
+      "A": {
+       "bytes": 336,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 6
+      },
+      "V": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
       "Q": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "S": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -2332,18 +2332,6 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 6
-      },
-      "B": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "W": {
        "bytes": 0,
        "conns": 0,
@@ -2356,13 +2344,25 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "R": {
+      "B": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
+      "A": {
+       "bytes": 336,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 6
+      },
       "Q": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -2623,7 +2623,13 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "B": {
+      "V": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 0
+      },
+      "W": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -2635,31 +2641,25 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "A": {
-       "bytes": 336,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 6
-      },
-      "W": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
       "R": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "S": {
+      "B": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
       },
-      "V": {
+      "A": {
+       "bytes": 336,
+       "conns": 0,
+       "denied": 0,
+       "rx_bytes": 6
+      },
+      "S": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -3094,12 +3094,12 @@
      ],
      "pass": true,
      "charged": {
-      "Q": 144,
-      "A": 336,
-      "R": 144,
-      "V": 144,
       "S": 96,
-      "W": 96
+      "A": 336,
+      "Q": 144,
+      "R": 144,
+      "W": 96,
+      "V": 144
      },
      "received": {
       "A": 336,
@@ -3112,10 +3112,10 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "Q": {
-       "bytes": 144,
-       "conns": 4,
-       "denied": 1,
+      "S": {
+       "bytes": 96,
+       "conns": 0,
+       "denied": 2,
        "rx_bytes": 0
       },
       "A": {
@@ -3124,22 +3124,16 @@
        "denied": 0,
        "rx_bytes": 0
       },
+      "Q": {
+       "bytes": 144,
+       "conns": 4,
+       "denied": 1,
+       "rx_bytes": 0
+      },
       "R": {
        "bytes": 144,
        "conns": 0,
        "denied": 5,
-       "rx_bytes": 0
-      },
-      "V": {
-       "bytes": 144,
-       "conns": 0,
-       "denied": 1,
-       "rx_bytes": 0
-      },
-      "S": {
-       "bytes": 96,
-       "conns": 0,
-       "denied": 2,
        "rx_bytes": 0
       },
       "W": {
@@ -3152,6 +3146,12 @@
        "bytes": 0,
        "conns": 0,
        "denied": 0,
+       "rx_bytes": 0
+      },
+      "V": {
+       "bytes": 144,
+       "conns": 0,
+       "denied": 1,
        "rx_bytes": 0
       }
      },
@@ -3535,11 +3535,11 @@
      ],
      "pass": true,
      "charged": {
-      "Q": 144,
       "R": 144,
+      "V": 144,
       "S": 96,
-      "A": 336,
-      "V": 144
+      "Q": 144,
+      "A": 336
      },
      "received": {
       "A": 336,
@@ -3551,26 +3551,20 @@
      "accounting_exact": true,
      "rx_exact": true,
      "usage": {
-      "Q": {
-       "bytes": 144,
-       "conns": 4,
-       "denied": 1,
-       "rx_bytes": 0
-      },
       "R": {
        "bytes": 144,
        "conns": 0,
        "denied": 5,
        "rx_bytes": 0
       },
-      "S": {
-       "bytes": 96,
+      "V": {
+       "bytes": 144,
        "conns": 0,
-       "denied": 2,
+       "denied": 1,
        "rx_bytes": 0
       },
-      "A": {
-       "bytes": 336,
+      "B": {
+       "bytes": 0,
        "conns": 0,
        "denied": 0,
        "rx_bytes": 0
@@ -3581,16 +3575,22 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "B": {
-       "bytes": 0,
+      "S": {
+       "bytes": 96,
        "conns": 0,
-       "denied": 0,
+       "denied": 2,
        "rx_bytes": 0
       },
-      "V": {
+      "Q": {
        "bytes": 144,
-       "conns": 0,
+       "conns": 4,
        "denied": 1,
+       "rx_bytes": 0
+      },
+      "A": {
+       "bytes": 336,
+       "conns": 0,
+       "denied": 0,
        "rx_bytes": 0
       }
      },
@@ -3975,10 +3975,10 @@
      "pass": true,
      "charged": {
       "A": 336,
-      "S": 96,
       "R": 144,
       "Q": 144,
-      "V": 144
+      "V": 144,
+      "S": 96
      },
      "received": {
       "A": 336,
@@ -3996,12 +3996,6 @@
        "denied": 0,
        "rx_bytes": 0
       },
-      "S": {
-       "bytes": 96,
-       "conns": 0,
-       "denied": 2,
-       "rx_bytes": 0
-      },
       "R": {
        "bytes": 144,
        "conns": 0,
@@ -4009,12 +4003,6 @@
        "rx_bytes": 0
       },
       "B": {
-       "bytes": 0,
-       "conns": 0,
-       "denied": 0,
-       "rx_bytes": 0
-      },
-      "W": {
        "bytes": 0,
        "conns": 0,
        "denied": 0,
@@ -4030,6 +4018,18 @@
        "bytes": 144,
        "conns": 0,
        "denied": 1,
+       "rx_bytes": 0
+      },
+      "S": {
+       "bytes": 96,
+       "conns": 0,
+       "denied": 2,
+       "rx_bytes": 0
+      },
+      "W": {
+       "bytes": 0,
+       "conns": 0,
+       "denied": 0,
        "rx_bytes": 0
       }
      },
