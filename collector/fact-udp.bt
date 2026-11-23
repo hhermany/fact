@@ -125,10 +125,16 @@ kprobe:udpv6_sendmsg
 	$msg = (struct msghdr *)arg1;
 	$dp = $sk->__sk_common.skc_dport;
 	$da = ntop(10, $sk->__sk_common.skc_v6_daddr.in6_u.u6_addr8);
-	if ($msg->msg_name != 0) {
+	if ($msg->msg_name != 0) {   /* an AF_UNSPEC address is ignored: the datagram goes to the peer */
 		$sin6 = (struct sockaddr_in6 *)$msg->msg_name;
-		$dp = $sin6->sin6_port;
-		$da = ntop(10, $sin6->sin6_addr.in6_u.u6_addr8);
+		if ($sin6->sin6_family == 10) {
+			$dp = $sin6->sin6_port;
+			$da = ntop(10, $sin6->sin6_addr.in6_u.u6_addr8);
+		} else if ($sin6->sin6_family == 2) {   /* an IPv4 address on an IPv6 socket */
+			$sin = (struct sockaddr_in *)$msg->msg_name;
+			$dp = $sin->sin_port;
+			$da = ntop(2, $sin->sin_addr.s_addr);
+		}
 	}
 	$key = (uint64)$dp | ((uint64)1 << 63);
 	if (@udp_last[(uint64)$sk] != $key) {
