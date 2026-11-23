@@ -1,0 +1,18 @@
+E7: runs 1/1, identical 0/1; other runs differ only in: {'model output': 1, 'unplanned': 1}
+E7c: runs 4/4, identical 0/4; other runs differ only in: {'model output': 4, 'unplanned': 1}
+E7f: runs 1/1, identical 0/1; other runs differ only in: {'model output': 1}
+E7m: runs 4/4, identical 2/4; other runs differ only in: {'model output': 2, 'variable cell': 2, 'unplanned': 1}
+E7net: runs 4/4, identical 0/4; other runs differ only in: {'model output': 4}
+E7o: runs 4/4, identical 0/4; other runs differ only in: {'model output': 4, 'unplanned': 2, 'variable cell': 2}
+vs recorded E7 IPv4: {'no reference': 4}
+vs recorded E7 IPv6: {'no reference': 4}
+vs recorded E7c IPv4: {'identical': 16}
+vs recorded E7c IPv6: {'identical': 16}
+vs recorded E7f IPv4: {'no reference': 4}
+vs recorded E7f IPv6: {'no reference': 4}
+vs recorded E7m IPv4: {'identical': 8, 'variable, outside recorded range': 4, 'variable, within recorded range': 4}
+vs recorded E7m IPv6: {'identical': 8, 'variable, within recorded range': 4, 'variable, outside recorded range': 4}
+vs recorded E7net IPv4: {'no reference': 16}
+vs recorded E7net IPv6: {'no reference': 16}
+vs recorded E7o IPv4: {'identical': 16}
+vs recorded E7o IPv6: {'identical': 16}

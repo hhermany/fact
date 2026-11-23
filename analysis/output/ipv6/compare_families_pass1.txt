@@ -1,0 +1,134 @@
+E1: runs 24/24, identical 24/24
+E10budget: runs 8/8, identical 4/8; other runs differ only in: {'request size': 4, 'unplanned': 3, 'variable cell': 4}
+E10conc: runs 4/4, identical 1/4; other runs differ only in: {'unplanned': 2, 'request size': 2, 'variable cell': 2}
+E10conccred: runs 4/4, identical 2/4; other runs differ only in: {'request size': 2, 'unplanned': 2, 'variable cell': 2}
+E11file: runs 4/4, identical 4/4
+E12contain: runs 6/6, identical 0/6; other runs differ only in: {'request size': 5, 'variable cell': 5, 'unplanned': 4}; OUTCOME DIFFERENCES: r0006-E12contain-c03-rep00
+E12containcred: runs 6/6, identical 0/6; other runs differ only in: {'request size': 5, 'unplanned': 5, 'variable cell': 5}; OUTCOME DIFFERENCES: r0002-E12contain-c01-rep00, r0006-E12contain-c03-rep00
+E1ap: runs 6/6, identical 0/6; other runs differ only in: {'baseline': 6}
+E1fast: runs 24/24, identical 24/24
+E2: runs 24/24, identical 24/24
+E2b: runs 10/10, identical 6/10; other runs differ only in: {'performance': 4}
+E3: runs 4/4, identical 4/4
+E3b: runs 8/8, identical 8/8
+E3cred: runs 3/3, identical 3/3
+E3net: runs 4/4, identical 4/4
+E3send: runs 15/15, identical 15/15
+E4: runs 8/8, identical 6/8; other runs differ only in: {'variable cell': 2}
+E5: runs 24/24, identical 21/24; other runs differ only in: {'variable cell': 3}
+E5ap: runs 12/12, identical 0/12; other runs differ only in: {'baseline': 12}
+E5aps: runs 12/12, identical 0/12; other runs differ only in: {'baseline': 12}
+E5f: runs 16/16, identical 14/16; other runs differ only in: {'unplanned': 2}
+E5fetch: runs 3/3, identical 1/3; other runs differ only in: {'unplanned': 2}
+E5lib: runs 12/12, identical 12/12
+E5native: runs 4/4, identical 2/4; other runs differ only in: {'variable cell': 2}
+E5net: runs 24/24, identical 21/24; other runs differ only in: {'variable cell': 3}
+E5node: runs 12/12, identical 7/12; other runs differ only in: {'unplanned': 3, 'variable cell': 4}
+E5partial: runs 1/1, identical 0/1; other runs differ only in: {'variable cell': 1}
+E5reuse: runs 16/16, identical 0/16; other runs differ only in: {'request size': 16, 'variable cell': 10, 'unplanned': 5}; OUTCOME DIFFERENCES: r0006-E5reuse-c04-rep00
+E5udp: runs 8/8, identical 4/8; other runs differ only in: {'variable cell': 4}
+E6: runs 16/16, identical 14/16; other runs differ only in: {'variable cell': 2}
+E6L: runs 24/24, identical 24/24
+E6Ls: runs 8/8, identical 8/8
+E6cred: runs 12/12, identical 11/12; other runs differ only in: {'unplanned': 1}
+E6f: runs 16/16, identical 16/16
+E6n: runs 8/8, identical 8/8
+E6net: runs 16/16, identical 14/16; other runs differ only in: {'variable cell': 2}
+E6reuse: runs 8/8, identical 0/8; other runs differ only in: {'variable cell': 8, 'unplanned': 8, 'request size': 4}; OUTCOME DIFFERENCES: r0006-E6reuse-c02-rep00
+E6reusecred: runs 4/4, identical 0/4; other runs differ only in: {'request size': 4, 'variable cell': 4, 'unplanned': 3}
+E6sess: runs 8/8, identical 8/8
+E6spoof: runs 6/6, identical 6/6
+E6spoofcred: runs 6/6, identical 6/6
+E7: runs 1/1, identical 0/1; other runs differ only in: {'model output': 1, 'unplanned': 1}
+E7f: runs 1/1, identical 0/1; other runs differ only in: {'model output': 1}
+E7r: runs 16/16, identical 16/16
+E7rc: runs 16/16, identical 0/16; other runs differ only in: {'performance': 16}
+E8ipfix: runs 4/4, identical 1/4; other runs differ only in: {'performance': 1, 'variable cell': 2, 'request size': 2, 'unplanned': 2}
+E9all: runs 2/2, identical 0/2; other runs differ only in: {'performance': 2}
+E9b: runs 2/2, identical 0/2; other runs differ only in: {'performance': 2}
+E9cost: runs 4/4, identical 2/4; other runs differ only in: {'performance': 2, 'variable cell': 1, 'unplanned': 1}
+E9costcred: runs 4/4, identical 2/4; other runs differ only in: {'request size': 2, 'performance': 2}
+vs recorded E1 IPv4: {'identical': 96}
+vs recorded E1 IPv6: {'identical': 96}
+vs recorded E10budget IPv4: {'no reference': 32}
+vs recorded E10budget IPv6: {'no reference': 32}
+vs recorded E10conc IPv4: {'no reference': 16}
+vs recorded E10conc IPv6: {'no reference': 16}
+vs recorded E10conccred IPv4: {'no reference': 16}
+vs recorded E10conccred IPv6: {'no reference': 16}
+vs recorded E12contain IPv4: {'no reference': 24}
+vs recorded E12contain IPv6: {'no reference': 24}
+vs recorded E12containcred IPv4: {'no reference': 24}
+vs recorded E12containcred IPv6: {'no reference': 24}
+vs recorded E1ap IPv4: {'no reference': 48}
+vs recorded E1ap IPv6: {'no reference': 36}
+vs recorded E1fast IPv4: {'identical': 96}
+vs recorded E1fast IPv6: {'identical': 96}
+vs recorded E2 IPv4: {'identical': 96}
+vs recorded E2 IPv6: {'identical': 96}
+vs recorded E4 IPv4: {'no reference': 32}
+vs recorded E4 IPv6: {'no reference': 32}
+vs recorded E5 IPv4: {'identical': 90, 'variable, outside recorded range': 6}
+vs recorded E5 IPv6: {'identical': 90, 'variable, outside recorded range': 4, 'variable, within recorded range': 2}
+vs recorded E5ap IPv4: {'identical': 96}
+vs recorded E5ap IPv6: {'identical': 60}
+vs recorded E5aps IPv4: {'no reference': 96}
+vs recorded E5aps IPv6: {'no reference': 60}
+vs recorded E5f IPv4: {'no reference': 64}
+vs recorded E5f IPv6: {'no reference': 64}
+vs recorded E5fetch IPv4: {'no reference': 12}
+vs recorded E5fetch IPv6: {'no reference': 12}
+vs recorded E5lib IPv4: {'no reference': 48}
+vs recorded E5lib IPv6: {'no reference': 48}
+vs recorded E5native IPv4: {'no reference': 16}
+vs recorded E5native IPv6: {'no reference': 16}
+vs recorded E5net IPv4: {'identical': 90, 'variable, outside recorded range': 6}
+vs recorded E5net IPv6: {'identical': 90, 'variable, outside recorded range': 6}
+vs recorded E5node IPv4: {'no reference': 48}
+vs recorded E5node IPv6: {'no reference': 48}
+vs recorded E5reuse IPv4: {'no reference': 64}
+vs recorded E5reuse IPv6: {'no reference': 64}
+vs recorded E5udp IPv4: {'no reference': 64}
+vs recorded E5udp IPv6: {'no reference': 64}
+vs recorded E6 IPv4: {'identical': 56, 'variable, outside recorded range': 8}
+vs recorded E6 IPv6: {'identical': 56, 'variable, outside recorded range': 8}
+vs recorded E6L IPv4: {'no reference': 96}
+vs recorded E6L IPv6: {'no reference': 96}
+vs recorded E6Ls IPv4: {'no reference': 32}
+vs recorded E6Ls IPv6: {'no reference': 32}
+vs recorded E6cred IPv4: {'no reference': 48}
+vs recorded E6cred IPv6: {'no reference': 48}
+vs recorded E6f IPv4: {'no reference': 64}
+vs recorded E6f IPv6: {'no reference': 64}
+vs recorded E6n IPv4: {'no reference': 32}
+vs recorded E6n IPv6: {'no reference': 32}
+vs recorded E6net IPv4: {'identical': 56, 'variable, outside recorded range': 8}
+vs recorded E6net IPv6: {'identical': 56, 'variable, outside recorded range': 8}
+vs recorded E6reuse IPv4: {'no reference': 32}
+vs recorded E6reuse IPv6: {'no reference': 32}
+vs recorded E6reusecred IPv4: {'no reference': 16}
+vs recorded E6reusecred IPv6: {'no reference': 16}
+vs recorded E6sess IPv4: {'no reference': 32}
+vs recorded E6sess IPv6: {'no reference': 32}
+vs recorded E6spoof IPv4: {'no reference': 24}
+vs recorded E6spoof IPv6: {'no reference': 24}
+vs recorded E6spoofcred IPv4: {'no reference': 24}
+vs recorded E6spoofcred IPv6: {'no reference': 24}
+vs recorded E7 IPv4: {'no reference': 4}
+vs recorded E7 IPv6: {'no reference': 4}
+vs recorded E7f IPv4: {'no reference': 4}
+vs recorded E7f IPv6: {'no reference': 4}
+vs recorded E7r IPv4: {'identical': 64}
+vs recorded E7r IPv6: {'identical': 64}
+vs recorded E7rc IPv4: {'no reference': 64}
+vs recorded E7rc IPv6: {'no reference': 64}
+vs recorded E8ipfix IPv4: {'no reference': 16}
+vs recorded E8ipfix IPv6: {'no reference': 16}
+vs recorded E9all IPv4: {'no reference': 16}
+vs recorded E9all IPv6: {'no reference': 16}
+vs recorded E9b IPv4: {'no reference': 16}
+vs recorded E9b IPv6: {'no reference': 16}
+vs recorded E9cost IPv4: {'no reference': 16}
+vs recorded E9cost IPv6: {'no reference': 16}
+vs recorded E9costcred IPv4: {'no reference': 16}
+vs recorded E9costcred IPv6: {'no reference': 16}

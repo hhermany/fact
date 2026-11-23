@@ -17,7 +17,7 @@ OUT=$(realpath -m "$1"); shift
 mkdir -p "$OUT"
 SEED=$(awk '/^campaign_seed:/ {print $2}' workflow/config.yaml)
 DEFAULT="E1 E1fast E1ap E2 E2b E3 E3b E3cred E3send E4 E5 E5f E5ap E5aps E5fetch E5lib E5native E5node E5partial
-E5reuse E5udp E6 E6L E6Ls E6f E6cred E6reuse E6reusecred E6sess E6spoof E6spoofcred E7 E7f E7r E7rc E8ipfix E9all
+E5reuse E5udp E6 E6L E6Ls E6f E6n E6cred E6reuse E6reusecred E6sess E6spoof E6spoofcred E7 E7f E7r E7rc E8ipfix E9all
 E9b E9cost E9costcred E10budget E10conc E10conccred E11file E12contain E12containcred"
 EXPS="${*:-$DEFAULT}"
 exec > >(tee -a "$OUT/parity.log") 2>&1
@@ -44,5 +44,5 @@ for e in $EXPS; do
 done
 python3 -I analysis/collect_runs.py "$OUT/campaigns" --out "$OUT/runs.csv" || true
 python3 -I analysis/compare_families.py "$OUT/campaigns" --out "$OUT/compare_families.json" \
-  --runs-csv "$OUT/runs.csv" --recorded analysis/runs.csv | tee "$OUT/compare_families.txt"
+  --runs-csv "$OUT/runs.csv" --recorded analysis/runs.csv --recorded-campaigns campaigns | tee "$OUT/compare_families.txt"
 '

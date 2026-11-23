@@ -10,7 +10,7 @@ Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 |---|---|
 | `collector/` | bpftrace collectors (`fact.bt` full, `fact-fast.bt` optimized, `fact-count.bt` ablation, `fact-bytes.bt` with per-send/receive byte events) |
 | `fact_rt/` | Runtime binding: execution identity follows the task (Python `contextvars`) and is handed to the kernel right before each `connect`/process creation (optionally also before each `send`, for connections reused by several tasks); FastMCP integration via `_meta` |
-| `policy/` | Per-execution egress policy: `cgroup/connect4`/`connect6` and `cgroup/sendmsg4`/`sendmsg6` eBPF programs (IPv4, IPv6, IPv4-mapped), optional per-send authorization (BPF LSM `socket_sendmsg`) (libbpf) + loader + `policyctl.py`; optional trusted-runtime mode (markers accepted only from registered runtime processes) |
+| `policy/` | Per-execution egress policy: `cgroup/connect4`/`connect6` and `cgroup/sendmsg4`/`sendmsg6` eBPF programs (IPv4, IPv6, IPv4-mapped), optional per-send authorization (BPF LSM `socket_sendmsg`), byte accounting (fexit on `tcp_sendmsg`, `udp_sendmsg`, `udpv6_sendmsg`, `tcp_recvmsg`, `vfs_write`), kernel-held credential (BPF LSM `task_prctl`), and an fentry on `udpv6_sendmsg` that tells connected IPv4-mapped datagrams apart (libbpf) + loader + `policyctl.py`; optional trusted-runtime mode (markers accepted only from registered runtime processes) |
 | `factd/` | Live attribution and per-execution accounting daemon |
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper, and `figures.R`, a literate R script (knitr::spin) that draws every figure with ggplot from the summarized CSVs; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
 | `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents (E7, E7m); `remote_farm.py` serves the destinations on a second machine (E3net, E5net, E6net) |
@@ -120,19 +120,69 @@ on connections a permissive execution had opened), and every permitted one did, 
 
 IPv6. The policy (`cgroup/connect6`, `cgroup/sendmsg6`, the LSM program and the accounting fexits, including
 `udpv6_sendmsg`) and the collectors cover IPv6 and IPv4-mapped addresses since 2026-11-22, after the campaigns;
-their IPv4 code paths are unchanged, and the workload experiments use IPv4. Destinations are identified by
-port, over either family. `tests/coverage/run.sh` (root, BPF LSM) checks the send paths: execution B, which may
-not reach the destination, tries send, sendall, sendto, sendmsg, sendmmsg, write, writev, sendfile, splice,
-MSG_ZEROCOPY, a duplicated descriptor, connected and unconnected UDP, new connections, IPv6 and IPv4-mapped
-addresses, and io_uring, on sockets execution A opened and on its own; the destination logs what arrives, and
-the kernel's usage map what each identity was charged. On 2026-11-22 all 34 checks passed: nothing of B's
-arrived, all of A's did, and A was charged exactly the bytes the destination received. Sends that io_uring
-defers to its kernel worker (`IOSQE_ASYNC`) carry no credential and fall to the default action (deny), even
-for A. As an IPv4 regression of this policy, E6, E6reuse and E6reusecred were re-run with `--n 1` and the
-paper's seed (28 runs; see "Re-running the confirmatory campaigns"): every E6 resolver row of FACT's automatic binding and of the
+their IPv4 code paths are unchanged. Destinations are identified by port, over either family. The workloads,
+benchmarks, factd and the tests take the family from `FACT_FAMILY` (4 by default, or 6; `workload/netfam.py`), so
+`scripts/campaign.py --family 6` runs any experiment over IPv6 (campaign ids end in `-ipv6`; the second machine
+and a remote model server are given with `--set dest_host=<IPv6 address>` and `--set ollama=[<address>]:11434`).
+The paper's campaigns are IPv4.
+
+Coverage matrix. `tests/coverage/run.sh` (root, BPF LSM) checks the send paths in four policy modes (per-send
+authorization, connection-level only, kernel-held credential, budgets) toward IPv4, IPv6 and IPv4-mapped
+destinations: execution B, which may not reach the destination, tries send, sendall, sendto, sendmsg, sendmmsg,
+write, writev, sendfile, splice, MSG_ZEROCOPY, a duplicated descriptor, connected and unconnected UDP, new
+connections and io_uring, on sockets execution A opened and on its own; the destination logs what arrives, and
+the kernel's usage map what each identity was charged. On 2026-11-22 every check passed in every mode and
+family, and the outcomes, charges, budget counters, policy decisions and the events of all seven collectors
+were the same across families (`analysis/output/coverage_test.json`). The matrix found one difference, now
+fixed (commit e14922f): toward an IPv4-mapped destination, `udpv6_sendmsg` hands even a connected send to
+`udp_sendmsg` with the destination filled in, so `cgroup/sendmsg4` decided again a send that is never re-decided
+on an IPv4 socket; an fentry on `udpv6_sendmsg` records whether the application named a destination, and the
+policy leaves the connected case to the per-send check, as on IPv4. Sends that io_uring defers to its kernel
+worker (`IOSQE_ASYNC`) carry no credential and fall to the default action (deny), even for A. As an IPv4
+regression of this policy, E6, E6reuse and E6reusecred were re-run with `--n 1` and the paper's seed (28 runs; see
+"Re-running the confirmatory campaigns"): every E6 resolver row of FACT's automatic binding and of the
 deterministic cells matched the recorded runs (56 identical); the 8 others are the two cells with manual markers
 and asynchronous tools, whose outcomes vary between boots. With per-send authorization, none of the 144
 forbidden requests of E6reuse and of E6reusecred reached the destination, and every permitted one did.
+
+Experiments over IPv6. `scripts/run_parity.sh` runs each experiment once per cell (`--n 1`, the paper's seed)
+over IPv4 and over IPv6, and `analysis/compare_families.py` compares the two runs of each cell: every output
+except times, latencies, rates, CPU, host ids and addresses. On 2026-11-22/23 this covered all 54 experiments
+(504 pairs of runs), including the second machine (E3net, E5net, E6net, E7m) and the model APIs (E7c, E7o,
+E7net), and 14 of them were run once more over IPv4 and over IPv6 (`analysis/compare_repeats.py` compares two
+IPv4 runs; outputs in `analysis/output/ipv6/`). 349 pairs were identical. Every other difference has a cause shown in the data, and none is a
+different decision or count by FACT for the same traffic:
+- request size: HTTP clients put the destination in the Host header, `127.0.0.1:PORT` or `[::1]:PORT`, so each
+  request is 4 bytes shorter over IPv6 (httpx 155 and 151 bytes, requests 158 and 154, aiohttp 139 and 135). In
+  every such pair each request differs by exactly 4 bytes and each response has the same size, the collector's
+  count equals the destination's in both families, and the IPv4 run reproduces the recorded campaigns (E5reuse,
+  E6reuse, E6reusecred, E8ipfix, E10, E12; in E9costcred each execution's 25 httpx GETs take 4550 bytes over
+  IPv4 and 4450 over IPv6; the 7 runaway uploads of E12contain, 28 bytes less). Byte budgets follow: with 10
+  requests over a 1500-byte budget, E10budget overshoots by 50 bytes over IPv4 and 10 over IPv6;
+- variable cells: values that already differ among the recorded IPv4 runs of the same cell, or between the two
+  IPv4 runs of this comparison (asynchronous tools with manual markers in E4, E5 and E6, the Node runtime in
+  E5node, E5native, partial sends in E5partial, connection reuse in the keep-alive pools: E5reuse c06 opened 8
+  and 12 connections in two IPv4 runs, 8 and 10 in two IPv6 runs);
+- performance: CPU cost, capacity, the BPF programs loaded on the host, and the number of IPFIX records (one per
+  execution per export interval, so it follows the timing of the run);
+- model output: the agents' final answers, model turns and token counts (E7, E7f, E7c, E7o, E7net), which
+  the model sets from prompts that name the destination by its address (an IPv6 prompt is 33 tokens shorter
+  per agent in E7c); the attribution and policy results of E7c match the recorded campaigns in both families;
+- a shared byte budget (E12contain, E12containcred, process mode): which normal requests get in before the
+  worker's budget runs out varies from run to run (the recorded IPv4 runs of E12containcred c03 completed 12, 14
+  or 17 normal requests; two IPv4 runs of E12contain c03 here differ by one request of execution E07), and so does
+  the per-execution split of admitted and denied requests. In one IPv6 run, per-send authorization let a
+  request's 175-byte header through and denied its body when the budget ran out; FACT charged the 175 bytes the
+  destination received (232588 = 232413 bytes of complete requests + 175), while the reference counts complete
+  requests only, so that run is not "exact". An IPv4 run of another cell also left bytes outside complete
+  requests at the destination (66049), and the IPv6 repetition of the cell was exact.
+
+Also over IPv6: E6n (8 of 8 pairs identical), and the OBI association test (comparison only), whose counts
+were the same as over IPv4 and as recorded (`analysis/output/obi_assoc.csv`).
+
+AgentProvenance over IPv6. AgentProvenance v0.9.0 (comparison only) attaches to `sys_enter_connect` but records no
+`network_connect` event for an IPv6 destination, in any mode: over IPv6 it attributes no connection (it still
+records the process events of subprocesses). Its results in the paper are over IPv4.
 
 In E7net, qwen2.5:3b wrote the host's other loopback address (127.0.1.1) in two calls of one run per boot. The
 reference is keyed to the listen address (127.0.0.1), so `score.json` leaves these four connections out (356

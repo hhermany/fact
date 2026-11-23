@@ -1,0 +1,14 @@
+E10budget IPv4×IPv4: identical 5/8; differ in: {'unplanned': 3, 'variable cell': 3, 'outcome': 1}
+E10conc IPv4×IPv4: identical 2/4; differ in: {'unplanned': 2, 'variable cell': 2}
+E10conccred IPv4×IPv4: identical 2/4; differ in: {'unplanned': 2, 'variable cell': 2}
+E12contain IPv4×IPv4: identical 1/6; differ in: {'variable cell': 5, 'unplanned': 2, 'outcome': 1}
+E12containcred IPv4×IPv4: identical 2/6; differ in: {'unplanned': 3, 'variable cell': 4, 'outcome': 1}
+E4 IPv4×IPv4: identical 6/8; differ in: {'variable cell': 2}
+E5node IPv4×IPv4: identical 6/12; differ in: {'variable cell': 4, 'unplanned': 3}
+E5partial IPv4×IPv4: identical 0/1; differ in: {'variable cell': 1}
+E5reuse IPv4×IPv4: identical 7/16; differ in: {'variable cell': 8, 'unplanned': 5, 'outcome': 1}
+E6 IPv4×IPv4: identical 14/16; differ in: {'variable cell': 2}
+E6reuse IPv4×IPv4: identical 0/8; differ in: {'variable cell': 8, 'unplanned': 5}
+E7 IPv4×IPv4: identical 0/1; differ in: {'unplanned': 1}
+E8ipfix IPv4×IPv4: identical 2/4; differ in: {'variable cell': 2, 'unplanned': 2}
+E9costcred IPv4×IPv4: identical 2/4; differ in: {'performance': 2}

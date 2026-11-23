@@ -1,0 +1,14 @@
+E10budget: runs 8/8, identical 4/8; other runs differ only in: {'request size': 4, 'unplanned': 2, 'variable cell': 4}
+E10conc: runs 4/4, identical 2/4; other runs differ only in: {'request size': 2, 'unplanned': 2, 'variable cell': 2}
+E10conccred: runs 4/4, identical 2/4; other runs differ only in: {'request size': 2, 'unplanned': 2, 'variable cell': 2}
+E12contain: runs 6/6, identical 0/6; other runs differ only in: {'request size': 5, 'variable cell': 5, 'unplanned': 4}; OUTCOME DIFFERENCES: r0006-E12contain-c03-rep00
+E12containcred: runs 6/6, identical 0/6; other runs differ only in: {'request size': 6, 'unplanned': 3, 'variable cell': 5}; OUTCOME DIFFERENCES: r0006-E12contain-c03-rep00
+E4: runs 8/8, identical 6/8; other runs differ only in: {'variable cell': 2}
+E5node: runs 12/12, identical 5/12; other runs differ only in: {'unplanned': 5, 'variable cell': 4}
+E5partial: runs 1/1, identical 0/1; other runs differ only in: {'variable cell': 1}
+E5reuse: runs 16/16, identical 0/16; other runs differ only in: {'request size': 16, 'variable cell': 10, 'unplanned': 4}
+E6: runs 16/16, identical 14/16; other runs differ only in: {'variable cell': 2}
+E6reuse: runs 8/8, identical 0/8; other runs differ only in: {'variable cell': 8, 'unplanned': 5, 'request size': 4}
+E7: runs 1/1, identical 0/1; other runs differ only in: {'model output': 1}
+E8ipfix: runs 4/4, identical 2/4; other runs differ only in: {'request size': 2, 'performance': 1, 'variable cell': 2}
+E9costcred: runs 4/4, identical 2/4; other runs differ only in: {'request size': 2, 'performance': 2}

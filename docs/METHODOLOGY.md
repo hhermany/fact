@@ -35,7 +35,7 @@ Smoke and pilot numbers quoted in internal documents are always labeled as such.
 - **Technique:** measurement of a real system under a controlled workload [Jain 1991, ch. 3: measurement is the indicated technique when the system exists and the question involves the real behavior of the kernel]. Simulation is used only as a unit test (`tests/test_agentctx_sim.py`), never as a result.
 - **Object:** IPv4 `tcp_connect` events and `connect` decisions (cgroup/connect4).
 - **Attribution unit:** synthetic execution (E1–E3), MCP session (E4–E6), or LLM agent execution (E7).
-- **Out of scope:** bytes per flow, IPv6, UDP, runtimes other than Python (the mechanism is general, but the implementation is Python).
+- **Out of scope (initial design; later extended):** bytes per flow, IPv6, UDP, runtimes other than Python (the mechanism is general, but the implementation is Python). Bytes (E5reuse, E5partial, E10, E12), UDP (E5udp, E9all, E9b), Node.js (E5node) and IPv6 (2026-11-22, see Limitations) were added later.
 
 ## 3. Experimental design
 
@@ -175,7 +175,7 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
   - the session-derived identity is implemented for the Python SDK (SSE transport) and assumes each execution's token is known only to its own client;
   - E5node hooks Node's internal libuv binding (`tcp_wrap`), not a public API: the hook may need updating across Node major versions, and connections opened by native addons or worker threads that do not load `fact_rt_node` are outside it;
   - E5lib runs the official MCP fetch server's `fetch_url` inside the shared server, not that server as a whole;
-  - the workload experiments use IPv4 only (IPv6 enforcement and accounting, added on 2026-11-22, are checked by the directed test `tests/coverage/run.sh`); the second machine is reached through a virtual switch.
+  - the confirmatory campaigns of the paper use IPv4. IPv6 enforcement and accounting, added on 2026-11-22, are checked by the directed test `tests/coverage/run.sh` (four policy modes × IPv4, IPv6, IPv4-mapped), and every experiment was then run once per cell over both families with the paper's seed (`scripts/run_parity.sh`, `analysis/compare_families.py`; results in the README, "IPv6"); the second machine is reached through a virtual switch.
 - **Conclusion:**
   - dependence among events of a run (handled with the run as the unit);
   - common random numbers, stated;
