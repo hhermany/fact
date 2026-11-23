@@ -9,8 +9,19 @@ accounted and authorized per execution, even when concurrent tool calls share on
 keep-alive connection. It works over IPv4 and IPv6 (including IPv4-mapped addresses): the policy, the byte
 accounting and the collectors hook both families, a coverage matrix checks every send path in both, and all 54
 experiments of the paper were re-run over IPv6 with no difference in any FACT decision or count (see "IPv6" under
-"Paper to data"). Of the systems we ran for comparison, AgentProvenance v0.9.0 records no connection to an IPv6
-destination, so over IPv6 it attributes none; OBI behaved over IPv6 as over IPv4.
+"Paper to data"). Column D9 of Table I records the same property for the related systems, from their source
+(checked in November 2026) and, for the two we ran, from their execution:
+
+| System | IPv4 and IPv6 | Evidence |
+|---|---|---|
+| AgentProvenance | no | run: v0.9.0 records no `network_connect` for an IPv6 destination; source: v0.10.1 (82c8f46) `internal/sensor/exec.c:459`, `if (sa.sin_family != AF_INET) return 0;` |
+| AgentGuard | no | source (cef1a1f): `enforcer.bpf.c:620` denies every AF_INET6 connect, "No IPv6 path exists" |
+| ActPlane | no | source (1cbb4d0): `docs/rule-language.md:113`, kernel endpoint matching is IPv4 only; IPv6 is reported as unsupported |
+| AgentSight | yes | source (fbc6d91): `bpf/process_ext/bpf_net.h:114,157` format IPv6 destinations |
+| OBI | yes | run: the association test gave the same counts over IPv6 as over IPv4 |
+| AgentCgroup | no | does not attribute network activity |
+| ContractWarden | no evidence | no public source found |
+| FACT | yes | the coverage matrix and the 54 experiments, over both families |
 
 ## What is here
 
