@@ -318,7 +318,8 @@ python3 analysis/obi_summary.py           # -> analysis/output/obi_assoc.csv
 
 ## Regenerating the summarized CSVs
 
-Older campaigns are archived as `.tar.gz` (in `campaigns/` and in the raw-data archive, with `SHA256SUMS`).
+Older campaigns are archived as `.tar.gz`, some in `campaigns/` and the others in the authors' raw-data archive,
+which is not part of this repository (see Data; `campaigns/<campaign_id>/checksums.sha256` holds the SHA-256 of every raw file).
 To rebuild `analysis/runs.csv` and `analysis/overhead.csv` from all of them:
 
 ```sh

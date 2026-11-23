@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the data deposit (e.g., for Zenodo) from the campaign archives.
+"""Package the campaign archives into one directory with checksums and an index.
 
 Usage:
   python3 scripts/package_data.py ARCHIVE_DIR OUT_DIR [--labels confirmatory,pilot,validation]
