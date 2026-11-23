@@ -144,6 +144,12 @@ E6reuse/E6reusecred is classified by the execution that opened its connection an
 per-send authorization, none of the 864 forbidden requests reached the destination (411 were denied at the LSM
 on connections a permissive execution had opened), and every permitted one did, whoever opened the connection.
 
+In `campaign_validation.csv` and in the capture columns of `runs.csv`, `attempted` counts the planned connections
+and `captured` those that reached `tcp_connect`. Under an egress policy, a connection denied at `cgroup/connect4`
+or `cgroup/connect6` never reaches `tcp_connect`, so in E6, E6net, E7, E7c, E7m, E7o, and E7r `lost` is exactly
+the number of denied connections (3680, 3670, 52, 312, 312, 312, and 1248: the TD + FD + ND of their policy
+tables), not capture loss. Capture loss is measured where nothing is denied (E1, E2: none).
+
 IPv6. The policy (`cgroup/connect6`, `cgroup/sendmsg6`, the LSM program and the accounting fexits, including
 `udpv6_sendmsg`) and the collectors cover IPv6 and IPv4-mapped addresses since 2026-11-22, after the campaigns;
 their IPv4 code paths are unchanged. Destinations are identified by port, over either family. The workloads,
@@ -340,6 +346,13 @@ figures differed only in their creation date, and 360 runs drawn at random (8 pe
 `analysis/score.py` reproduced their `score.json`. The second boot of E2 (scaling to K = 64), run afterwards on
 2026-11-21, added 480 rows to `runs.csv` (120 runs, no capture loss and no misattribution, as in the first boot),
 and `structural_conflicts.csv` now counts 4030 runs.
+
+On 2026-11-23 the whole check was repeated at commit `b43d327` from the 59 campaign archives. Every raw file matched
+its checksum except the `events.jsonl` of 64 of the 85 failed runs (EADDRINUSE, see `docs/METHODOLOGY.md`) of the
+pilot `hermes-E2-pilot-20261012T050414Z`, which no result uses; its 35 completed runs match. The 8972 rows of
+`runs.csv` and the 224 of `overhead.csv` were reproduced exactly, and every other summarized result was
+byte-identical except `policy_matrix.csv` and `policy_reach.csv`, which had been generated without the archived
+E6 and E7 campaigns and now include them (rows added, none changed).
 
 ## Data
 

@@ -1,4 +1,8 @@
 experiment,setting,class,runs,TA,TD,FA,FD,ND
+E6,,P,48,3000,0,0,0,0
+E6,,R,48,1440,1560,0,0,0
+E6,binding_mode=manual,P,48,2519,0,0,481,0
+E6,binding_mode=manual,R,48,1222,1421,139,218,0
 E6L,wrong_label=0.05,P,48,4640,0,0,160,0
 E6L,wrong_label=0.05,R,48,2368,2352,48,32,0
 E6L,wrong_label=0.2,P,48,4160,0,0,640,0
@@ -33,6 +37,8 @@ E6spoofcred,trust=0,P,18,1050,0,0,0,0
 E6spoofcred,trust=0,R,18,504,0,546,0,0
 E6spoofcred,trust=1,P,18,1050,0,0,0,0
 E6spoofcred,trust=1,R,18,504,546,0,0,0
+E7,,P,26,156,0,0,0,0
+E7,,R,26,104,52,0,0,0
 E7c,,P,104,936,0,0,0,0
 E7c,,R,104,624,312,0,0,0
 E7f,wrong_label=0.3333333333333333,P,26,104,0,0,52,0

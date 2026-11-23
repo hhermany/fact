@@ -5,6 +5,8 @@ E10conc,allow,1,1260
 E10conc,deny,0,540
 E10conccred,allow,1,1260
 E10conccred,deny,0,540
+E6,allow,1,8320
+E6,deny,0,3680
 E6L,allow,1,13584
 E6L,deny,0,5616
 E6Ls,allow,1,4440
@@ -21,6 +23,8 @@ E6spoof,allow,1,3654
 E6spoof,deny,0,546
 E6spoofcred,allow,1,3654
 E6spoofcred,deny,0,546
+E7,allow,1,260
+E7,deny,0,52
 E7c,allow,1,1560
 E7c,deny,0,312
 E7f,allow,1,174
