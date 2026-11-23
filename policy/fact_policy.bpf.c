@@ -61,10 +61,11 @@ struct task_struct { int pid; int tgid; } __attribute__((preserve_access_index))
 struct in6_addr { union { __u32 u6_addr32[4]; } in6_u; } __attribute__((preserve_access_index));
 struct sock_common { unsigned short skc_family; __be16 skc_dport; __be32 skc_daddr; struct in6_addr skc_v6_daddr; } __attribute__((preserve_access_index));
 struct sock { struct sock_common __sk_common; } __attribute__((preserve_access_index));
-struct socket { struct sock *sk; } __attribute__((preserve_access_index));
+struct socket { short type; struct sock *sk; } __attribute__((preserve_access_index));
 struct msghdr { void *msg_name; } __attribute__((preserve_access_index));
 struct inode { unsigned short i_mode; } __attribute__((preserve_access_index));
 struct file { struct inode *f_inode; } __attribute__((preserve_access_index));
+#define SOCK_STREAM_ 1
 #define PR_FACT 0x46414354   /* "FACT" */
 #define FACT_SET 1
 #define FACT_CLEAR 2
@@ -196,6 +197,7 @@ int on_exit(__u64 *ctx)
 	__u32 tid = (__u32)pt, tgid = pt >> 32;
 	bpf_map_delete_elem(&ctx_map, &tid);
 	bpf_map_delete_elem(&dom_map, &tid);
+	bpf_map_delete_elem(&v6_named, &tid);
 	if (tid == tgid)   /* the right to switch dies with the registered process (no PID reuse) */
 		bpf_map_delete_elem(&trust_map, &tgid);
 	return 0;
@@ -455,8 +457,12 @@ int BPF_PROG(on_sock_sendmsg, struct socket *sock, struct msghdr *msg, int size,
 	__u8 v6 = fam == 10;
 	if (v6)
 		BPF_CORE_READ_INTO(&a6, sk, __sk_common.skc_v6_daddr.in6_u.u6_addr32);
-	void *name = BPF_CORE_READ(msg, msg_name);
-	if (name) {   /* unconnected datagram: the destination is in the message */
+	/* An address in the message is the destination of a datagram only: TCP ignores it (sendto on a
+	 * connected stream socket), so a stream send is decided by the socket's peer, and an address
+	 * passed with it cannot steer the decision to another port. (A TCP Fast Open send on an
+	 * unconnected socket has no peer yet: it is decided by cgroup/connect4/6, which it runs.) */
+	void *name = BPF_CORE_READ(sock, type) == SOCK_STREAM_ ? 0 : BPF_CORE_READ(msg, msg_name);
+	if (name) {   /* datagram with an address: the destination is in the message */
 		struct fact_sin6 sin = {};   /* sockaddr_in and sockaddr_in6 share family and port */
 		bpf_probe_read_kernel(&sin, sizeof(struct fact_sin), name);
 		if (sin.family == 2) {
@@ -474,8 +480,9 @@ int BPF_PROG(on_sock_sendmsg, struct socket *sock, struct msghdr *msg, int size,
 }
 
 /* Budget accounting: bytes accepted by the kernel (return value), charged to the
- * identity of the sending thread (as in decide), for policed destinations. */
-static __always_inline void charge(struct sock *sk, struct msghdr *msg, int ret)
+ * identity of the sending thread (as in decide), for policed destinations. dgram: the
+ * message's address, if any, is the destination (UDP); TCP ignores it and goes by the peer. */
+static __always_inline void charge(struct sock *sk, struct msghdr *msg, int ret, int dgram)
 {
 	if (ret <= 0)
 		return;
@@ -487,7 +494,7 @@ static __always_inline void charge(struct sock *sk, struct msghdr *msg, int ret)
 	if (fam != 2 && fam != 10)   /* AF_INET, AF_INET6 */
 		return;
 	__be16 port = BPF_CORE_READ(sk, __sk_common.skc_dport);
-	void *name = BPF_CORE_READ(msg, msg_name);
+	void *name = dgram ? BPF_CORE_READ(msg, msg_name) : 0;
 	if (name) {
 		struct fact_sin sin = {};
 		bpf_probe_read_kernel(&sin, sizeof(sin), name);
@@ -557,7 +564,7 @@ int BPF_PROG(on_tcp_recv, struct sock *sk, struct msghdr *msg, __u64 len, int fl
 SEC("fexit/tcp_sendmsg")
 int BPF_PROG(on_tcp_sent, struct sock *sk, struct msghdr *msg, __u64 size, int ret)
 {
-	charge(sk, msg, ret);
+	charge(sk, msg, ret, 0);
 	return 0;
 }
 
@@ -568,14 +575,14 @@ int BPF_PROG(on_udp_sent, struct sock *sk, struct msghdr *msg, __u64 size, int r
 	 * destination), whose fexit charges the same bytes */
 	if (sk && BPF_CORE_READ(sk, __sk_common.skc_family) == 10)
 		return 0;
-	charge(sk, msg, ret);
+	charge(sk, msg, ret, 1);
 	return 0;
 }
 
 SEC("fexit/udpv6_sendmsg")
 int BPF_PROG(on_udp6_sent, struct sock *sk, struct msghdr *msg, __u64 size, int ret)
 {
-	charge(sk, msg, ret);
+	charge(sk, msg, ret, 1);
 	return 0;
 }
 

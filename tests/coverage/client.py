@@ -4,8 +4,9 @@
 #, FAMILY in v4 | v6 | v4mapped, MODE in persend | connect | cred | budget.
 # The same battery runs in every family, each on its own ports (TCP base+1, UDP base+2): execution A
 # may reach them, B may not. A opens the sockets, then B tries every send path; A sends again; a
-# connection without identity follows. In budget mode, Q (3 connections), R (100 bytes over TCP)
-# and S (50 bytes of datagrams) test the kernel-held budgets. Identities are handed over with
+# connection without identity follows. In budget mode, Q (3 connections), R (100 bytes over TCP),
+# V (R's budget, with a decoy address passed with each TCP send) and S (50 bytes of datagrams)
+# test the kernel-held budgets. Identities are handed over with
 # markers (openat), or with the credential (prctl) in cred mode. Every payload is a tag padded to
 # 48 bytes that the destination logs, so delivery is observed at the destination.
 import ctypes, errno, json, os, socket, sys, tempfile, time
@@ -80,6 +81,8 @@ ident("B")
 tryit("B_send", lambda: a.send(tag("B_send")))
 tryit("B_sendall", lambda: a.sendall(tag("B_sendall")))
 tryit("B_sendto_connected", lambda: a.sendto(tag("B_sendto_connected"), (HOST, T)))
+# an address of an unpoliced port with a send on A's TCP connection: TCP ignores it, the policy too
+tryit("B_sendto_decoy_port", lambda: a.sendto(tag("B_sendto_decoy_port"), (HOST, 22)))
 tryit("B_sendmsg", lambda: a.sendmsg([tag("B_sendmsg")]))
 tryit("B_sendmmsg", lambda: sendmmsg(a.fileno(), tag("B_sendmmsg")))
 tryit("B_write", lambda: os.write(a.fileno(), tag("B_write")))
@@ -123,6 +126,10 @@ if MODE == "budget":
     r = socket.socket(AF); r.connect((HOST, T))
     for k in range(1, 9):
         tryit(f"R_send_{k}", lambda k=k: r.send(tag(f"R_send_{k}")))
+    ident("V")   # the byte budget of R, with an unpoliced port's address passed with every TCP send
+    v = socket.socket(AF); v.connect((HOST, T))
+    for k in range(1, 5):
+        tryit(f"V_sendto_decoy_{k}", lambda k=k: v.sendto(tag(f"V_sendto_decoy_{k}"), (HOST, 22)))
     ident("S")
     s = socket.socket(AF, socket.SOCK_DGRAM)
     for k in range(1, 5):

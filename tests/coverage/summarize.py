@@ -16,7 +16,7 @@ d, out = sys.argv[1], sys.argv[2]
 FAMS = {"v4": 62000, "v6": 62010, "v4mapped": 62020}
 HOSTS = {"v4": {"127.0.0.1"}, "v6": {"::1"}, "v4mapped": {"::ffff:127.0.0.1", "127.0.0.1"}}
 COLLECTORS = ["fact", "fact-fast", "fact-count", "fact-bytes", "fact-cred", "fact-udp", "fact-all"]
-B_ON_A_SOCKET = {"B_send", "B_sendall", "B_sendto_connected", "B_sendmsg", "B_sendmmsg", "B_write", "B_writev",
+B_ON_A_SOCKET = {"B_send", "B_sendall", "B_sendto_connected", "B_sendto_decoy_port", "B_sendmsg", "B_sendmmsg", "B_write", "B_writev",
                  "B_sendfile", "B_splice", "B_msg_zerocopy", "B_write_dup_fd", "B_udp_connected_send",
                  "U_B_send_inline", "U_B_send_async", "U_B_send_zc", "U_B_write", "U_B_write_async", "U_B_sendmsg"}
 
@@ -47,7 +47,7 @@ def expected(mode, name, fam):
         return "delivered"
     if name.startswith("Q_conn_"):
         return "delivered" if int(name.rsplit("_", 1)[1]) <= 3 else "blocked"   # 3 connections
-    if name.startswith("R_send_"):
+    if name.startswith(("R_send_", "V_sendto_decoy_")):
         # 48-byte sends, allowed while fewer than 100 bytes were accepted: 0, 48, 96 -> 3 sends
         return "delivered" if int(name.rsplit("_", 1)[1]) <= 3 else "blocked"
     if name.startswith("S_sendto_"):

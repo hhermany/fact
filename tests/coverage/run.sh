@@ -4,7 +4,8 @@
 # fresh policy and all seven collectors run while client.py and uring.c execute the same battery:
 # execution A opens TCP and UDP sockets, then B tries every send path we know of (send/sendall/
 # sendto/sendmsg/sendmmsg, write/writev, sendfile, splice, MSG_ZEROCOPY, a duplicated fd, UDP
-# connected and unconnected, new connects, and io_uring inline and forced to the io-wq worker), A
+# connected and unconnected, new connects, a TCP send with a decoy address, and io_uring inline and
+# forced to the io-wq worker), A
 # sends again, and a connection without identity follows. Modes:
 #   persend  markers, per-send authorization (LSM), usage counted
 #   connect  markers, connection-level authorization only, usage counted
@@ -51,8 +52,8 @@ for MODE in persend connect cred budget; do
       sleep 0.2
     done
     python3 -c "import sys; sys.path.insert(0,'policy'); import policyctl; p=$POLICED; \
-policyctl.load_dict({'A':p,'Q':p,'R':p,'S':p}); \
-policyctl.load_budgets({'A':{'bytes':10**9},'B':{'bytes':10**9},'Q':{'conns':3},'R':{'bytes':100},'S':{'bytes':50}})"
+policyctl.load_dict({'A':p,'Q':p,'R':p,'S':p,'V':p}); \
+policyctl.load_budgets({'A':{'bytes':10**9},'B':{'bytes':10**9},'Q':{'conns':3},'R':{'bytes':100},'S':{'bytes':50},'V':{'bytes':100}})"
     sh -c "echo \$\$ > $CG/cgroup.procs; exec python3 -I $T/client.py $D/client.json $FAM $MODE"
     sh -c "echo \$\$ > $CG/cgroup.procs; exec $O/uring $FAM $H $P $IFACE" > $D/uring.jsonl 2> $D/uring.err
     sleep 0.5
