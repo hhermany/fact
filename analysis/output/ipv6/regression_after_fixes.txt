@@ -1,0 +1,33 @@
+# after the TCP-address fix (9db09f7): /tmp/fc/parity (before) vs /tmp/fc/fix (after), per family
+E10budget IPv4×IPv4: identical 4/8; differ in: {'unplanned': 4, 'variable cell': 4, 'outcome': 2}
+E10conc IPv4×IPv4: identical 2/4; differ in: {'unplanned': 1, 'variable cell': 2}
+E12containcred IPv4×IPv4: identical 0/6; differ in: {'unplanned': 6, 'variable cell': 5, 'outcome': 3}
+E3send IPv4×IPv4: identical 15/15
+E5udp IPv4×IPv4: identical 4/8; differ in: {'variable cell': 4, 'unplanned': 1}
+E6reuse IPv4×IPv4: identical 0/8; differ in: {'variable cell': 8, 'unplanned': 7, 'outcome': 1}
+E6reusecred IPv4×IPv4: identical 0/4; differ in: {'variable cell': 4, 'unplanned': 3, 'outcome': 1}
+E9all IPv4×IPv4: identical 0/2; differ in: {'performance': 2}
+E10budget IPv6×IPv6: identical 4/8; differ in: {'unplanned': 3, 'variable cell': 4, 'outcome': 1}
+E10conc IPv6×IPv6: identical 1/4; differ in: {'unplanned': 3, 'variable cell': 2}
+E12containcred IPv6×IPv6: identical 1/6; differ in: {'unplanned': 5, 'variable cell': 5, 'outcome': 1}
+E3send IPv6×IPv6: identical 15/15
+E5udp IPv6×IPv6: identical 4/8; differ in: {'variable cell': 4}
+E6reuse IPv6×IPv6: identical 0/8; differ in: {'variable cell': 8, 'unplanned': 7, 'outcome': 1}
+E6reusecred IPv6×IPv6: identical 0/4; differ in: {'variable cell': 4, 'unplanned': 3}
+E9all IPv6×IPv6: identical 0/2; differ in: {'performance': 2}
+# after the AF_UNSPEC and collector fixes (3fb966a, e493781): before vs after, per family
+E5udp IPv4×IPv4: identical 4/8; differ in: {'variable cell': 4}
+E9b IPv4×IPv4: identical 0/2; differ in: {'performance': 2, 'variable cell': 1, 'unplanned': 1}
+E5udp IPv6×IPv6: identical 4/8; differ in: {'variable cell': 4}
+E9b IPv6×IPv6: identical 1/2; differ in: {'performance': 1}
+# after the fixes: IPv4 vs IPv6
+E10budget: runs 8/8, identical 4/8; other runs differ only in: {'request size': 4, 'unplanned': 4, 'variable cell': 4}; OUTCOME DIFFERENCES: r0006-E10budget-c02-rep00, r0007-E10budget-c03-rep00
+E10conc: runs 4/4, identical 2/4; other runs differ only in: {'request size': 2, 'unplanned': 2, 'variable cell': 2}
+E12containcred: runs 6/6, identical 0/6; other runs differ only in: {'request size': 5, 'unplanned': 6, 'variable cell': 5}; OUTCOME DIFFERENCES: r0006-E12contain-c03-rep00
+E3send: runs 15/15, identical 15/15
+E5udp: runs 8/8, identical 4/8; other runs differ only in: {'variable cell': 4, 'unplanned': 1}
+E6reuse: runs 8/8, identical 0/8; other runs differ only in: {'variable cell': 8, 'unplanned': 7, 'request size': 4}; OUTCOME DIFFERENCES: r0006-E6reuse-c02-rep00
+E6reusecred: runs 4/4, identical 0/4; other runs differ only in: {'request size': 4, 'variable cell': 4, 'unplanned': 4}; OUTCOME DIFFERENCES: r0004-E6reuse-c03-rep00
+E9all: runs 2/2, identical 0/2; other runs differ only in: {'performance': 2}
+E5udp: runs 8/8, identical 4/8; other runs differ only in: {'variable cell': 4}
+E9b: runs 2/2, identical 0/2; other runs differ only in: {'performance': 2, 'variable cell': 1, 'unplanned': 1}

@@ -4,6 +4,14 @@ Per-execution network attribution, accounting, and control for AI agents, with e
 Artifact of the paper *Who Opened This Connection? eBPF-based Per-Execution Network Attribution,
 Accounting, and Control for AI Agents* (submitted to IEEE/IFIP NOMS 2027).
 
+FACT carries each tool call's execution identity to the kernel, so connections, sends and datagrams are attributed,
+accounted and authorized per execution, even when concurrent tool calls share one worker process, thread or
+keep-alive connection. It works over IPv4 and IPv6 (including IPv4-mapped addresses): the policy, the byte
+accounting and the collectors hook both families, a coverage matrix checks every send path in both, and all 54
+experiments of the paper were re-run over IPv6 with no difference in any FACT decision or count (see "IPv6" under
+"Paper to data"). Of the systems we ran for comparison, AgentProvenance v0.9.0 records no connection to an IPv6
+destination, so over IPv6 it attributes none; OBI behaved over IPv6 as over IPv4.
+
 ## What is here
 
 | Path | Content |
@@ -130,14 +138,28 @@ Coverage matrix. `tests/coverage/run.sh` (root, BPF LSM) checks the send paths i
 authorization, connection-level only, kernel-held credential, budgets) toward IPv4, IPv6 and IPv4-mapped
 destinations: execution B, which may not reach the destination, tries send, sendall, sendto, sendmsg, sendmmsg,
 write, writev, sendfile, splice, MSG_ZEROCOPY, a duplicated descriptor, connected and unconnected UDP, new
-connections and io_uring, on sockets execution A opened and on its own; the destination logs what arrives, and
-the kernel's usage map what each identity was charged. On 2026-11-22 every check passed in every mode and
+connections, io_uring and a TCP send naming another port, on sockets execution A opened and on its own; the destination logs what arrives, and
+the kernel's usage map what each identity was charged. On 2026-11-23, after the fixes below, every check passed in every mode and
 family, and the outcomes, charges, budget counters, policy decisions and the events of all seven collectors
 were the same across families (`analysis/output/coverage_test.json`). The matrix found one difference, now
 fixed (commit e14922f): toward an IPv4-mapped destination, `udpv6_sendmsg` hands even a connected send to
 `udp_sendmsg` with the destination filled in, so `cgroup/sendmsg4` decided again a send that is never re-decided
 on an IPv4 socket; an fentry on `udpv6_sendmsg` records whether the application named a destination, and the
-policy leaves the connected case to the per-send check, as on IPv4. Sends that io_uring defers to its kernel
+policy leaves the connected case to the per-send check, as on IPv4. A review of the code then found two
+bypasses, now fixed and tested by the matrix; no experiment exercises them. In both families (commit 9db09f7),
+an address passed with `sendto` or `sendmsg` on a TCP socket, which TCP ignores, was taken by the LSM program and by the byte charge as the
+destination: naming an unpoliced port, execution B could send on a connection A had opened, and an execution could
+send past its byte budget (`B_sendto_decoy_port`, `V_sendto_decoy_*`); the policy now reads a message's address for
+datagrams only. Over IPv4 only (commit 3fb966a), `udp_sendmsg` takes a datagram's address of family AF_UNSPEC as an
+AF_INET one (`udpv6_sendmsg` ignores it), and the charge did not, so such datagrams were not charged to the byte
+budget (`W_sendto_unspec_*`, run over IPv4 only; the decision itself was right, since `cgroup/sendmsg4` sees the
+address); the collectors now also read an IPv6 socket's datagram address by its family (commit e493781). With the
+code before each fix, its checks fail (`analysis/output/ipv6/coverage_before_fix1.json`, `coverage_before_fix2.json`);
+with all of them, every check passes. Re-run over both families, E3send, E5udp, E6reuse, E6reusecred, E9all,
+E10budget, E10conc and E12containcred after the first fix, and E5udp and E9b after the others, attributed every
+sent and received byte to its sender, as before; their other differences from the earlier runs are of the kinds
+found between two IPv4 runs of the same code (connections opened by the keep-alive pools, the shared budget of
+E12; `analysis/output/ipv6/regression_after_fixes.txt`). Sends that io_uring defers to its kernel
 worker (`IOSQE_ASYNC`) carry no credential and fall to the default action (deny), even for A. As an IPv4
 regression of this policy, E6, E6reuse and E6reusecred were re-run with `--n 1` and the paper's seed (28 runs; see
 "Re-running the confirmatory campaigns"): every E6 resolver row of FACT's automatic binding and of the
