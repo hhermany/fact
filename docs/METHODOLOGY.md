@@ -163,7 +163,7 @@ Application: in E5 and E6, the smallest cell (K=2, 25 ops) has 50 cases per run,
   - residual state between runs (mitigated by a fresh collector and new cgroups);
   - interference between the bpftrace collector and the policy program, which coexist in E6/E7.
 - **Construct:**
-  - "connection" means a `connect` attempt; bytes are attributed only in E5reuse, and only for HTTP/1.1 keep-alive (protocols that multiplex several sessions' requests on one connection, such as HTTP/2, are not evaluated);
+  - "connection" means a `connect` attempt; bytes are attributed in E5reuse, E5partial, E6reuse, E10 and E12 (and, with the kernel-held credential, E6reusecred, E10conccred, E12containcred and E9costcred), and on reused connections only for HTTP/1.1 keep-alive (protocols that multiplex several sessions' requests on one connection, such as HTTP/2, are not evaluated);
   - a synthetic execution is not a real task (mitigated in E4–E7 with a real MCP server and LLM agents);
   - in E7, the model's behavior is part of the workload, not a controlled variable.
 - **External:**

@@ -4,7 +4,7 @@
 // Attaches cgroup/connect4/connect6 and cgroup/sendmsg4/sendmsg6 (unconnected UDP; IPv6 and IPv4-mapped
 // addresses are decided like IPv4, by port); with per_send=1 also the BPF LSM
 // program on socket_sendmsg (needs lsm=...,bpf), which re-authorizes every send; with budget=1 (enforce)
-// or 2 (count only) also the fexit programs on tcp_sendmsg/udp_sendmsg that charge accepted bytes to per-execution budgets.
+// or 2 (count only) also the fexit programs on tcp_sendmsg/udp_sendmsg/udpv6_sendmsg that charge accepted bytes to per-execution budgets.
 // With cred=1 the identity is an execution credential switched by prctl(PR_FACT, ...) and authorized by the BPF LSM
 // hook task_prctl (openat markers are not accepted); the kernel also stamps sockets and keeps per-credential usage
 // (sent and received bytes). It needs the BPF LSM; the loader refuses to start without it.

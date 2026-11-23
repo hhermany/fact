@@ -311,7 +311,7 @@ static __always_inline int decide(struct cfg *c, __u32 dport, __u32 daddr, const
 	/* budget: the accounting of the same identity, kept in the kernel, drives the
 	 * decision. A connection is allowed while fewer than max_conns were attempted; a
 	 * send or datagram is allowed while the bytes accepted so far (charged at the
-	 * return of tcp_sendmsg/udp_sendmsg) are below max_bytes, so an execution can
+	 * return of tcp_sendmsg/udp_sendmsg/udpv6_sendmsg) are below max_bytes, so an execution can
 	 * exceed its byte budget by at most the send that crosses it. */
 	if (verdict && who && c->budget == 1) {   /* 1: count and enforce; 2: count only */
 		struct budget *b = bpf_map_lookup_elem(&budget_map, who);
