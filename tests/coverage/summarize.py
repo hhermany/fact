@@ -30,9 +30,11 @@ B_ON_A_SOCKET = {"B_send", "B_sendall", "B_sendto_connected", "B_sendto_decoy_po
 KNOWN = {}
 # Tests run over IPv4 only, because the kernel itself treats their input differently by family:
 # udp_sendmsg takes a datagram's AF_UNSPEC address as an AF_INET one, while udpv6_sendmsg ignores it
-# and sends to the socket's peer. Identity W sends those datagrams; it is checked against its
-# expected outcomes and charges over IPv4 and left out of the comparison across families.
+# and sends to the socket's peer. Identity W sends those datagrams, to its own port (base+4); it is
+# checked against its expected outcomes and charges over IPv4 and left out of the comparison across
+# families (by identity, and by port for the collectors that do not record identities with markers).
 V4_ONLY = "W"
+V4_ONLY_PORT = 4
 PORT3_TAGS = {"A_udp3_connected_send_control", "B_udp_connected_send", "B_udp_sendto_peer_connected"}
 
 
@@ -83,7 +85,7 @@ def collector_signature(path, base, skip=(), skip_ctx=(V4_ONLY,)):
     for e in evs:
         if e.get("ev") in ("connect", "send", "recv") and "dport" in e:
             p = norm_port(e["dport"], base)
-            if p is None or p in skip:
+            if p is None or p in skip or p == V4_ONLY_PORT:
                 continue
             if str(e.get("ctx", "")).rsplit("/", 1)[-1] in skip_ctx:
                 continue
@@ -153,7 +155,7 @@ for mode in ("persend", "connect", "cred", "budget"):
             if l.startswith('{"ev":"decision"'):
                 x = json.loads(l)
                 p = norm_port(x["dport"], base)
-                if p is None or p in skip or str(x["ctx"]).rsplit("/", 1)[-1] == V4_ONLY:
+                if p is None or p in skip or p == V4_ONLY_PORT or str(x["ctx"]).rsplit("/", 1)[-1] == V4_ONLY:
                     continue
                 dec[(x["kind"], x["verdict"], x["ctx"], p, x["budget"])] += 1
                 daddrs.add(x["daddr"])

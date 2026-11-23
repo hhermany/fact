@@ -30,7 +30,7 @@ if [ ! -x $O/uring ] || [ $T/uring.c -nt $O/uring ]; then
 fi
 : > $O/dryrun.txt
 for f in collector/*.bt; do bpftrace --dry-run $f > /dev/null 2>> $O/dryrun.txt; echo "$f $?" >> $O/dryrun.txt; done
-POLICED="[62001,62002,62003,62011,62012,62013,62021,62022,62023]"
+POLICED="[62001,62002,62003,62004,62011,62012,62013,62014,62021,62022,62023,62024]"
 for MODE in persend connect cred budget; do
   case $MODE in
     persend) ARGS="0 1 2 0";;   # lineage per_send budget cred

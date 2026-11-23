@@ -2,7 +2,7 @@
 # Destination of the coverage test (outside the policed cgroup): logs every newline-terminated
 # tag it receives (and its size), with the listener and the peer's address, and answers each TCP tag with "r\n"
 # (received bytes, charged in credential mode). One dual-stack socket per port serves IPv4,
-# IPv6 and IPv4-mapped clients: TCP on base+1, UDP on base+2 and base+3,
+# IPv6 and IPv4-mapped clients: TCP on base+1, UDP on base+2, base+3 and base+4,
 # with base 62000, 62010 and 62020 for the families v4, v6 and v4mapped of client.py.
 import json, socket, sys, threading
 out = open(sys.argv[1], "a", buffering=1)
@@ -52,5 +52,6 @@ for base in (62000, 62010, 62020):
     tcp(base + 1)
     udp(base + 2)
     udp(base + 3)
+    udp(base + 4)   # datagrams of identity W (IPv4 only), kept apart from the family comparison
 print("ready", flush=True)
 threading.Event().wait()

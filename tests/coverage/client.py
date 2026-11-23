@@ -137,7 +137,7 @@ if MODE == "budget":
     if FAM == "v4":   # IPv4 only: udp_sendmsg takes an AF_UNSPEC address as AF_INET (IPv6 ignores it)
         ident("W")    # S's datagram budget, each datagram addressed with sa_family AF_UNSPEC
         w = socket.socket(AF, socket.SOCK_DGRAM)
-        sa = bytes(2) + U.to_bytes(2, "big") + socket.inet_aton(HOST) + bytes(8)   # sockaddr_in, family 0
+        sa = bytes(2) + (U + 2).to_bytes(2, "big") + socket.inet_aton(HOST) + bytes(8)   # sockaddr_in, family 0, own port
         def unspec(k):
             b = tag(f"W_sendto_unspec_{k}")
             r = libc.sendto(w.fileno(), b, len(b), 0, sa, len(sa))
