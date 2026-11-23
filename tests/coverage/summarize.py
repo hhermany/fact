@@ -28,6 +28,11 @@ B_ON_A_SOCKET = {"B_send", "B_sendall", "B_sendto_connected", "B_sendto_decoy_po
 # recognizes that case (fentry on udpv6_sendmsg) and, as on IPv4, does not decide it again.
 # B_udp_connected_send and B_udp_sendto_peer_connected, on their own port base+3, test both cases.)
 KNOWN = {}
+# Tests run over IPv4 only, because the kernel itself treats their input differently by family:
+# udp_sendmsg takes a datagram's AF_UNSPEC address as an AF_INET one, while udpv6_sendmsg ignores it
+# and sends to the socket's peer. Identity W sends those datagrams; it is checked against its
+# expected outcomes and charges over IPv4 and left out of the comparison across families.
+V4_ONLY = "W"
 PORT3_TAGS = {"A_udp3_connected_send_control", "B_udp_connected_send", "B_udp_sendto_peer_connected"}
 
 
@@ -50,7 +55,7 @@ def expected(mode, name, fam):
     if name.startswith(("R_send_", "V_sendto_decoy_")):
         # 48-byte sends, allowed while fewer than 100 bytes were accepted: 0, 48, 96 -> 3 sends
         return "delivered" if int(name.rsplit("_", 1)[1]) <= 3 else "blocked"
-    if name.startswith("S_sendto_"):
+    if name.startswith(("S_sendto_", "W_sendto_unspec_")):
         # 48-byte datagrams under a 50-byte budget: 0, 48 -> 2 datagrams
         return "delivered" if int(name.rsplit("_", 1)[1]) <= 2 else "blocked"
     return "blocked"                                       # B, per send
@@ -65,7 +70,7 @@ def norm_port(p, base):
     return p - base if base < p <= base + 9 else None
 
 
-def collector_signature(path, base, skip=()):
+def collector_signature(path, base, skip=(), skip_ctx=(V4_ONLY,)):
     """Network events of the family's ports, without addresses, ports, times or ids."""
     sig, sks = collections.Counter(), set()
     evs = []
@@ -79,6 +84,8 @@ def collector_signature(path, base, skip=()):
         if e.get("ev") in ("connect", "send", "recv") and "dport" in e:
             p = norm_port(e["dport"], base)
             if p is None or p in skip:
+                continue
+            if str(e.get("ctx", "")).rsplit("/", 1)[-1] in skip_ctx:
                 continue
             if e["ev"] == "connect" and e.get("proto", "tcp") == "tcp":
                 sks.add(e.get("sk"))
@@ -135,7 +142,7 @@ for mode in ("persend", "connect", "cred", "budget"):
             for name, ns in got.items():
                 if name in PORT3_TAGS:
                     p3[who(name)] += sum(ns)
-        usage_cmp = {k: dict(v, bytes=v["bytes"] - p3.get(k, 0)) for k, v in usage.items()}
+        usage_cmp = {k: dict(v, bytes=v["bytes"] - p3.get(k, 0)) for k, v in usage.items() if k != V4_ONLY}
         acct_ok = all(charged.get(k, 0) == recv.get(k, 0) for k in set(charged) | set(recv) if k != "N")
         rx_ok = True
         if mode == "cred":
@@ -146,7 +153,7 @@ for mode in ("persend", "connect", "cred", "budget"):
             if l.startswith('{"ev":"decision"'):
                 x = json.loads(l)
                 p = norm_port(x["dport"], base)
-                if p is None or p in skip:
+                if p is None or p in skip or str(x["ctx"]).rsplit("/", 1)[-1] == V4_ONLY:
                     continue
                 dec[(x["kind"], x["verdict"], x["ctx"], p, x["budget"])] += 1
                 daddrs.add(x["daddr"])
@@ -160,7 +167,7 @@ for mode in ("persend", "connect", "cred", "budget"):
     # parity across families
     ref = per["v4"]
     outcome = {f: {x["test"]: x["observed"] for x in per[f]["tests"]
-                   if (mode, "v4mapped", x["test"]) not in KNOWN} for f in FAMS}
+                   if (mode, "v4mapped", x["test"]) not in KNOWN and who(x["test"]) != V4_ONLY} for f in FAMS}
     parity = {
         "outcomes": all(outcome[f] == outcome["v4"] for f in FAMS),
         "usage_counters": all(per[f]["_usage_cmp"] == ref["_usage_cmp"] for f in FAMS),

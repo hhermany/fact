@@ -10,7 +10,8 @@
 #   persend  markers, per-send authorization (LSM), usage counted
 #   connect  markers, connection-level authorization only, usage counted
 #   cred     execution credential (prctl), per-send authorization, sent and received bytes counted
-#   budget   markers, per-send authorization, budgets enforced (connections, TCP bytes, datagram bytes)
+#   budget   markers, per-send authorization, budgets enforced (connections, TCP bytes, datagram bytes;
+#            over IPv4 also datagrams addressed with family AF_UNSPEC, which udp_sendmsg accepts)
 # The destination (outside the policed cgroup) logs every tag it receives; the kernel's usage map
 # shows what each identity was charged; summarize.py checks each mode's expected outcomes and that
 # every family gives the same outcomes, charges, and collector events. Every collector script is
@@ -52,8 +53,8 @@ for MODE in persend connect cred budget; do
       sleep 0.2
     done
     python3 -c "import sys; sys.path.insert(0,'policy'); import policyctl; p=$POLICED; \
-policyctl.load_dict({'A':p,'Q':p,'R':p,'S':p,'V':p}); \
-policyctl.load_budgets({'A':{'bytes':10**9},'B':{'bytes':10**9},'Q':{'conns':3},'R':{'bytes':100},'S':{'bytes':50},'V':{'bytes':100}})"
+policyctl.load_dict({'A':p,'Q':p,'R':p,'S':p,'V':p,'W':p}); \
+policyctl.load_budgets({'A':{'bytes':10**9},'B':{'bytes':10**9},'Q':{'conns':3},'R':{'bytes':100},'S':{'bytes':50},'V':{'bytes':100},'W':{'bytes':50}})"
     sh -c "echo \$\$ > $CG/cgroup.procs; exec python3 -I $T/client.py $D/client.json $FAM $MODE"
     sh -c "echo \$\$ > $CG/cgroup.procs; exec $O/uring $FAM $H $P $IFACE" > $D/uring.jsonl 2> $D/uring.err
     sleep 0.5

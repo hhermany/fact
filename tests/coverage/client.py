@@ -5,8 +5,8 @@
 # The same battery runs in every family, each on its own ports (TCP base+1, UDP base+2): execution A
 # may reach them, B may not. A opens the sockets, then B tries every send path; A sends again; a
 # connection without identity follows. In budget mode, Q (3 connections), R (100 bytes over TCP),
-# V (R's budget, with a decoy address passed with each TCP send) and S (50 bytes of datagrams)
-# test the kernel-held budgets. Identities are handed over with
+# V (R's budget, with a decoy address passed with each TCP send), S (50 bytes of datagrams) and, over
+# IPv4, W (S's budget, datagrams addressed with family AF_UNSPEC) test the kernel-held budgets. Identities are handed over with
 # markers (openat), or with the credential (prctl) in cred mode. Every payload is a tag padded to
 # 48 bytes that the destination logs, so delivery is observed at the destination.
 import ctypes, errno, json, os, socket, sys, tempfile, time
@@ -134,6 +134,18 @@ if MODE == "budget":
     s = socket.socket(AF, socket.SOCK_DGRAM)
     for k in range(1, 5):
         tryit(f"S_sendto_{k}", lambda k=k: s.sendto(tag(f"S_sendto_{k}"), (HOST, U)))
+    if FAM == "v4":   # IPv4 only: udp_sendmsg takes an AF_UNSPEC address as AF_INET (IPv6 ignores it)
+        ident("W")    # S's datagram budget, each datagram addressed with sa_family AF_UNSPEC
+        w = socket.socket(AF, socket.SOCK_DGRAM)
+        sa = bytes(2) + U.to_bytes(2, "big") + socket.inet_aton(HOST) + bytes(8)   # sockaddr_in, family 0
+        def unspec(k):
+            b = tag(f"W_sendto_unspec_{k}")
+            r = libc.sendto(w.fileno(), b, len(b), 0, sa, len(sa))
+            if r < 0:
+                e = ctypes.get_errno(); raise OSError(e, os.strerror(e))
+            return r
+        for k in range(1, 5):
+            tryit(f"W_sendto_unspec_{k}", lambda k=k: unspec(k))
 ident(None)
 time.sleep(0.3)
 json.dump({"family": FAM, "mode": MODE, "tests": res, "rx_read": rx}, open(out, "w"), indent=1)

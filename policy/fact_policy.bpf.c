@@ -465,7 +465,9 @@ int BPF_PROG(on_sock_sendmsg, struct socket *sock, struct msghdr *msg, int size,
 	if (name) {   /* datagram with an address: the destination is in the message */
 		struct fact_sin6 sin = {};   /* sockaddr_in and sockaddr_in6 share family and port */
 		bpf_probe_read_kernel(&sin, sizeof(struct fact_sin), name);
-		if (sin.family == 2) {
+		/* on an IPv4 socket, udp_sendmsg takes an AF_UNSPEC address as an AF_INET one (an IPv6
+		 * socket ignores it and sends to its peer) */
+		if (sin.family == 2 || (sin.family == 0 && fam == 2)) {
 			port = sin.port; addr = ((struct fact_sin *)&sin)->addr; v6 = 0;
 		} else if (sin.family == 10) {
 			bpf_probe_read_kernel(&sin, sizeof(sin), name);
@@ -498,7 +500,9 @@ static __always_inline void charge(struct sock *sk, struct msghdr *msg, int ret,
 	if (name) {
 		struct fact_sin sin = {};
 		bpf_probe_read_kernel(&sin, sizeof(sin), name);
-		if (sin.family == 2 || sin.family == 10) port = sin.port;
+		/* AF_UNSPEC: a destination on an IPv4 socket, as in on_sock_sendmsg; on an IPv6 socket
+		 * udpv6_sendmsg has already dropped it (msg_name is NULL here) */
+		if (sin.family == 2 || sin.family == 10 || (sin.family == 0 && fam == 2)) port = sin.port;
 	}
 	__u32 dport = bpf_ntohs(port);
 	if (dport < c->lo || dport > c->hi)
