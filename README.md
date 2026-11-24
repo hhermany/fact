@@ -34,7 +34,7 @@ experiments of the paper were re-run over IPv6 with no difference in any FACT de
 | `analysis/` | Resolvers (fused, with explicit ambiguity), scoring against the independent reference, R analysis that generates every table of the paper, and `figures.R`, a literate R script (knitr::spin) that draws every figure with ggplot from the summarized CSVs; `baselines.py` emulates the correlation mechanisms of related systems on the same logs |
 | `workload/` | Synthetic workloads (E1–E3), MCP server/driver (E4–E6), LLM agents (E7, E7m); `remote_farm.py` serves the destinations on a second machine (E3net, E5net, E6net) |
 | `scripts/`, `workflow/`, `Snakefile`, `flake.nix` | Reproducible pipeline: Nix shell, Snakemake (preflight → pilot → size → campaign → validate → report) |
-| `campaigns/` | One directory per campaign with `manifest.json`, `checksums.sha256` and environment snapshot. **Raw run data are not distributed** (hundreds of MB); they can be regenerated and checked against the checksums (see Data) |
+| `campaigns/` | One directory per campaign with `manifest.json`, `checksums.sha256` and environment snapshot. Raw run data are published in [the `raw-data` branch](https://github.com/hhermany/fact/tree/raw-data) (see Data) |
 | `tests/` | Simulation test of the runtime binding; equivalence test live daemon × offline scoring |
 | `docs/METHODOLOGY.md` | Experimental methodology, with the literature that justifies each choice; `docs/FAULT-INJECTION-PILOTS.md` records the fault-injection pilots |
 
@@ -326,8 +326,8 @@ python3 analysis/obi_summary.py           # -> analysis/output/obi_assoc.csv
 
 ## Regenerating the summarized CSVs
 
-Older campaigns are archived as `.tar.gz`, some in `campaigns/` and the others in the authors' raw-data archive,
-which is not part of this repository (see Data; `campaigns/<campaign_id>/checksums.sha256` holds the SHA-256 of every raw file).
+The raw data of every campaign are archived as `.tar.gz` in [the `raw-data` branch](https://github.com/hhermany/fact/tree/raw-data),
+and some older archives are also in `campaigns/` (see Data; `campaigns/<campaign_id>/checksums.sha256` holds the SHA-256 of every raw file).
 To rebuild `analysis/runs.csv` and `analysis/overhead.csv` from all of them:
 
 ```sh
@@ -361,7 +361,9 @@ the code, the workflow, one directory per campaign under `campaigns/` (manifest,
 SHA-256 checksums of every raw file), the summarized results under `analysis/output/`, and the tables and figures generated from them
 under `analysis/output/tex/` and `analysis/output/fig/`.
 
-The raw per-run event logs (hundreds of MB) are not distributed. They can be regenerated with
+The raw per-run data of all campaigns (176 archives, about 460 MB, with the SHA-256 of every archive) are published in
+[the `raw-data` branch](https://github.com/hhermany/fact/tree/raw-data) (fetch only that branch with
+`git clone --branch raw-data --single-branch https://github.com/hhermany/fact.git fact-raw-data`). They can also be regenerated with
 `scripts/run_confirmatory.sh` (see above), and a regenerated campaign can be compared with the original one through its
 manifest and checksums. The `git` field of each manifest refers to the private development repository in which the campaign ran
 (see History). `scripts/package_data.py` remains available to package raw archives locally.
@@ -373,7 +375,7 @@ Code: MIT (see `LICENSE`). Summarized results: CC BY 4.0. Citation metadata: `CI
 ## History
 
 Developed first in the authors' private development repository (last commit `de5c489`);
-this repository starts from that state without the raw data.
+this repository starts from that state, and the raw data are in [the `raw-data` branch](https://github.com/hhermany/fact/tree/raw-data).
 
 The system was called *agentnet* during development and renamed FACT before submission. Campaigns recorded
 before the rename name the collectors `agentnet.bt` and `agentnet-fast.bt` (in each run's `collector.txt` and in
